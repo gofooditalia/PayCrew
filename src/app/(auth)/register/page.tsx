@@ -22,7 +22,7 @@ export default function RegisterPage() {
 
     try {
       // Registra l'utente in Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -41,7 +41,7 @@ export default function RegisterPage() {
           router.push('/login')
         }, 3000)
       }
-    } catch (err) {
+    } catch {
       setError('Si è verificato un errore durante la registrazione')
     }
     
