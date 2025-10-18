@@ -1,0 +1,287 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String    @unique
+  name          String?
+  role          UserRole  @default(USER)
+  aziendaId     String?   @db.Uuid
+  azienda       Azienda?  @relation(fields: [aziendaId], references: [id])
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(6)
+  
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  USER
+  
+  @@map("user_role")
+}
+
+model Azienda {
+  id                String      @id @default(uuid()) @db.Uuid
+  nome              String
+  partitaIva        String      @unique
+  codiceFiscale     String?
+  indirizzo         String?
+  citta             String?
+  cap               String?
+  telefono          String?
+  email             String?
+  users             User[]
+  dipendenti        Dipendente[]
+  sedi              Sede[]
+  createdAt         DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(6)
+  
+  @@map("aziende")
+}
+
+model Sede {
+  id            String      @id @default(uuid()) @db.Uuid
+  nome          String
+  indirizzo     String?
+  citta         String?
+  aziendaId     String      @db.Uuid
+  azienda       Azienda     @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  dipendenti    Dipendente[]
+  turni         Turno[]
+  createdAt     DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(6)
+  
+  @@map("sedi")
+}
+
+model Dipendente {
+  id                    String      @id @default(uuid()) @db.Uuid
+  nome                  String
+  cognome               String
+  codiceFiscale         String      @unique
+  dataNascita           DateTime    @db.Date
+  luogoNascita          String?
+  indirizzo             String?
+  citta                 String?
+  cap                   String?
+  telefono              String?
+  email                 String?
+  iban                  String?
+  
+  // Dati contrattuali
+  dataAssunzione        DateTime    @db.Date
+  tipoContratto         TipoContratto
+  ccnl                  CCNL
+  livello               String
+  retribuzione          Decimal     @db.Decimal(10, 2)
+  oreSettimanali        Int         @default(40)
+  
+  // Relazioni
+  aziendaId             String      @db.Uuid
+  azienda               Azienda     @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  sedeId                String?     @db.Uuid
+  sede                  Sede?       @relation(fields: [sedeId], references: [id])
+  
+  documenti             Documento[]
+  presenze              Presenza[]
+  bustePaga             BustaPaga[]
+  feriePermessi         FeriePermessi[]
+  turni                 Turno[]
+  
+  attivo                Boolean     @default(true)
+  dataCessazione        DateTime?   @db.Date
+  
+  createdAt             DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime    @updatedAt @db.Timestamptz(6)
+  
+  @@index([aziendaId])
+  @@index([codiceFiscale])
+  @@map("dipendenti")
+}
+
+enum TipoContratto {
+  TEMPO_INDETERMINATO
+  TEMPO_DETERMINATO
+  APPRENDISTATO
+  STAGIONALE
+  PARTTIME
+  
+  @@map("tipo_contratto")
+}
+
+enum CCNL {
+  TURISMO
+  COMMERCIO
+  METALMECCANICI
+  ALTRO
+  
+  @@map("ccnl")
+}
+
+model Documento {
+  id              String        @id @default(uuid()) @db.Uuid
+  tipo            TipoDocumento
+  numero          String?
+  dataRilascio    DateTime?     @db.Date
+  dataScadenza    DateTime?     @db.Date
+  storagePath     String        // Path in Supabase Storage
+  fileName        String
+  fileSize        Int?
+  mimeType        String?
+  dipendenteId    String        @db.Uuid
+  dipendente      Dipendente    @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
+  
+  @@index([dipendenteId])
+  @@index([dataScadenza])
+  @@map("documenti")
+}
+
+enum TipoDocumento {
+  CARTA_IDENTITA
+  PERMESSO_SOGGIORNO
+  CODICE_FISCALE
+  CONTRATTO
+  VISITA_MEDICA
+  ALTRO
+  
+  @@map("tipo_documento")
+}
+
+model Presenza {
+  id              String      @id @default(uuid()) @db.Uuid
+  data            DateTime    @db.Date
+  entrata         DateTime?   @db.Timestamptz(6)
+  uscita          DateTime?   @db.Timestamptz(6)
+  oreLavorate     Decimal?    @db.Decimal(5, 2)
+  oreStraordinario Decimal?   @db.Decimal(5, 2)
+  nota            String?
+  dipendenteId    String      @db.Uuid
+  dipendente      Dipendente  @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  createdAt       DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(6)
+  
+  @@index([dipendenteId])
+  @@index([data])
+  @@map("presenze")
+}
+
+model Turno {
+  id              String      @id @default(uuid()) @db.Uuid
+  data            DateTime    @db.Date
+  oraInizio       String      // formato HH:mm
+  oraFine         String      // formato HH:mm
+  tipoTurno       TipoTurno
+  dipendenteId    String      @db.Uuid
+  dipendente      Dipendente  @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  sedeId          String?     @db.Uuid
+  sede            Sede?       @relation(fields: [sedeId], references: [id])
+  createdAt       DateTime    @default(now()) @db.Timestamptz(6)
+  
+  @@index([dipendenteId])
+  @@index([data])
+  @@map("turni")
+}
+
+enum TipoTurno {
+  MATTINA
+  PRANZO
+  SERA
+  NOTTE
+  SPEZZATO
+  
+  @@map("tipo_turno")
+}
+
+model FeriePermessi {
+  id              String         @id @default(uuid()) @db.Uuid
+  tipo            TipoAssenza
+  dataInizio      DateTime       @db.Date
+  dataFine        DateTime       @db.Date
+  giorni          Int
+  stato           StatoRichiesta @default(IN_ATTESA)
+  motivazione     String?
+  dipendenteId    String         @db.Uuid
+  dipendente      Dipendente     @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime       @updatedAt @db.Timestamptz(6)
+  
+  @@index([dipendenteId])
+  @@index([stato])
+  @@map("ferie_permessi")
+}
+
+enum TipoAssenza {
+  FERIE
+  PERMESSO
+  MALATTIA
+  CONGEDO
+  
+  @@map("tipo_assenza")
+}
+
+enum StatoRichiesta {
+  IN_ATTESA
+  APPROVATA
+  RIFIUTATA
+  
+  @@map("stato_richiesta")
+}
+
+model BustaPaga {
+  id                  String      @id @default(uuid()) @db.Uuid
+  mese                Int         // 1-12
+  anno                Int
+  
+  // Competenze
+  retribuzioneLorda   Decimal     @db.Decimal(10, 2)
+  straordinari        Decimal     @db.Decimal(10, 2) @default(0)
+  altreCompetenze     Decimal     @db.Decimal(10, 2) @default(0)
+  totaleLordo         Decimal     @db.Decimal(10, 2)
+  
+  // Trattenute
+  contributiINPS      Decimal     @db.Decimal(10, 2)
+  irpef               Decimal     @db.Decimal(10, 2)
+  altreRitenute       Decimal     @db.Decimal(10, 2) @default(0)
+  totaleRitenute      Decimal     @db.Decimal(10, 2)
+  
+  // Netto
+  netto               Decimal     @db.Decimal(10, 2)
+  
+  // TFR
+  tfr                 Decimal     @db.Decimal(10, 2)
+  
+  // Dati ore
+  oreLavorate         Decimal     @db.Decimal(6, 2)
+  oreStraordinario    Decimal     @db.Decimal(6, 2) @default(0)
+  
+  // File PDF in Supabase Storage
+  storagePath         String?
+  
+  dipendenteId        String      @db.Uuid
+  dipendente          Dipendente  @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime    @updatedAt @db.Timestamptz(6)
+  
+  @@unique([dipendenteId, mese, anno])
+  @@index([dipendenteId])
+  @@index([anno, mese])
+  @@map("buste_paga")
+}
