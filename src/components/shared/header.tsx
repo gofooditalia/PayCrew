@@ -10,7 +10,13 @@ import {
 } from '@heroicons/react/24/outline'
 
 interface HeaderProps {
-  user: any
+  user: {
+    id: string;
+    email?: string;
+    user_metadata?: {
+      name?: string;
+    };
+  };
 }
 
 export default function Header({ user }: HeaderProps) {

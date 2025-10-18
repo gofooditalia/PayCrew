@@ -7,7 +7,7 @@ export default async function TestSupabase() {
     
     if (error) {
       // Se la RPC non esiste, proviamo un test più semplice
-      const { data: versionData, error: versionError } = await supabase
+      const { error: versionError } = await supabase
         .from('_test_connection')
         .select('*')
         .limit(1)
