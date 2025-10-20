@@ -40,13 +40,16 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] Layout protetto con navigazione
 - [x] Dashboard con statistiche
 
-### 🔄 Sprint 2 - Gestione Dipendenti (In Corso)
-- [ ] CRUD Dipendenti completo
-- [ ] Gestione documenti con upload
-- [ ] Gestione Aziende/Sedi
-- [ ] Autenticazione avanzata con ruoli
+### ✅ Sprint 2 - Gestione Dipendenti (Completato)
+- [x] CRUD Dipendenti completo
+- [x] Gestione documenti con upload
+- [x] Gestione Aziende/Sedi
+- [x] Autenticazione avanzata con ruoli
+- [x] API routes complete per dipendenti e aziende
+- [x] Componenti UI per gestione dipendenti
+- [x] Validazione form con Zod
 
-### ⏳ Sprint 3 - Presenze e Turni (Pianificato)
+### 🔄 Sprint 3 - Presenze e Turni (In Corso)
 - [ ] Registro presenze
 - [ ] Gestione turni
 - [ ] Calcolo ore lavorate
@@ -55,6 +58,27 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [ ] Calcolo buste paga
 - [ ] Generazione PDF cedolini
 - [ ] Report avanzati
+
+## 🚀 Release v0.2.0 - Versione Stabile
+
+PayCrew v0.2.0 è stata rilasciata con tutte le funzionalità degli Sprint 1 e 2 complete:
+
+### ✅ Funzionalità Disponibili
+- **Gestione Aziende**: CRUD completo con sedi multiple
+- **Gestione Dipendenti**: Anagrafica completa con documenti
+- **Autenticazione**: Sistema completo con ruoli e permessi
+- **API Routes**: Tutti gli endpoint necessari
+- **UI Components**: Interfaccia completa e responsive
+
+### 🌐 Deploy
+La versione stabile è pronta per il deploy su piattaforme alternative:
+- **Netlify**: Raccomandato per stabilità
+- **Railway**: Ottimo per backend
+- **Render**: Supporto Next.js eccellente
+
+Per istruzioni dettagliate, vedi [`DEPLOYMENT_ALTERNATIVES.md`](DEPLOYMENT_ALTERNATIVES.md).
+
+**Nota**: A causa di problemi temporanei con Vercel (guasto AWS globale), si raccomandano piattaforme alternative per il deploy in produzione.
 
 ## 🚀 Quick Start
 
