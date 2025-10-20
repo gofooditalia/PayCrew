@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { UserGroupIcon, ClockIcon, DocumentTextIcon, CurrencyEuroIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button'
+import { UserGroupIcon, ClockIcon, DocumentTextIcon, CurrencyEuroIcon, PencilIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 
 async function getDashboardStats() {
   const supabase = await createClient()
@@ -12,7 +14,7 @@ async function getDashboardStats() {
     redirect('/login')
   }
 
-  // Ottieni l'azienda dell'utente
+  // Ottieni l'azienda dell'utente usando Prisma
   const userData = await prisma.user.findUnique({
     where: { id: user.id },
     select: { aziendaId: true }
@@ -27,7 +29,7 @@ async function getDashboardStats() {
     }
   }
 
-  // Calcola le statistiche
+  // Calcola le statistiche usando Prisma
   const [
     totalDipendenti,
     presenzeOggi,
@@ -35,28 +37,28 @@ async function getDashboardStats() {
     totaleSalari
   ] = await Promise.all([
     prisma.dipendente.count({
-      where: { 
+      where: {
         aziendaId: userData.aziendaId,
-        attivo: true 
+        attivo: true
       }
     }),
     prisma.presenza.count({
-      where: { 
+      where: {
         dipendente: { aziendaId: userData.aziendaId },
         data: new Date()
       }
     }),
     prisma.bustaPaga.count({
-      where: { 
+      where: {
         dipendente: { aziendaId: userData.aziendaId },
         mese: new Date().getMonth() + 1,
         anno: new Date().getFullYear()
       }
     }),
     prisma.dipendente.aggregate({
-      where: { 
+      where: {
         aziendaId: userData.aziendaId,
-        attivo: true 
+        attivo: true
       },
       _sum: { retribuzione: true }
     })
@@ -66,7 +68,7 @@ async function getDashboardStats() {
     totalDipendenti,
     presenzeOggi,
     bustePagaMese,
-    totaleSalari: totaleSalari._sum.retribuzione || 0
+    totaleSalari: parseFloat((totaleSalari._sum.retribuzione || 0).toString())
   }
 }
 
@@ -75,9 +77,17 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Benvenuto nel gestionale PayCrew</p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">Benvenuto nel gestionale PayCrew</p>
+        </div>
+        <Link href="/azienda/modifica">
+          <Button variant="outline" className="flex items-center">
+            <PencilIcon className="h-4 w-4 mr-2" />
+            Modifica Azienda
+          </Button>
+        </Link>
       </div>
 
       {/* Stats Cards */}
@@ -145,34 +155,34 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <a
+              <Link
                 href="/dipendenti/nuovo"
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Nuovo Dipendente</h3>
                 <p className="text-sm text-gray-600">Aggiungi un nuovo dipendente</p>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/presenze"
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Registra Presenza</h3>
                 <p className="text-sm text-gray-600">Inserisci presenza giornaliera</p>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/buste-paga"
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Genera Busta Paga</h3>
                 <p className="text-sm text-gray-600">Crea nuovo cedolino</p>
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/report"
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Visualizza Report</h3>
                 <p className="text-sm text-gray-600">Analisi e statistiche</p>
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>
