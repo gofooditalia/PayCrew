@@ -6,25 +6,51 @@
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--background);
-  --color-card-foreground: var(--foreground);
-  --color-popover: var(--background);
-  --color-popover-foreground: var(--foreground);
-  --color-primary: #2563eb;
+  /* Modern Dashboard Color Palette */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+  --color-primary: #6366f1;
   --color-primary-foreground: #ffffff;
   --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #0f172a;
+  --color-secondary-foreground: #475569;
   --color-muted: #f8fafc;
   --color-muted-foreground: #64748b;
   --color-accent: #f1f5f9;
-  --color-accent-foreground: #0f172a;
+  --color-accent-foreground: #475569;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
   --color-border: #e2e8f0;
   --color-input: #e2e8f0;
-  --color-ring: #2563eb;
+  --color-ring: #6366f1;
+  
+  /* Extended Modern Palette */
+  --color-success: #10b981;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #ffffff;
+  --color-info: #06b6d4;
+  --color-info-foreground: #ffffff;
+  
+  /* Gradient Definitions */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  
+  /* Shadow System */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
@@ -32,25 +58,41 @@
 /* Dark theme colors */
 @media (prefers-color-scheme: dark) {
   @theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+    --color-background: #0f172a;
+    --color-foreground: #f8fafc;
     --color-card: #1e293b;
     --color-card-foreground: #f8fafc;
     --color-popover: #1e293b;
     --color-popover-foreground: #f8fafc;
-    --color-primary: #3b82f6;
+    --color-primary: #818cf8;
     --color-primary-foreground: #0f172a;
     --color-secondary: #334155;
-    --color-secondary-foreground: #f8fafc;
+    --color-secondary-foreground: #e2e8f0;
     --color-muted: #1e293b;
     --color-muted-foreground: #94a3b8;
     --color-accent: #334155;
-    --color-accent-foreground: #f8fafc;
+    --color-accent-foreground: #e2e8f0;
     --color-destructive: #ef4444;
     --color-destructive-foreground: #f8fafc;
     --color-border: #334155;
     --color-input: #334155;
-    --color-ring: #3b82f6;
+    --color-ring: #818cf8;
+    
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+    --gradient-success: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    --gradient-warning: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    --gradient-info: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+    --gradient-card: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+    
+    /* Dark mode shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
+    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
   }
 }
 
@@ -67,114 +109,166 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Mobile text visibility improvements */
+/* Modern Card Styling */
+.bg-card {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+}
+
+/* Modern Button Styling */
+.bg-primary {
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-primary:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+/* Success, Warning, Info variants */
+.bg-success {
+  background: var(--gradient-success);
+  color: var(--color-success-foreground);
+}
+
+.bg-warning {
+  background: var(--gradient-warning);
+  color: var(--color-warning-foreground);
+}
+
+.bg-info {
+  background: var(--gradient-info);
+  color: var(--color-info-foreground);
+}
+
+/* Mobile text visibility improvements with modern palette */
 @media (max-width: 768px) {
   /* Improve contrast for gray text on mobile */
   .text-gray-600 {
-    color: rgb(75 85 99) !important; /* Darker gray for mobile */
+    color: var(--color-muted-foreground) !important;
   }
   
   .text-gray-500 {
-    color: rgb(55 65 81) !important; /* Darker gray for mobile */
+    color: var(--color-secondary-foreground) !important;
   }
   
   .text-gray-400 {
-    color: rgb(75 85 99) !important; /* Darker gray for mobile */
+    color: var(--color-muted-foreground) !important;
   }
   
   /* Ensure muted foreground is visible on mobile */
   .text-muted-foreground {
-    color: rgb(75 85 99) !important;
+    color: var(--color-muted-foreground) !important;
   }
   
-  /* CRITICAL FIX: Ensure data numbers are visible on mobile */
+  /* CRITICAL FIX: Modern data numbers styling for mobile */
   .text-2xl {
-    color: rgb(17 24 39) !important; /* Very dark gray for maximum contrast */
-    font-weight: 700 !important; /* Extra bold for better visibility */
+    color: var(--color-foreground) !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, var(--color-foreground) 0%, var(--color-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
   
-  /* Specific fix for card data */
+  /* Specific fix for card data with modern styling */
   .card-content .text-2xl {
-    color: rgb(17 24 39) !important;
+    color: var(--color-foreground) !important;
     font-weight: 700 !important;
-    text-shadow: 0.5px 0.5px 0px rgba(0, 0, 0, 0.1) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
   }
   
   /* Ensure card foreground is visible */
   .text-card-foreground {
-    color: rgb(17 24 39) !important;
+    color: var(--color-card-foreground) !important;
   }
   
-  /* Fix for card headers and titles */
+  /* Fix for card headers and titles with modern colors */
   .text-sm.font-medium {
-    color: rgb(31 41 55) !important; /* Darker than default */
+    color: var(--color-secondary-foreground) !important;
     font-weight: 600 !important;
   }
   
   /* Improve text size for better readability */
   .text-xs {
-    font-size: 0.875rem !important; /* Increase from 0.75rem */
+    font-size: 0.875rem !important;
   }
   
   /* Better contrast for card subtitles */
   .card-subtitle {
-    color: rgb(55 65 81) !important;
+    color: var(--color-muted-foreground) !important;
     font-weight: 500 !important;
   }
   
-  /* Additional mobile-specific fixes */
+  /* Modern mobile card styling */
   .bg-card {
-    background-color: rgb(255 255 255) !important;
-    border-color: rgb(229 231 235) !important;
+    background: var(--gradient-card) !important;
+    border-color: var(--color-border) !important;
+    border-radius: 12px !important;
   }
   
-  /* Ensure icons are visible */
+  /* Ensure icons are visible with modern colors */
   .text-muted-foreground.h-4.w-4 {
-    color: rgb(107 114 128) !important;
+    color: var(--color-muted-foreground) !important;
   }
 }
 
-/* Dark mode mobile fixes */
+/* Dark mode mobile fixes with modern palette */
 @media (max-width: 768px) and (prefers-color-scheme: dark) {
   .text-2xl {
-    color: rgb(243 244 246) !important; /* Very light gray for dark mode */
+    color: var(--color-foreground) !important;
   }
   
   .card-content .text-2xl {
-    color: rgb(243 244 246) !important;
-    text-shadow: 0.5px 0.5px 0px rgba(0, 0, 0, 0.3) !important;
+    color: var(--color-foreground) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
   }
   
   .text-card-foreground {
-    color: rgb(243 244 246) !important;
+    color: var(--color-card-foreground) !important;
   }
   
   .text-sm.font-medium {
-    color: rgb(209 213 219) !important;
+    color: var(--color-secondary-foreground) !important;
   }
   
   .bg-card {
-    background-color: rgb(30 41 59) !important;
-    border-color: rgb(51 65 85) !important;
+    background: var(--gradient-card) !important;
+    border-color: var(--color-border) !important;
   }
 }
 
-/* Custom utility classes for mobile text */
+/* Custom utility classes for modern text */
 .mobile-text-primary {
-  @apply text-gray-900;
+  color: var(--color-foreground);
+  font-weight: 600;
 }
 
 .mobile-text-secondary {
-  @apply text-gray-700;
+  color: var(--color-secondary-foreground);
+  font-weight: 500;
 }
 
 .mobile-text-muted {
-  @apply text-gray-600;
+  color: var(--color-muted-foreground);
 }
 
-/* Additional fixes for shadcn/ui components */
+/* Modern shadcn/ui utility classes */
 .bg-card {
-  background-color: var(--color-card);
+  background: var(--gradient-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
 }
 
 .text-card-foreground {
@@ -182,7 +276,8 @@ body {
 }
 
 .bg-popover {
-  background-color: var(--color-popover);
+  background: var(--gradient-card);
+  border: 1px solid var(--color-border);
 }
 
 .text-popover-foreground {
@@ -190,7 +285,8 @@ body {
 }
 
 .bg-primary {
-  background-color: var(--color-primary);
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-md);
 }
 
 .text-primary-foreground {
@@ -198,7 +294,7 @@ body {
 }
 
 .bg-secondary {
-  background-color: var(--color-secondary);
+  background: var(--color-secondary);
 }
 
 .text-secondary-foreground {
@@ -206,7 +302,7 @@ body {
 }
 
 .bg-muted {
-  background-color: var(--color-muted);
+  background: var(--color-muted);
 }
 
 .text-muted-foreground {
@@ -214,7 +310,7 @@ body {
 }
 
 .bg-accent {
-  background-color: var(--color-accent);
+  background: var(--color-accent);
 }
 
 .text-accent-foreground {
@@ -222,7 +318,7 @@ body {
 }
 
 .bg-destructive {
-  background-color: var(--color-destructive);
+  background: var(--color-destructive);
 }
 
 .text-destructive-foreground {
@@ -234,9 +330,90 @@ body {
 }
 
 .bg-input {
-  background-color: var(--color-input);
+  background: var(--color-input);
 }
 
 .ring-ring {
   --tw-ring-color: var(--color-ring);
+}
+
+/* Additional modern utility classes */
+.bg-success {
+  background: var(--gradient-success);
+}
+
+.text-success-foreground {
+  color: var(--color-success-foreground);
+}
+
+.bg-warning {
+  background: var(--gradient-warning);
+}
+
+.text-warning-foreground {
+  color: var(--color-warning-foreground);
+}
+
+.bg-info {
+  background: var(--gradient-info);
+}
+
+.text-info-foreground {
+  color: var(--color-info-foreground);
+}
+
+/* Modern shadow utilities */
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.shadow-modern {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Modern transition utilities */
+.transition-modern {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-smooth {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Modern hover effects */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Modern gradient text */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-success {
+  background: var(--gradient-success);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Modern border radius */
+.rounded-modern {
+  border-radius: 12px;
+}
+
+.rounded-card {
+  border-radius: 16px;
 }
