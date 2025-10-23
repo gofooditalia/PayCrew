@@ -43,7 +43,7 @@ async function getDipendenti() {
   })
 
   // Transform the data to match the expected interface
-  return dipendenti.map(dipendente => ({
+  return dipendenti.map((dipendente: any) => ({
     ...dipendente,
     email: dipendente.email || '',
     telefono: dipendente.telefono || '',
