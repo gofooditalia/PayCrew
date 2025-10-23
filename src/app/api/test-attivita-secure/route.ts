@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { AttivitaLogger } from '@/lib/attivita-logger'
 import { AttivitaMonitor } from '@/lib/attivita-monitor'
-import { TipoAttivita, TipoEntita } from '@prisma/client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -257,9 +256,7 @@ export async function GET() {
         { type: 'performance', description: 'Test performance con 10 operazioni' },
         { type: 'retry', description: 'Test sistema di retry' },
         { type: 'monitoring', description: 'Test sistema di monitoring' }
-      ],
-      tipiAttivita: Object.values(TipoAttivita),
-      tipiEntita: Object.values(TipoEntita)
+      ]
     })
 
   } catch (error) {
