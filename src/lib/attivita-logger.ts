@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { AttivitaValidator } from '@/lib/validation/attivita-validator'
 import { AttivitaMonitor } from '@/lib/attivita-monitor'
-import { TipoAttivita, TipoEntita } from '@prisma/client'
 
 // Interfacce per tipi specifici
 export interface DipendenteData {
