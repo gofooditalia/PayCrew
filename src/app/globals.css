@@ -8,8 +8,50 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--background);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--background);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: #2563eb;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  --color-muted: #f8fafc;
+  --color-muted-foreground: #64748b;
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #2563eb;
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* Dark theme colors */
+@media (prefers-color-scheme: dark) {
+  @theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: #1e293b;
+    --color-card-foreground: #f8fafc;
+    --color-popover: #1e293b;
+    --color-popover-foreground: #f8fafc;
+    --color-primary: #3b82f6;
+    --color-primary-foreground: #0f172a;
+    --color-secondary: #334155;
+    --color-secondary-foreground: #f8fafc;
+    --color-muted: #1e293b;
+    --color-muted-foreground: #94a3b8;
+    --color-accent: #334155;
+    --color-accent-foreground: #f8fafc;
+    --color-destructive: #ef4444;
+    --color-destructive-foreground: #f8fafc;
+    --color-border: #334155;
+    --color-input: #334155;
+    --color-ring: #3b82f6;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -45,6 +87,30 @@ body {
     color: rgb(75 85 99) !important;
   }
   
+  /* CRITICAL FIX: Ensure data numbers are visible on mobile */
+  .text-2xl {
+    color: rgb(17 24 39) !important; /* Very dark gray for maximum contrast */
+    font-weight: 700 !important; /* Extra bold for better visibility */
+  }
+  
+  /* Specific fix for card data */
+  .card-content .text-2xl {
+    color: rgb(17 24 39) !important;
+    font-weight: 700 !important;
+    text-shadow: 0.5px 0.5px 0px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* Ensure card foreground is visible */
+  .text-card-foreground {
+    color: rgb(17 24 39) !important;
+  }
+  
+  /* Fix for card headers and titles */
+  .text-sm.font-medium {
+    color: rgb(31 41 55) !important; /* Darker than default */
+    font-weight: 600 !important;
+  }
+  
   /* Improve text size for better readability */
   .text-xs {
     font-size: 0.875rem !important; /* Increase from 0.75rem */
@@ -54,6 +120,42 @@ body {
   .card-subtitle {
     color: rgb(55 65 81) !important;
     font-weight: 500 !important;
+  }
+  
+  /* Additional mobile-specific fixes */
+  .bg-card {
+    background-color: rgb(255 255 255) !important;
+    border-color: rgb(229 231 235) !important;
+  }
+  
+  /* Ensure icons are visible */
+  .text-muted-foreground.h-4.w-4 {
+    color: rgb(107 114 128) !important;
+  }
+}
+
+/* Dark mode mobile fixes */
+@media (max-width: 768px) and (prefers-color-scheme: dark) {
+  .text-2xl {
+    color: rgb(243 244 246) !important; /* Very light gray for dark mode */
+  }
+  
+  .card-content .text-2xl {
+    color: rgb(243 244 246) !important;
+    text-shadow: 0.5px 0.5px 0px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  .text-card-foreground {
+    color: rgb(243 244 246) !important;
+  }
+  
+  .text-sm.font-medium {
+    color: rgb(209 213 219) !important;
+  }
+  
+  .bg-card {
+    background-color: rgb(30 41 59) !important;
+    border-color: rgb(51 65 85) !important;
   }
 }
 
@@ -68,4 +170,73 @@ body {
 
 .mobile-text-muted {
   @apply text-gray-600;
+}
+
+/* Additional fixes for shadcn/ui components */
+.bg-card {
+  background-color: var(--color-card);
+}
+
+.text-card-foreground {
+  color: var(--color-card-foreground);
+}
+
+.bg-popover {
+  background-color: var(--color-popover);
+}
+
+.text-popover-foreground {
+  color: var(--color-popover-foreground);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.text-primary-foreground {
+  color: var(--color-primary-foreground);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.text-secondary-foreground {
+  color: var(--color-secondary-foreground);
+}
+
+.bg-muted {
+  background-color: var(--color-muted);
+}
+
+.text-muted-foreground {
+  color: var(--color-muted-foreground);
+}
+
+.bg-accent {
+  background-color: var(--color-accent);
+}
+
+.text-accent-foreground {
+  color: var(--color-accent-foreground);
+}
+
+.bg-destructive {
+  background-color: var(--color-destructive);
+}
+
+.text-destructive-foreground {
+  color: var(--color-destructive-foreground);
+}
+
+.border-border {
+  border-color: var(--color-border);
+}
+
+.bg-input {
+  background-color: var(--color-input);
+}
+
+.ring-ring {
+  --tw-ring-color: var(--color-ring);
 }
