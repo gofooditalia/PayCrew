@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { AttivitaLogger } from '@/lib/attivita-logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -160,7 +161,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create new employee using Prisma
+    // Create new employee using Prisma with proper type conversion
     const dipendente = await prisma.dipendente.create({
       data: {
         nome: dipendenteData.nome,
@@ -178,8 +179,8 @@ export async function POST(request: NextRequest) {
         tipoContratto: dipendenteData.tipoContratto,
         ccnl: dipendenteData.ccnl,
         livello: dipendenteData.livello,
-        retribuzione: dipendenteData.retribuzione,
-        oreSettimanali: dipendenteData.oreSettimanali || 40,
+        retribuzione: parseFloat(dipendenteData.retribuzione),
+        oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,
         sedeId: dipendenteData.sedeId || null,
         attivo: dipendenteData.attivo !== undefined ? dipendenteData.attivo : true,
         aziendaId: userData.aziendaId
@@ -193,6 +194,11 @@ export async function POST(request: NextRequest) {
         }
       }
     })
+
+    // Log dell'attività di creazione dipendente
+    console.log('API Dipendenti - Inizio logging attività per:', dipendente.nome, dipendente.cognome);
+    await AttivitaLogger.logCreazioneDipendente(dipendente, user.id, userData.aziendaId)
+    console.log('API Dipendenti - Logging attività completato');
 
     return NextResponse.json({
       message: 'Dipendente creato con successo',

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { 
+import {
   MagnifyingGlassIcon,
   PencilIcon,
   TrashIcon,
@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface Dipendente {
   id: string
@@ -40,13 +41,9 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
   )
 
   // Use useMemo to prevent re-creation on every render
-  const formatCurrency = useMemo(() => {
+  const currencyFormatter = useMemo(() => {
     return (amount: number) => {
-      // Use a simple, consistent formatting approach
-      return `€${amount.toLocaleString('it-IT', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })}`
+      return formatCurrency(amount)
     }
   }, [])
 
@@ -143,7 +140,7 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {formatCurrency(dipendente.retribuzione)}
+                        {currencyFormatter(dipendente.retribuzione)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { UserGroupIcon, ClockIcon, DocumentTextIcon, CurrencyEuroIcon, PencilIcon } from '@heroicons/react/24/outline'
+import { AttivitaRecenti } from '@/components/attivita/attivita-recenti'
+import { formatCurrency } from '@/lib/utils/currency'
 import Link from 'next/link'
 
 async function getDashboardStats() {
@@ -138,7 +140,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              €{stats.totaleSalari.toLocaleString('it-IT')}
+              {formatCurrency(stats.totaleSalari)}
             </div>
             <p className="text-xs text-muted-foreground">
               Mensile
@@ -187,22 +189,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Attività Recenti</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Nessuna attività recente</p>
-                  <p className="text-xs text-gray-600">Le attività appariranno qui</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AttivitaRecenti limit={5} />
       </div>
     </div>
   )
