@@ -67,29 +67,37 @@ export class AttivitaLogger {
         datiAggiuntivi: datiAggiuntivi as any
       });
 
-      // Inserimento type-safe con Prisma
-      const result = await prisma.attivita.create({
-        data: {
-          tipoAttivita: validatedParams.tipoAttivita,
-          descrizione: validatedParams.descrizione,
-          idEntita: validatedParams.idEntita,
-          tipoEntita: validatedParams.tipoEntita,
-          userId: validatedParams.userId,
-          aziendaId: validatedParams.aziendaId,
-          datiAggiuntivi: validatedParams.datiAggiuntivi as any
-        },
-        select: {
-          id: true,
-          tipoAttivita: true,
-          createdAt: true
-        }
-      });
+      // Inserimento type-safe con query raw per compatibilità Vercel
+      const result = await prisma.$queryRawUnsafe(`
+        INSERT INTO attivita (
+          id, "tipoAttivita", descrizione, "idEntita", "tipoEntita",
+          "userId", "aziendaId", "datiAggiuntivi", "createdAt"
+        ) VALUES (
+          gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, NOW()
+        )
+        RETURNING id, "tipoAttivita", "createdAt"
+      `,
+        validatedParams.tipoAttivita,
+        validatedParams.descrizione,
+        validatedParams.idEntita,
+        validatedParams.tipoEntita,
+        validatedParams.userId,
+        validatedParams.aziendaId,
+        validatedParams.datiAggiuntivi as any
+      ) as Array<{
+        id: string
+        tipoAttivita: string
+        createdAt: Date
+      }>;
+      
+      // Prendi il primo risultato (l'array ha un solo elemento)
+      const activityResult = result[0];
 
       const duration = Date.now() - startTime;
       
       // Logging strutturato del successo
       console.log('✅ Attività registrata con successo', {
-        attivitaId: result.id,
+        attivitaId: activityResult.id,
         tipoAttivita: validatedParams.tipoAttivita,
         userId: validatedParams.userId.substring(0, 8) + '...',
         aziendaId: validatedParams.aziendaId.substring(0, 8) + '...',
