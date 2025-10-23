@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { AttivitaLogger } from '@/lib/attivita-logger'
 
 export async function GET(
   request: NextRequest,
@@ -118,7 +119,7 @@ export async function PUT(
     // Get update data from request
     const updateData = await request.json()
 
-    // Update employee using Prisma
+    // Update employee using Prisma with proper type conversion
     const dipendente = await prisma.dipendente.update({
       where: { id: dipendenteId },
       data: {
@@ -137,8 +138,8 @@ export async function PUT(
         tipoContratto: updateData.tipoContratto,
         ccnl: updateData.ccnl,
         livello: updateData.livello,
-        retribuzione: updateData.retribuzione,
-        oreSettimanali: updateData.oreSettimanali || 40,
+        retribuzione: parseFloat(updateData.retribuzione),
+        oreSettimanali: parseInt(updateData.oreSettimanali) || 40,
         sedeId: updateData.sedeId || null,
         attivo: updateData.attivo !== undefined ? updateData.attivo : true,
         dataCessazione: updateData.dataCessazione ? new Date(updateData.dataCessazione) : null,
@@ -152,6 +153,9 @@ export async function PUT(
         }
       }
     })
+
+    // Log dell'attività di modifica dipendente
+    await AttivitaLogger.logModificaDipendente(dipendente, user.id, userData.aziendaId)
 
     return NextResponse.json({
       message: 'Dipendente aggiornato con successo',
@@ -224,10 +228,16 @@ export async function DELETE(
       )
     }
 
+    // Store employee name before deletion for logging
+    const dipendenteNome = `${existingDipendente.nome} ${existingDipendente.cognome}`
+
     // Delete employee using Prisma
     await prisma.dipendente.delete({
       where: { id: dipendenteId }
     })
+
+    // Log dell'attività di eliminazione dipendente
+    await AttivitaLogger.logEliminazioneDipendente(dipendenteId, dipendenteNome, user.id, userData.aziendaId)
 
     return NextResponse.json({
       message: 'Dipendente eliminato con successo'

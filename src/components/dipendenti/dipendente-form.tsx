@@ -112,25 +112,36 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
       }
 
       if (dipendente) {
-        // Update existing dipendente
-        const { error } = await supabase
-          .from('dipendenti')
-          .update(dipendenteData)
-          .eq('id', dipendente.id)
+        // Update existing dipendente using API route
+        const response = await fetch(`/api/dipendenti/${dipendente.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        })
 
-        if (error) {
-          setError(error.message)
+        const data = await response.json()
+
+        if (!response.ok) {
+          setError(data.error || 'Errore durante l\'aggiornamento del dipendente')
         } else {
           router.push('/dipendenti')
         }
       } else {
-        // Create new dipendente
-        const { error } = await supabase
-          .from('dipendenti')
-          .insert(dipendenteData)
+        // Create new dipendente using API route
+        const response = await fetch('/api/dipendenti', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        })
 
-        if (error) {
-          setError(error.message)
+        const data = await response.json()
+
+        if (!response.ok) {
+          setError(data.error || 'Errore durante la creazione del dipendente')
         } else {
           router.push('/dipendenti')
         }

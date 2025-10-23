@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { 
+import { useSidebar } from '@/contexts/sidebar-context'
+import {
   Bars3Icon,
   BellIcon,
-  UserCircleIcon 
+  UserCircleIcon
 } from '@heroicons/react/24/outline'
 
 interface HeaderProps {
@@ -17,12 +18,14 @@ interface HeaderProps {
       name?: string;
     };
   };
+  companyName?: string;
 }
 
-export default function Header({ user }: HeaderProps) {
+export default function Header({ user, companyName }: HeaderProps) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const { sidebarState, toggleSidebar, isSidebarCollapsed } = useSidebar()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -34,22 +37,33 @@ export default function Header({ user }: HeaderProps) {
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Mobile menu button */}
-          <div className="flex items-center lg:hidden">
-            <button
-              type="button"
-              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
-            >
-              <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-            </button>
+          {/* Left side - Company Name and Burger Menu */}
+          <div className="flex items-center">
+            {/* Burger menu - visible when sidebar is open, hidden when collapsed */}
+            {sidebarState !== 'collapsed' && (
+              <button
+                type="button"
+                className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 mr-4"
+                onClick={toggleSidebar}
+              >
+                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+              </button>
+            )}
+            
+            {/* Company Name - visible on all screen sizes */}
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold text-gray-900">
+                {companyName || 'PayCrew'}
+              </h1>
+            </div>
           </div>
 
-          {/* Right side of header */}
-          <div className="flex items-center space-x-4">
-            {/* Notifications */}
+          {/* Right side of header - Notifications and User */}
+          <div className="flex items-center space-x-4 ml-4">
+            {/* Notifications - Hidden on mobile, visible on desktop and tablet */}
             <button
               type="button"
-              className="p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="hidden sm:block p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               <BellIcon className="h-6 w-6" aria-hidden="true" />
             </button>

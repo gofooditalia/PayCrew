@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface Dipendente {
   id: string
@@ -77,12 +78,7 @@ export default function DipendenteDetailPage() {
     }
   }, [params.id, router, supabase])
 
-  const formatCurrency = (amount: number) => {
-    return `€${amount.toLocaleString('it-IT', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })}`
-  }
+  // La funzione formatCurrency è ora importata da @/lib/utils/currency
 
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('it-IT')
