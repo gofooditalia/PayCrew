@@ -52,7 +52,7 @@ export default function Header({ user, companyName }: HeaderProps) {
             
             {/* Company Name - visible on all screen sizes */}
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold mobile-text-primary">
                 {companyName || 'PayCrew'}
               </h1>
             </div>
@@ -83,7 +83,7 @@ export default function Header({ user, companyName }: HeaderProps) {
                 <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50">
                   <div className="px-4 py-3">
                     <p className="text-sm">Loggato come</p>
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium mobile-text-primary truncate">
                       {user?.email}
                     </p>
                   </div>

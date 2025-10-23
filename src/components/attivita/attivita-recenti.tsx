@@ -143,7 +143,7 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <p className="text-red-600">Errore nel caricamento delle attività</p>
+            <p className="text-red-700 sm:text-red-600">Errore nel caricamento delle attività</p>
             <p className="text-sm text-gray-600">{error}</p>
           </div>
         </CardContent>
@@ -160,8 +160,8 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
         <CardContent>
           <div className="text-center py-8">
             <ClockIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Nessuna attività recente</p>
-            <p className="text-sm text-gray-500">Le attività appariranno qui</p>
+            <p className="mobile-text-secondary">Nessuna attività recente</p>
+            <p className="text-sm mobile-text-muted">Le attività appariranno qui</p>
           </div>
         </CardContent>
       </Card>
@@ -194,14 +194,14 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
                   <Badge variant={getBadgeVariantForTipoAttivita(item.tipoAttivita)}>
                     {formatTipoAttivita(item.tipoAttivita)}
                   </Badge>
-                  <span className="text-xs text-gray-500">
-                    {formatDistanceToNow(new Date(item.createdAt), { 
-                      addSuffix: true, 
-                      locale: it 
+                  <span className="text-sm mobile-text-muted">
+                    {formatDistanceToNow(new Date(item.createdAt), {
+                      addSuffix: true,
+                      locale: it
                     })}
                   </span>
                 </div>
-                <p className="text-sm font-medium text-gray-900 mb-1">
+                <p className="text-base font-medium mobile-text-primary mb-1">
                   {item.descrizione}
                 </p>
                 <div className="flex items-center space-x-2">
@@ -210,7 +210,7 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
                       {item.user.name?.charAt(0) || item.user.email.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-sm mobile-text-muted">
                     {item.user.name || item.user.email}
                   </p>
                 </div>
