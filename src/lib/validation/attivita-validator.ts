@@ -1,12 +1,48 @@
-import { TipoAttivita, TipoEntita } from '@prisma/client';
+// Definizione manuale dei tipi per compatibilità con Vercel
+export type TipoAttivita =
+  | 'CREAZIONE_DIPENDENTE'
+  | 'MODIFICA_DIPENDENTE'
+  | 'ELIMINAZIONE_DIPENDENTE'
+  | 'REGISTRAZIONE_PRESENZA'
+  | 'MODIFICA_PRESENZA'
+  | 'GENERAZIONE_BUSTA_PAGA'
+  | 'RICHIESTA_FERIE'
+  | 'APPROVAZIONE_FERIE'
+  | 'RIFIUTO_FERIE';
+
+export type TipoEntita =
+  | 'DIPENDENTE'
+  | 'PRESENZA'
+  | 'BUSTA_PAGA'
+  | 'FERIE_PERMESSI';
+
+// Array di valori validi per le validazioni
+export const TIPI_ATTIVITA_VALIDI: readonly TipoAttivita[] = [
+  'CREAZIONE_DIPENDENTE',
+  'MODIFICA_DIPENDENTE',
+  'ELIMINAZIONE_DIPENDENTE',
+  'REGISTRAZIONE_PRESENZA',
+  'MODIFICA_PRESENZA',
+  'GENERAZIONE_BUSTA_PAGA',
+  'RICHIESTA_FERIE',
+  'APPROVAZIONE_FERIE',
+  'RIFIUTO_FERIE'
+] as const;
+
+export const TIPI_ENTITA_VALIDI: readonly TipoEntita[] = [
+  'DIPENDENTE',
+  'PRESENZA',
+  'BUSTA_PAGA',
+  'FERIE_PERMESSI'
+] as const;
 
 export class AttivitaValidator {
   /**
    * Valida che il tipoAttivita sia un valore valido dell'enum
    */
   static validateTipoAttivita(value: string): TipoAttivita {
-    if (!Object.values(TipoAttivita).includes(value as TipoAttivita)) {
-      throw new Error(`tipoAttivita non valido: ${value}. Valori ammessi: ${Object.values(TipoAttivita).join(', ')}`);
+    if (!TIPI_ATTIVITA_VALIDI.includes(value as TipoAttivita)) {
+      throw new Error(`tipoAttivita non valido: ${value}. Valori ammessi: ${TIPI_ATTIVITA_VALIDI.join(', ')}`);
     }
     return value as TipoAttivita;
   }
@@ -16,8 +52,8 @@ export class AttivitaValidator {
    */
   static validateTipoEntita(value: string | null | undefined): TipoEntita | null {
     if (!value) return null;
-    if (!Object.values(TipoEntita).includes(value as TipoEntita)) {
-      throw new Error(`tipoEntita non valido: ${value}. Valori ammessi: ${Object.values(TipoEntita).join(', ')}`);
+    if (!TIPI_ENTITA_VALIDI.includes(value as TipoEntita)) {
+      throw new Error(`tipoEntita non valido: ${value}. Valori ammessi: ${TIPI_ENTITA_VALIDI.join(', ')}`);
     }
     return value as TipoEntita;
   }
