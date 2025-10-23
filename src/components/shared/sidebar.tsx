@@ -67,7 +67,7 @@ export default function Sidebar() {
                 >
                   <item.icon
                     className={`${
-                      isActive ? 'text-indigo-400' : 'text-gray-400 group-hover:text-gray-300'
+                      isActive ? 'text-indigo-300 sm:text-indigo-400' : 'text-gray-300 sm:text-gray-400 group-hover:text-gray-200 sm:group-hover:text-gray-300'
                     } ${sidebarState === 'collapsed' ? 'h-6 w-6' : 'mr-3 h-5 w-5'}`}
                     aria-hidden="true"
                   />
@@ -83,18 +83,18 @@ export default function Sidebar() {
               return (
                 <div
                   key={item.name}
-                  className="text-gray-500 group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-not-allowed relative"
+                  className="text-gray-400 sm:text-gray-500 group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-not-allowed relative"
                 >
                   <item.icon
                     className={`${
-                      'text-gray-500'
+                      'text-gray-400 sm:text-gray-500'
                     } ${sidebarState === 'collapsed' ? 'h-6 w-6' : 'mr-3 h-5 w-5'}`}
                     aria-hidden="true"
                   />
                   {sidebarState === 'open' && (
                     <span className="flex items-center">
                       {item.name}
-                      <span className="ml-2 text-xs bg-gray-700 text-gray-400 px-2 py-1 rounded">
+                      <span className="ml-2 text-xs bg-gray-700 text-gray-300 sm:text-gray-400 px-2 py-1 rounded">
                         Presto disponibile
                       </span>
                     </span>
@@ -103,7 +103,7 @@ export default function Sidebar() {
                     <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                       <div className="flex flex-col">
                         <span>{item.name}</span>
-                        <span className="text-xs text-gray-400 mt-1">Presto disponibile</span>
+                        <span className="text-xs text-gray-300 sm:text-gray-400 mt-1">Presto disponibile</span>
                       </div>
                     </div>
                   )}

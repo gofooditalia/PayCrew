@@ -82,7 +82,7 @@ export default async function DashboardPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">Benvenuto nel gestionale PayCrew</p>
+          <p className="mobile-text-secondary">Benvenuto nel gestionale PayCrew</p>
         </div>
         <Link href="/azienda/modifica">
           <Button variant="outline" className="flex items-center">
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalDipendenti}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm mobile-text-muted">
               Dipendenti attivi
             </p>
           </CardContent>
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.presenzeOggi}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm mobile-text-muted">
               Registrazioni odierna
             </p>
           </CardContent>
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.bustePagaMese}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm mobile-text-muted">
               Questo mese
             </p>
           </CardContent>
@@ -142,7 +142,7 @@ export default async function DashboardPage() {
             <div className="text-2xl font-bold">
               {formatCurrency(stats.totaleSalari)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm mobile-text-muted">
               Mensile
             </p>
           </CardContent>
@@ -162,28 +162,28 @@ export default async function DashboardPage() {
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Nuovo Dipendente</h3>
-                <p className="text-sm text-gray-600">Aggiungi un nuovo dipendente</p>
+                <p className="text-sm mobile-text-secondary">Aggiungi un nuovo dipendente</p>
               </Link>
               <Link
                 href="/presenze"
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Registra Presenza</h3>
-                <p className="text-sm text-gray-600">Inserisci presenza giornaliera</p>
+                <p className="text-sm mobile-text-secondary">Inserisci presenza giornaliera</p>
               </Link>
               <Link
                 href="/buste-paga"
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Genera Busta Paga</h3>
-                <p className="text-sm text-gray-600">Crea nuovo cedolino</p>
+                <p className="text-sm mobile-text-secondary">Crea nuovo cedolino</p>
               </Link>
               <Link
                 href="/report"
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">Visualizza Report</h3>
-                <p className="text-sm text-gray-600">Analisi e statistiche</p>
+                <p className="text-sm mobile-text-secondary">Analisi e statistiche</p>
               </Link>
             </div>
           </CardContent>

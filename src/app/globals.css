@@ -24,3 +24,48 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/* Mobile text visibility improvements */
+@media (max-width: 768px) {
+  /* Improve contrast for gray text on mobile */
+  .text-gray-600 {
+    color: rgb(75 85 99) !important; /* Darker gray for mobile */
+  }
+  
+  .text-gray-500 {
+    color: rgb(55 65 81) !important; /* Darker gray for mobile */
+  }
+  
+  .text-gray-400 {
+    color: rgb(75 85 99) !important; /* Darker gray for mobile */
+  }
+  
+  /* Ensure muted foreground is visible on mobile */
+  .text-muted-foreground {
+    color: rgb(75 85 99) !important;
+  }
+  
+  /* Improve text size for better readability */
+  .text-xs {
+    font-size: 0.875rem !important; /* Increase from 0.75rem */
+  }
+  
+  /* Better contrast for card subtitles */
+  .card-subtitle {
+    color: rgb(55 65 81) !important;
+    font-weight: 500 !important;
+  }
+}
+
+/* Custom utility classes for mobile text */
+.mobile-text-primary {
+  @apply text-gray-900;
+}
+
+.mobile-text-secondary {
+  @apply text-gray-700;
+}
+
+.mobile-text-muted {
+  @apply text-gray-600;
+}
