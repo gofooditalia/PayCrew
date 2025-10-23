@@ -71,7 +71,7 @@ export default function CreaAziendaPage() {
 
       // Redirect to dashboard with a hard refresh to ensure the new layout is loaded
       window.location.href = '/dashboard'
-    } catch (err) {
+    } catch {
       setError('Si è verificato un errore durante la creazione dell\'azienda')
     }
     

@@ -26,8 +26,16 @@ export default function TestAttivitaSecurePage() {
   const [loading, setLoading] = useState(false)
   const [testResults, setTestResults] = useState<TestResult[]>([])
   const [monitoringStats, setMonitoringStats] = useState<MonitoringStats | null>(null)
-  const [availableTests, setAvailableTests] = useState<any[]>([])
-  const [attivitaCreate, setAttivitaCreate] = useState<any[]>([])
+  const [availableTests, setAvailableTests] = useState<Array<{
+    type: string
+    description: string
+  }>>([])
+  const [attivitaCreate, setAttivitaCreate] = useState<Array<{
+    id: string
+    tipoAttivita: string
+    descrizione: string
+    createdAt: string
+  }>>([])
 
   useEffect(() => {
     fetchStats()

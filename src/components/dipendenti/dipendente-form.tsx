@@ -101,7 +101,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
       }
 
       // Prepare the data for API
-      const dipendenteData = {
+      const preparedData = {
         id: dipendente?.id || crypto.randomUUID(),
         ...formData,
         retribuzione: parseFloat(formData.retribuzione),
@@ -146,7 +146,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
           router.push('/dipendenti')
         }
       }
-    } catch (err) {
+    } catch {
       setError('Si è verificato un errore durante il salvataggio')
     }
     

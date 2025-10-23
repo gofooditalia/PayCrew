@@ -33,7 +33,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { testType = 'basic' } = body
 
-    let results: any[] = []
+    const results: Array<{
+      test: string
+      status: string
+      message?: string
+      error?: string
+      duration?: string
+      avgPerOperation?: string
+      initialStats?: unknown
+      finalStats?: unknown
+    }> = []
 
     switch (testType) {
       case 'basic':
@@ -212,7 +221,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

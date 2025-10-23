@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { formatDistanceToNow } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { 
-  UserPlusIcon, 
-  PencilIcon, 
+import {
+  UserPlusIcon,
+  PencilIcon,
   UserMinusIcon,
   ClockIcon,
   DocumentTextIcon,
@@ -27,7 +27,7 @@ interface Attivita {
     name: string
     email: string
   }
-  datiAggiuntivi?: any
+  datiAggiuntivi?: Record<string, unknown>
 }
 
 interface AttivitaRecentiProps {
@@ -40,15 +40,7 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchAttivita()
-  }, [limit])
-
-  const handleRefresh = () => {
-    fetchAttivita()
-  }
-
-  const fetchAttivita = async () => {
+  const fetchAttivita = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/attivita?limit=${limit}`)
@@ -64,6 +56,14 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
     } finally {
       setLoading(false)
     }
+  }, [limit])
+
+  useEffect(() => {
+    fetchAttivita()
+  }, [fetchAttivita])
+
+  const handleRefresh = () => {
+    fetchAttivita()
   }
 
   const getIconForTipoAttivita = (tipoAttivita: string) => {
