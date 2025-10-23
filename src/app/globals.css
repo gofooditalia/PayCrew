@@ -1,419 +1,46 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  /* Modern Dashboard Color Palette */
-  --color-background: #ffffff;
-  --color-foreground: #0f172a;
-  --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #0f172a;
-  --color-primary: #6366f1;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #475569;
-  --color-muted: #f8fafc;
-  --color-muted-foreground: #64748b;
-  --color-accent: #f1f5f9;
-  --color-accent-foreground: #475569;
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: #6366f1;
-  
-  /* Extended Modern Palette */
-  --color-success: #10b981;
-  --color-success-foreground: #ffffff;
-  --color-warning: #f59e0b;
-  --color-warning-foreground: #ffffff;
-  --color-info: #06b6d4;
-  --color-info-foreground: #ffffff;
-  
-  /* Gradient Definitions */
-  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-  
-  /* Shadow System */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-}
-
-/* Dark theme colors */
-@media (prefers-color-scheme: dark) {
-  @theme inline {
-    --color-background: #0f172a;
-    --color-foreground: #f8fafc;
-    --color-card: #1e293b;
-    --color-card-foreground: #f8fafc;
-    --color-popover: #1e293b;
-    --color-popover-foreground: #f8fafc;
-    --color-primary: #818cf8;
-    --color-primary-foreground: #0f172a;
-    --color-secondary: #334155;
-    --color-secondary-foreground: #e2e8f0;
-    --color-muted: #1e293b;
-    --color-muted-foreground: #94a3b8;
-    --color-accent: #334155;
-    --color-accent-foreground: #e2e8f0;
-    --color-destructive: #ef4444;
-    --color-destructive-foreground: #f8fafc;
-    --color-border: #334155;
-    --color-input: #334155;
-    --color-ring: #818cf8;
-    
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
-    --gradient-success: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-    --gradient-warning: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    --gradient-info: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
-    --gradient-card: linear-gradient(145deg, #1e293b 0%, #334155 100%);
-    
-    /* Dark mode shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
-    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
-    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-    --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
-  }
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
 }
 
-/* Modern Card Styling */
-.bg-card {
-  background: var(--gradient-card);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bg-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-2px);
-  border-color: var(--color-primary);
-}
-
-/* Modern Button Styling */
-.bg-primary {
-  background: var(--gradient-primary);
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bg-primary:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
-}
-
-/* Success, Warning, Info variants */
-.bg-success {
-  background: var(--gradient-success);
-  color: var(--color-success-foreground);
-}
-
-.bg-warning {
-  background: var(--gradient-warning);
-  color: var(--color-warning-foreground);
-}
-
-.bg-info {
-  background: var(--gradient-info);
-  color: var(--color-info-foreground);
-}
-
-/* Mobile text visibility improvements with modern palette */
+/* Fix specifici per mobile */
 @media (max-width: 768px) {
-  /* Improve contrast for gray text on mobile */
-  .text-gray-600 {
-    color: var(--color-muted-foreground) !important;
-  }
-  
-  .text-gray-500 {
-    color: var(--color-secondary-foreground) !important;
-  }
-  
-  .text-gray-400 {
-    color: var(--color-muted-foreground) !important;
-  }
-  
-  /* Ensure muted foreground is visible on mobile */
-  .text-muted-foreground {
-    color: var(--color-muted-foreground) !important;
-  }
-  
-  /* CRITICAL FIX: Modern data numbers styling for mobile */
   .text-2xl {
-    color: var(--color-foreground) !important;
+    color: hsl(var(--foreground)) !important;
     font-weight: 700 !important;
-    background: linear-gradient(135deg, var(--color-foreground) 0%, var(--color-primary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
-  
-  /* Specific fix for card data with modern styling */
-  .card-content .text-2xl {
-    color: var(--color-foreground) !important;
-    font-weight: 700 !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  }
-  
-  /* Ensure card foreground is visible */
-  .text-card-foreground {
-    color: var(--color-card-foreground) !important;
-  }
-  
-  /* Fix for card headers and titles with modern colors */
-  .text-sm.font-medium {
-    color: var(--color-secondary-foreground) !important;
-    font-weight: 600 !important;
-  }
-  
-  /* Improve text size for better readability */
-  .text-xs {
-    font-size: 0.875rem !important;
-  }
-  
-  /* Better contrast for card subtitles */
-  .card-subtitle {
-    color: var(--color-muted-foreground) !important;
-    font-weight: 500 !important;
-  }
-  
-  /* Modern mobile card styling */
-  .bg-card {
-    background: var(--gradient-card) !important;
-    border-color: var(--color-border) !important;
-    border-radius: 12px !important;
-  }
-  
-  /* Ensure icons are visible with modern colors */
-  .text-muted-foreground.h-4.w-4 {
-    color: var(--color-muted-foreground) !important;
-  }
-}
-
-/* Dark mode mobile fixes with modern palette */
-@media (max-width: 768px) and (prefers-color-scheme: dark) {
-  .text-2xl {
-    color: var(--color-foreground) !important;
-  }
-  
-  .card-content .text-2xl {
-    color: var(--color-foreground) !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-  }
-  
-  .text-card-foreground {
-    color: var(--color-card-foreground) !important;
-  }
-  
-  .text-sm.font-medium {
-    color: var(--color-secondary-foreground) !important;
-  }
-  
-  .bg-card {
-    background: var(--gradient-card) !important;
-    border-color: var(--color-border) !important;
-  }
-}
-
-/* Custom utility classes for modern text */
-.mobile-text-primary {
-  color: var(--color-foreground);
-  font-weight: 600;
-}
-
-.mobile-text-secondary {
-  color: var(--color-secondary-foreground);
-  font-weight: 500;
-}
-
-.mobile-text-muted {
-  color: var(--color-muted-foreground);
-}
-
-/* Modern shadcn/ui utility classes */
-.bg-card {
-  background: var(--gradient-card);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
-}
-
-.text-card-foreground {
-  color: var(--color-card-foreground);
-}
-
-.bg-popover {
-  background: var(--gradient-card);
-  border: 1px solid var(--color-border);
-}
-
-.text-popover-foreground {
-  color: var(--color-popover-foreground);
-}
-
-.bg-primary {
-  background: var(--gradient-primary);
-  box-shadow: var(--shadow-md);
-}
-
-.text-primary-foreground {
-  color: var(--color-primary-foreground);
-}
-
-.bg-secondary {
-  background: var(--color-secondary);
-}
-
-.text-secondary-foreground {
-  color: var(--color-secondary-foreground);
-}
-
-.bg-muted {
-  background: var(--color-muted);
-}
-
-.text-muted-foreground {
-  color: var(--color-muted-foreground);
-}
-
-.bg-accent {
-  background: var(--color-accent);
-}
-
-.text-accent-foreground {
-  color: var(--color-accent-foreground);
-}
-
-.bg-destructive {
-  background: var(--color-destructive);
-}
-
-.text-destructive-foreground {
-  color: var(--color-destructive-foreground);
-}
-
-.border-border {
-  border-color: var(--color-border);
-}
-
-.bg-input {
-  background: var(--color-input);
-}
-
-.ring-ring {
-  --tw-ring-color: var(--color-ring);
-}
-
-/* Additional modern utility classes */
-.bg-success {
-  background: var(--gradient-success);
-}
-
-.text-success-foreground {
-  color: var(--color-success-foreground);
-}
-
-.bg-warning {
-  background: var(--gradient-warning);
-}
-
-.text-warning-foreground {
-  color: var(--color-warning-foreground);
-}
-
-.bg-info {
-  background: var(--gradient-info);
-}
-
-.text-info-foreground {
-  color: var(--color-info-foreground);
-}
-
-/* Modern shadow utilities */
-.shadow-card {
-  box-shadow: var(--shadow-card);
-}
-
-.shadow-card-hover {
-  box-shadow: var(--shadow-card-hover);
-}
-
-.shadow-modern {
-  box-shadow: var(--shadow-lg);
-}
-
-/* Modern transition utilities */
-.transition-modern {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.transition-smooth {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Modern hover effects */
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover);
-}
-
-.hover-scale:hover {
-  transform: scale(1.02);
-}
-
-/* Modern gradient text */
-.gradient-text {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-success {
-  background: var(--gradient-success);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Modern border radius */
-.rounded-modern {
-  border-radius: 12px;
-}
-
-.rounded-card {
-  border-radius: 16px;
 }

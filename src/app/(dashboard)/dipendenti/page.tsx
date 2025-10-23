@@ -58,11 +58,11 @@ export default async function DipendentiPage() {
   const dipendenti = await getDipendenti()
 
   return (
-    <div>
+    <div className="min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dipendenti</h1>
-          <p className="text-gray-600">Gestisci l&apos;anagrafica dei dipendenti</p>
+          <h1 className="text-3xl font-bold text-foreground">Dipendenti</h1>
+          <p className="text-muted-foreground">Gestisci l&apos;anagrafica dei dipendenti</p>
         </div>
         <Link href="/dipendenti/nuovo">
           <Button className="flex items-center gap-2">

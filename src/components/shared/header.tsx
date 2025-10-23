@@ -34,7 +34,7 @@ export default function Header({ user, companyName }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-background border-b shadow-sm">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side - Company Name and Burger Menu */}
@@ -43,16 +43,17 @@ export default function Header({ user, companyName }: HeaderProps) {
             {sidebarState !== 'collapsed' && (
               <button
                 type="button"
-                className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 mr-4"
+                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary mr-4 transition-colors duration-200"
                 onClick={toggleSidebar}
+                aria-label="Apri menu laterale"
               >
                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
               </button>
             )}
             
-            {/* Company Name - visible on all screen sizes */}
+            {/* Company Name */}
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold mobile-text-primary">
+              <h1 className="text-xl font-bold text-foreground" title={companyName || 'PayCrew'}>
                 {companyName || 'PayCrew'}
               </h1>
             </div>
@@ -63,7 +64,8 @@ export default function Header({ user, companyName }: HeaderProps) {
             {/* Notifications - Hidden on mobile, visible on desktop and tablet */}
             <button
               type="button"
-              className="hidden sm:block p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="hidden sm:block p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
+              aria-label="Notifiche"
             >
               <BellIcon className="h-6 w-6" aria-hidden="true" />
             </button>
@@ -72,25 +74,32 @@ export default function Header({ user, companyName }: HeaderProps) {
             <div className="relative">
               <button
                 type="button"
-                className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                aria-label="Menu profilo utente"
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="true"
               >
                 <span className="sr-only">Apri menu utente</span>
-                <UserCircleIcon className="h-8 w-8 text-gray-400" aria-hidden="true" />
+                <UserCircleIcon className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors duration-200" aria-hidden="true" />
               </button>
 
               {profileMenuOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50">
-                  <div className="px-4 py-3">
-                    <p className="text-sm">Loggato come</p>
-                    <p className="text-sm font-medium mobile-text-primary truncate">
+                <div
+                  className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-popover ring-1 ring-border divide-y divide-border focus:outline-none z-50 transition-all duration-200"
+                  role="menu"
+                >
+                  <div className="px-4 py-3" role="none">
+                    <p className="text-sm text-muted-foreground" role="none">Loggato come</p>
+                    <p className="text-sm font-medium text-foreground truncate" role="none">
                       {user?.email}
                     </p>
                   </div>
-                  <div className="py-1">
+                  <div className="py-1" role="none">
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                      role="menuitem"
                     >
                       Esci
                     </button>
