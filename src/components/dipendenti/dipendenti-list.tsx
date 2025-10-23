@@ -58,17 +58,18 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
     <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <CardTitle>Elenco Dipendenti ({dipendenti.length})</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Elenco Dipendenti ({dipendenti.length})</CardTitle>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-input rounded-md leading-5 bg-background placeholder-muted-foreground focus:outline-none focus:placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-colors duration-200"
               placeholder="Cerca dipendenti..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Cerca dipendenti"
             />
           </div>
         </div>
@@ -76,7 +77,7 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
       <CardContent>
         {filteredDipendenti.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               {searchTerm ? 'Nessun dipendente trovato per questa ricerca.' : 'Nessun dipendente registrato.'}
             </p>
             <Link href="/dipendenti/nuovo" className="mt-4 inline-block">
@@ -85,22 +86,22 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted/50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Dipendente
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Contatti
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Contratto
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Retribuzione
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Sede
                   </th>
                   <th scope="col" className="relative px-6 py-3">
@@ -108,57 +109,57 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {filteredDipendenti.map((dipendente) => (
-                  <tr key={dipendente.id} className="hover:bg-gray-50">
+                  <tr key={dipendente.id} className="hover:bg-muted/50 transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full bg-indigo-100">
-                          <span className="text-indigo-600 font-medium">
+                        <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full bg-primary/10">
+                          <span className="text-primary font-medium">
                             {dipendente.nome.charAt(0)}{dipendente.cognome.charAt(0)}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-foreground">
                             {dipendente.nome} {dipendente.cognome}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-muted-foreground">
                             Assunto il {formatDate(dipendente.dataAssunzione)}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{dipendente.email}</div>
+                      <div className="text-sm text-foreground">{dipendente.email}</div>
                       {dipendente.telefono && (
-                        <div className="text-sm text-gray-500">{dipendente.telefono}</div>
+                        <div className="text-sm text-muted-foreground">{dipendente.telefono}</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{dipendente.tipoContratto}</div>
-                      <div className="text-sm text-gray-500">Livello {dipendente.livello}</div>
+                      <div className="text-sm text-foreground">{dipendente.tipoContratto}</div>
+                      <div className="text-sm text-muted-foreground">Livello {dipendente.livello}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         {currencyFormatter(dipendente.retribuzione)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {dipendente.sede?.nome || 'Non assegnato'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <Link href={`/dipendenti/${dipendente.id}`}>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label={`Visualizza ${dipendente.nome} ${dipendente.cognome}`}>
                             <EyeIcon className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </Link>
                         <Link href={`/dipendenti/${dipendente.id}/modifica`}>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label={`Modifica ${dipendente.nome} ${dipendente.cognome}`}>
                             <PencilIcon className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </Link>
-                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-800">
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80" aria-label={`Elimina ${dipendente.nome} ${dipendente.cognome}`}>
                           <TrashIcon className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       </div>
