@@ -185,15 +185,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Recupera le attività create per verificare
-    const attivitaCreate = await prisma.attivita.findMany({
-      where: {
-        userId: user.id,
-        aziendaId: userData.aziendaId,
-        descrizione: { contains: 'Test' }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 10
-    })
+    const attivitaCreate = await prisma.$queryRawUnsafe(`
+      SELECT id, "tipoAttivita", descrizione, "createdAt"
+      FROM attivita
+      WHERE "userId" = $1 AND "aziendaId" = $2 AND descrizione ILIKE '%Test%'
+      ORDER BY "createdAt" DESC
+      LIMIT 10
+    `, user.id, userData.aziendaId) as Array<{
+      id: string
+      tipoAttivita: string
+      descrizione: string
+      createdAt: Date
+    }>
 
     return NextResponse.json({ 
       message: 'Test attività sicura completato',
