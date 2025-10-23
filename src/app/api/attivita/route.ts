@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
+// Interfaccia per il risultato della query raw
+interface AttivitaRawResult {
+  id: string
+  tipoAttivita: string
+  descrizione: string
+  idEntita: string | null
+  tipoEntita: string | null
+  datiAggiuntivi: unknown
+  createdAt: Date
+  userId: string
+  userName: string | null
+  userEmail: string
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Create Supabase client
@@ -35,7 +49,7 @@ export async function GET(request: NextRequest) {
     const giorni = parseInt(searchParams.get('giorni') || '30')
 
     // Build where clause
-    const where: any = {
+    const where: Record<string, unknown> = {
       aziendaId: userData.aziendaId
     }
 
@@ -87,7 +101,7 @@ export async function GET(request: NextRequest) {
     `)
 
     // Transform the raw query result to match the expected format
-    const attivitaFormattate = (attivita as any[]).map(item => ({
+    const attivitaFormattate = (attivita as AttivitaRawResult[]).map(item => ({
       id: item.id,
       tipoAttivita: item.tipoAttivita,
       descrizione: item.descrizione,

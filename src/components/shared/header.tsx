@@ -25,7 +25,7 @@ export default function Header({ user, companyName }: HeaderProps) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  const { sidebarState, toggleSidebar, isSidebarCollapsed } = useSidebar()
+  const { sidebarState, toggleSidebar } = useSidebar()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

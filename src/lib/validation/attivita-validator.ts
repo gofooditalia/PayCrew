@@ -57,7 +57,7 @@ export class AttivitaValidator {
   /**
    * Valida e sanitizza i dati aggiuntivi JSON
    */
-  static validateDatiAggiuntivi(dati: any): any {
+  static validateDatiAggiuntivi(dati: Record<string, unknown> | null | undefined): unknown {
     if (dati === null || dati === undefined) {
       return null;
     }
@@ -87,7 +87,7 @@ export class AttivitaValidator {
     tipoEntita?: string;
     userId: string;
     aziendaId: string;
-    datiAggiuntivi?: any;
+    datiAggiuntivi?: Record<string, unknown>;
   }) {
     const {
       tipoAttivita,

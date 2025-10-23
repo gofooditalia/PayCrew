@@ -3,6 +3,34 @@ import { AttivitaValidator } from '@/lib/validation/attivita-validator'
 import { AttivitaMonitor } from '@/lib/attivita-monitor'
 import { TipoAttivita, TipoEntita } from '@prisma/client'
 
+// Interfacce per tipi specifici
+export interface DipendenteData {
+  id: string
+  nome: string
+  cognome: string
+}
+
+export interface PresenzaData {
+  id: string
+  dipendenteId: string
+  data: Date | string
+}
+
+export interface BustaPagaData {
+  id: string
+  dipendenteId: string
+  mese: number
+  anno: number
+  netto: number
+}
+
+export interface FeriePermessiData {
+  id: string
+  dipendenteId: string
+  tipo: string
+  giorni: number
+}
+
 export interface LogAttivitaParams {
   tipoAttivita: string
   descrizione: string
@@ -10,7 +38,7 @@ export interface LogAttivitaParams {
   tipoEntita?: string
   userId: string
   aziendaId: string
-  datiAggiuntivi?: any
+  datiAggiuntivi?: unknown
 }
 
 export class AttivitaLogger {
@@ -37,7 +65,7 @@ export class AttivitaLogger {
         tipoEntita,
         userId,
         aziendaId,
-        datiAggiuntivi
+        datiAggiuntivi: datiAggiuntivi as any
       });
 
       // Inserimento type-safe con Prisma
@@ -49,7 +77,7 @@ export class AttivitaLogger {
           tipoEntita: validatedParams.tipoEntita,
           userId: validatedParams.userId,
           aziendaId: validatedParams.aziendaId,
-          datiAggiuntivi: validatedParams.datiAggiuntivi
+          datiAggiuntivi: validatedParams.datiAggiuntivi as any
         },
         select: {
           id: true,
@@ -125,7 +153,7 @@ export class AttivitaLogger {
     }
   }
 
-  static async logCreazioneDipendente(dipendente: any, userId: string, aziendaId: string): Promise<void> {
+  static async logCreazioneDipendente(dipendente: DipendenteData, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'CREAZIONE_DIPENDENTE',
       descrizione: `Nuovo dipendente aggiunto: ${dipendente.nome} ${dipendente.cognome}`,
@@ -137,11 +165,11 @@ export class AttivitaLogger {
         dipendenteId: dipendente.id,
         nome: dipendente.nome,
         cognome: dipendente.cognome
-      }
+      } as Record<string, unknown>
     })
   }
 
-  static async logModificaDipendente(dipendente: any, userId: string, aziendaId: string): Promise<void> {
+  static async logModificaDipendente(dipendente: DipendenteData, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'MODIFICA_DIPENDENTE',
       descrizione: `Dipendente modificato: ${dipendente.nome} ${dipendente.cognome}`,
@@ -153,7 +181,7 @@ export class AttivitaLogger {
         dipendenteId: dipendente.id,
         nome: dipendente.nome,
         cognome: dipendente.cognome
-      }
+      } as Record<string, unknown>
     })
   }
 
@@ -171,7 +199,7 @@ export class AttivitaLogger {
     })
   }
 
-  static async logRegistrazionePresenza(presenza: any, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+  static async logRegistrazionePresenza(presenza: PresenzaData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'REGISTRAZIONE_PRESENZA',
       descrizione: `Presenza registrata per: ${dipendenteNome}`,
@@ -183,11 +211,11 @@ export class AttivitaLogger {
         presenzaId: presenza.id,
         dipendenteId: presenza.dipendenteId,
         data: presenza.data
-      }
+      } as Record<string, unknown>
     })
   }
 
-  static async logModificaPresenza(presenza: any, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+  static async logModificaPresenza(presenza: PresenzaData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'MODIFICA_PRESENZA',
       descrizione: `Presenza modificata per: ${dipendenteNome}`,
@@ -199,11 +227,11 @@ export class AttivitaLogger {
         presenzaId: presenza.id,
         dipendenteId: presenza.dipendenteId,
         data: presenza.data
-      }
+      } as Record<string, unknown>
     })
   }
 
-  static async logGenerazioneBustaPaga(bustaPaga: any, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+  static async logGenerazioneBustaPaga(bustaPaga: BustaPagaData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'GENERAZIONE_BUSTA_PAGA',
       descrizione: `Busta paga generata per: ${dipendenteNome} (${bustaPaga.mese}/${bustaPaga.anno})`,
@@ -217,11 +245,11 @@ export class AttivitaLogger {
         mese: bustaPaga.mese,
         anno: bustaPaga.anno,
         netto: bustaPaga.netto
-      }
+      } as Record<string, unknown>
     })
   }
 
-  static async logRichiestaFerie(feriePermessi: any, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+  static async logRichiestaFerie(feriePermessi: FeriePermessiData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'RICHIESTA_FERIE',
       descrizione: `Richiesta ferie/permessi per: ${dipendenteNome}`,
@@ -234,11 +262,11 @@ export class AttivitaLogger {
         dipendenteId: feriePermessi.dipendenteId,
         tipo: feriePermessi.tipo,
         giorni: feriePermessi.giorni
-      }
+      } as Record<string, unknown>
     })
   }
 
-  static async logApprovazioneFerie(feriePermessi: any, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+  static async logApprovazioneFerie(feriePermessi: FeriePermessiData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'APPROVAZIONE_FERIE',
       descrizione: `Richiesta ferie approvata per: ${dipendenteNome}`,
@@ -251,11 +279,11 @@ export class AttivitaLogger {
         dipendenteId: feriePermessi.dipendenteId,
         tipo: feriePermessi.tipo,
         giorni: feriePermessi.giorni
-      }
+      } as Record<string, unknown>
     })
   }
 
-  static async logRifiutoFerie(feriePermessi: any, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+  static async logRifiutoFerie(feriePermessi: FeriePermessiData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
     await this.logAttivita({
       tipoAttivita: 'RIFIUTO_FERIE',
       descrizione: `Richiesta ferie rifiutata per: ${dipendenteNome}`,
@@ -268,7 +296,7 @@ export class AttivitaLogger {
         dipendenteId: feriePermessi.dipendenteId,
         tipo: feriePermessi.tipo,
         giorni: feriePermessi.giorni
-      }
+      } as Record<string, unknown>
     })
   }
 }
