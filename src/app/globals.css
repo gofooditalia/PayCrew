@@ -4,26 +4,61 @@
 
 @layer base {
   :root {
+    /* Colori di base esistenti migliorati */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    
+    /* Colori primari HR moderni */
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
+    --primary-dark: 217 77% 47%;
+    --primary-light: 217 91% 95%;
+    
+    /* Colori secondari */
     --secondary: 210 40% 96%;
     --secondary-foreground: 222.2 84% 4.9%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96%;
     --accent-foreground: 222.2 84% 4.9%;
+    
+    /* Colori di stato */
+    --success: 160 84% 39%;
+    --success-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+    --error: 0 84% 60%;
+    --error-foreground: 210 40% 98%;
+    --info: 188 94% 47%;
+    --info-foreground: 210 40% 98%;
+    
+    /* Colori distruttivi esistenti */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    
+    /* Bordi e input */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --ring: 217 91% 60%;
+    
+    /* Design system migliorato */
+    --radius: 0.75rem;
+    
+    /* Ombre per cards moderne */
+    --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
+    /* Gradienti */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 77% 47%) 100%);
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 71% 29%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(38 84% 45%) 100%);
+    --gradient-error: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(0 71% 52%) 100%);
+    --gradient-info: linear-gradient(135deg, hsl(188 94% 47%) 0%, hsl(188 84% 42%) 100%);
   }
 }
 
@@ -34,6 +69,138 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+  }
+}
+
+/* Classi utility per cards moderne */
+@layer utilities {
+  .card-modern {
+    background: var(--gradient-card);
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-modern:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+  
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    transition: all 0.2s ease;
+  }
+  
+  .badge-status:hover {
+    transform: scale(1.05);
+  }
+  
+  .badge-attivo {
+    background: var(--gradient-success);
+    color: var(--success-foreground);
+  }
+  
+  .badge-ferie {
+    background: var(--gradient-info);
+    color: var(--info-foreground);
+  }
+  
+  .badge-parttime {
+    background: var(--gradient-warning);
+    color: var(--warning-foreground);
+  }
+  
+  .badge-scaduto {
+    background: var(--gradient-error);
+    color: var(--error-foreground);
+  }
+  
+  .avatar-gradient {
+    background: var(--gradient-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .avatar-gradient:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+  }
+  
+  .table-row-hover {
+    transition: all 0.2s ease;
+  }
+  
+  .table-row-hover:hover {
+    background: linear-gradient(90deg, hsl(var(--muted) / 0.5) 0%, hsl(var(--primary-light)) 100%);
+    transform: translateX(4px);
+  }
+  
+  .button-scale {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .button-scale:hover {
+    transform: scale(1.05);
+  }
+  
+  .button-scale:active {
+    transform: scale(0.95);
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  .slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .pulse-glow {
+    animation: pulseGlow 2s infinite;
+  }
+}
+
+/* Animazioni personalizzate */
+@layer base {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
+    }
   }
 }
 

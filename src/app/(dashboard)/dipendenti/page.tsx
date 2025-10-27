@@ -58,14 +58,16 @@ export default async function DipendentiPage() {
   const dipendenti = await getDipendenti()
 
   return (
-    <div className="min-h-screen">
-      <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen animate-fade-in">
+      <div className="flex justify-between items-center mb-8 animate-slide-up">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dipendenti</h1>
-          <p className="text-muted-foreground">Gestisci l&apos;anagrafica dei dipendenti</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-2">
+            👥 Dipendenti
+          </h1>
+          <p className="text-muted-foreground text-lg">Gestisci l&apos;anagrafica dei dipendenti</p>
         </div>
         <Link href="/dipendenti/nuovo">
-          <Button className="flex items-center gap-2">
+          <Button className="flex items-center gap-2 button-scale shadow-lg hover:shadow-xl">
             <PlusIcon className="h-5 w-5" />
             Nuovo Dipendente
           </Button>

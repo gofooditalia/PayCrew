@@ -29,19 +29,19 @@ export default function Sidebar() {
   const { sidebarState, toggleSidebar } = useSidebar()
 
   return (
-    <div className={`flex flex-col bg-background border-r border-border transition-all duration-300 ease-in-out ${
+    <div className={`flex flex-col bg-gradient-to-b from-background via-background to-muted/10 border-r border-border/50 transition-all duration-300 ease-in-out ${
       sidebarState === 'open' ? 'w-64' : sidebarState === 'collapsed' ? 'w-16' : 'w-64'
     } ${
       sidebarState === 'closed' ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'
-    } fixed lg:relative h-full z-40`}>
-      <div className="flex items-center h-16 px-4 bg-background border-b border-border justify-between">
+    } fixed lg:relative h-full z-40 shadow-lg`}>
+      <div className="flex items-center h-16 px-4 bg-gradient-to-r from-background to-muted/20 border-b border-border/50 justify-between">
         {sidebarState === 'open' && (
-          <h1 className="text-xl font-bold text-foreground">PayCrew</h1>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">🚀 PayCrew</h1>
         )}
         {sidebarState === 'collapsed' && (
           <button
             type="button"
-            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary transition-colors duration-200"
+            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary transition-all duration-200 button-scale"
             onClick={toggleSidebar}
             aria-label="Espandi menu laterale"
           >
@@ -62,20 +62,20 @@ export default function Sidebar() {
                   href={item.href}
                   className={`${
                     isActive
-                      ? 'bg-accent text-foreground border-l-4 border-primary'
-                      : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                  } group flex items-center px-3 py-2 text-sm font-medium rounded-r-md transition-colors duration-150`}
+                      ? 'bg-gradient-to-r from-accent to-primary/10 text-foreground border-l-4 border-primary shadow-md'
+                      : 'text-muted-foreground hover:bg-gradient-to-r hover:from-accent/50 hover:to-primary/5 hover:text-foreground'
+                  } group flex items-center px-3 py-2 text-sm font-medium rounded-r-md transition-all duration-150 button-scale`}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <item.icon
                     className={`${
-                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                    } ${sidebarState === 'collapsed' ? 'h-6 w-6' : 'mr-3 h-5 w-5'} transition-colors duration-150`}
+                      isActive ? 'text-primary animate-pulse-glow' : 'text-muted-foreground group-hover:text-primary'
+                    } ${sidebarState === 'collapsed' ? 'h-6 w-6' : 'mr-3 h-5 w-5'} transition-all duration-150`}
                     aria-hidden="true"
                   />
                   {sidebarState === 'open' && <span>{item.name}</span>}
                   {sidebarState === 'collapsed' && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-border">
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gradient-to-r from-popover to-background text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-border/50 backdrop-blur-sm">
                       {item.name}
                     </div>
                   )}
@@ -103,7 +103,7 @@ export default function Sidebar() {
                     </span>
                   )}
                   {sidebarState === 'collapsed' && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-border">
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gradient-to-r from-popover to-background text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-border/50 backdrop-blur-sm">
                       <div className="flex flex-col">
                         <span>{item.name}</span>
                         <span className="text-xs text-muted-foreground mt-1">Presto disponibile</span>
