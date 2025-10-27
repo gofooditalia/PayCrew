@@ -68,12 +68,13 @@ export class AttivitaLogger {
       });
 
       // Inserimento type-safe con query raw per compatibilità Vercel
+      // Cast esplicito dei tipi enum per PostgreSQL
       const result = await prisma.$queryRawUnsafe(`
         INSERT INTO attivita (
           id, "tipoAttivita", descrizione, "idEntita", "tipoEntita",
           "userId", "aziendaId", "datiAggiuntivi", "createdAt"
         ) VALUES (
-          gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, NOW()
+          gen_random_uuid(), $1::tipo_attivita, $2, $3, $4::tipo_entita, $5, $6, $7, NOW()
         )
         RETURNING id, "tipoAttivita", "createdAt"
       `,

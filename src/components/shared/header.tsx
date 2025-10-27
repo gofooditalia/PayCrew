@@ -34,7 +34,7 @@ export default function Header({ user, companyName }: HeaderProps) {
   }
 
   return (
-    <header className="bg-background border-b shadow-sm">
+    <header className="bg-gradient-to-r from-background via-background to-muted/20 border-b shadow-lg backdrop-blur-sm">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side - Company Name and Burger Menu */}
@@ -43,7 +43,7 @@ export default function Header({ user, companyName }: HeaderProps) {
             {sidebarState !== 'collapsed' && (
               <button
                 type="button"
-                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary mr-4 transition-colors duration-200"
+                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary mr-4 transition-all duration-200 button-scale"
                 onClick={toggleSidebar}
                 aria-label="Apri menu laterale"
               >
@@ -53,8 +53,8 @@ export default function Header({ user, companyName }: HeaderProps) {
             
             {/* Company Name */}
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-foreground" title={companyName || 'PayCrew'}>
-                {companyName || 'PayCrew'}
+              <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent" title={companyName || 'PayCrew'}>
+                🏢 {companyName || 'PayCrew'}
               </h1>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default function Header({ user, companyName }: HeaderProps) {
             {/* Notifications - Hidden on mobile, visible on desktop and tablet */}
             <button
               type="button"
-              className="hidden sm:block p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
+              className="hidden sm:block p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 button-scale relative"
               aria-label="Notifiche"
             >
               <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -81,12 +81,12 @@ export default function Header({ user, companyName }: HeaderProps) {
                 aria-haspopup="true"
               >
                 <span className="sr-only">Apri menu utente</span>
-                <UserCircleIcon className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors duration-200" aria-hidden="true" />
+                <UserCircleIcon className="h-8 w-8 text-muted-foreground hover:text-primary transition-all duration-200 button-scale" aria-hidden="true" />
               </button>
 
               {profileMenuOpen && (
                 <div
-                  className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-popover ring-1 ring-border divide-y divide-border focus:outline-none z-50 transition-all duration-200"
+                  className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-xl bg-gradient-to-br from-popover to-background ring-1 ring-border divide-y divide-border focus:outline-none z-50 transition-all duration-200 backdrop-blur-sm"
                   role="menu"
                 >
                   <div className="px-4 py-3" role="none">
