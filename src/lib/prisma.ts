@@ -1,30 +1,41 @@
 import { PrismaClient } from '@prisma/client'
 
-// Debug logging for Prisma engine detection
-console.log('[PRISMA_DEBUG] Node.js platform:', process.platform)
-console.log('[PRISMA_DEBUG] Node.js arch:', process.arch)
-console.log('[PRISMA_DEBUG] Node.js version:', process.version)
-console.log('[PRISMA_DEBUG] Environment:', process.env.NODE_ENV)
-
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['error', 'warn', 'query'] : ['error'],
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL
+// Create a Prisma client with connection pooling for serverless environments
+function createPrismaClientWithConnectionPool(): PrismaClient {
+  // Add connection pooling to DATABASE_URL for serverless environments
+  const databaseUrl = process.env.DATABASE_URL
+  
+  // Configure connection pooling for serverless
+  const pooledUrl = databaseUrl && process.env.NODE_ENV === 'production' 
+    ? databaseUrl.includes('?') 
+      ? `${databaseUrl}&connection_limit=10&pool_timeout=10000`
+      : `${databaseUrl}?connection_limit=10&pool_timeout=10000`
+    : databaseUrl
+
+  const client = new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn', 'query'] : ['error'],
+    datasources: {
+      db: {
+        url: pooledUrl
+      }
     }
-  }
-})
+  })
+
+  return client
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClientWithConnectionPool()
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
 }
 
 // Log successful initialization
-console.log('[PRISMA_DEBUG] Prisma client initialized successfully')
+console.log('[PRISMA_DEBUG] Prisma client with connection pooling initialized successfully')
 
 // Helper function to safely execute Prisma queries with error handling
 export async function safePrismaQuery<T>(
