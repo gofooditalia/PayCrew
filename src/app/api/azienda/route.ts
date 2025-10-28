@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica se l'utente esiste già
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { id: userId }
     })
 
@@ -29,12 +29,12 @@ export async function POST(request: NextRequest) {
     void provincia // Marca come usato per evitare warning ESLint
 
     // Crea l'azienda usando Prisma
-    const azienda = await prisma.azienda.create({
+    const azienda = await prisma.aziende.create({
       data: aziendaDataFiltered
     })
 
     // Crea o aggiorna l'utente associato all'azienda
-    const user = await prisma.user.upsert({
+    const user = await prisma.users.upsert({
       where: { id: userId },
       update: {
         email: userEmail,
@@ -45,17 +45,22 @@ export async function POST(request: NextRequest) {
         id: userId,
         email: userEmail,
         role: 'ADMIN',
-        aziendaId: azienda.id
+        aziendaId: azienda.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 
     // Crea la sede principale
-    await prisma.sede.create({
+    await prisma.sedi.create({
       data: {
+        id: crypto.randomUUID(),
         nome: 'Sede Principale',
         indirizzo: aziendaDataFiltered.indirizzo || '',
         citta: aziendaDataFiltered.citta || '',
-        aziendaId: azienda.id
+        aziendaId: azienda.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's company
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -236,7 +236,7 @@ export async function GET() {
     }
 
     // Get user's company
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })

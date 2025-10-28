@@ -9,7 +9,7 @@ export default async function TestPrismaPage() {
   if (dbConnected) {
     try {
       userCount = await safePrismaQuery(
-        () => prisma.user.count(),
+        () => prisma.users.count(),
         0
       ) || 0
     } catch (error) {

@@ -15,7 +15,7 @@ export async function GET() {
     }
 
     // Get user's company to verify permissions
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     // Get company locations
-    const sedi = await prisma.sede.findMany({
+    const sedi = await prisma.sedi.findMany({
       where: { aziendaId: userData.aziendaId },
       select: {
         id: true,
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's company to verify permissions
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -83,12 +83,15 @@ export async function POST(request: NextRequest) {
     const sedeData = await request.json()
 
     // Create new location
-    const sede = await prisma.sede.create({
+    const sede = await prisma.sedi.create({
       data: {
+        id: crypto.randomUUID(),
         nome: sedeData.nome,
         indirizzo: sedeData.indirizzo || null,
         citta: sedeData.citta || null,
-        aziendaId: userData.aziendaId
+        aziendaId: userData.aziendaId,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 

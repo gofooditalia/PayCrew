@@ -57,7 +57,7 @@ export default async function DashboardLayout({
 
   // Check if user has an associated company using Prisma with error handling
   const userData = await safePrismaQuery(() =>
-    prisma.user.findUnique({
+    prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -70,7 +70,7 @@ export default async function DashboardLayout({
 
   // Get company data with error handling
   const azienda = await safePrismaQuery(() =>
-    prisma.azienda.findUnique({
+    prisma.aziende.findUnique({
       where: { id: userData.aziendaId! },
       select: { nome: true }
     })

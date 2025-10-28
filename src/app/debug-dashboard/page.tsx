@@ -52,7 +52,7 @@ export default async function DebugDashboardPage() {
 
     // Test user data query
     try {
-      const userData = await prisma.user.findUnique({
+      const userData = await prisma.users.findUnique({
         where: { id: user.id },
         select: { aziendaId: true }
       })
@@ -64,38 +64,52 @@ export default async function DebugDashboardPage() {
 
     // Test dashboard queries
     try {
-      const userData = await prisma.user.findUnique({
+      const userData = await prisma.users.findUnique({
         where: { id: user.id },
         select: { aziendaId: true }
       })
 
       if (userData?.aziendaId) {
+        const dipendentiIds = await prisma.dipendenti.findMany({
+          where: {
+            aziendaId: userData.aziendaId,
+            attivo: true
+          },
+          select: { id: true }
+        })
+
+        const dipendenteIds = dipendentiIds.map(d => d.id)
+
         const [
           totalDipendenti,
           presenzeOggi,
           bustePagaMese,
           totaleSalari
         ] = await Promise.all([
-          prisma.dipendente.count({
+          prisma.dipendenti.count({
             where: {
               aziendaId: userData.aziendaId,
               attivo: true
             }
           }),
-          prisma.presenza.count({
+          prisma.presenze.count({
             where: {
-              dipendente: { aziendaId: userData.aziendaId },
+              dipendenteId: {
+                in: dipendenteIds
+              },
               data: new Date()
             }
           }),
-          prisma.bustaPaga.count({
+          prisma.buste_paga.count({
             where: {
-              dipendente: { aziendaId: userData.aziendaId },
+              dipendenteId: {
+                in: dipendenteIds
+              },
               mese: new Date().getMonth() + 1,
               anno: new Date().getFullYear()
             }
           }),
-          prisma.dipendente.aggregate({
+          prisma.dipendenti.aggregate({
             where: {
               aziendaId: userData.aziendaId,
               attivo: true

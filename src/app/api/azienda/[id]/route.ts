@@ -20,7 +20,7 @@ export async function PUT(
     const { id: aziendaId } = await params
 
     // Check if user has permission to update this company
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true, role: true }
     })
@@ -36,7 +36,7 @@ export async function PUT(
     const updateData = await request.json()
 
     // Update company using Prisma
-    const azienda = await prisma.azienda.update({
+    const azienda = await prisma.aziende.update({
       where: { id: aziendaId },
       data: {
         nome: updateData.nome,
@@ -94,7 +94,7 @@ export async function GET(
     const { id: aziendaId } = await params
 
     // Check if user has permission to view this company
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -107,7 +107,7 @@ export async function GET(
     }
 
     // Get company details
-    const azienda = await prisma.azienda.findUnique({
+    const azienda = await prisma.aziende.findUnique({
       where: { id: aziendaId },
       select: {
         id: true,

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's company to verify permissions
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -64,10 +64,10 @@ export async function GET(request: NextRequest) {
     }
 
     const [dipendenti, totalCount] = await Promise.all([
-      prisma.dipendente.findMany({
+      prisma.dipendenti.findMany({
         where,
         include: {
-          sede: {
+          sedi: {
             select: {
               id: true,
               nome: true
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit
       }),
-      prisma.dipendente.count({ where })
+      prisma.dipendenti.count({ where })
     ])
 
     return NextResponse.json({
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's company to verify permissions
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if codiceFiscale already exists for this company
-    const existingDipendente = await prisma.dipendente.findFirst({
+    const existingDipendente = await prisma.dipendenti.findFirst({
       where: {
         codiceFiscale: dipendenteData.codiceFiscale,
         aziendaId: userData.aziendaId
@@ -162,8 +162,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new employee using Prisma with proper type conversion
-    const dipendente = await prisma.dipendente.create({
+    const dipendente = await prisma.dipendenti.create({
       data: {
+        id: crypto.randomUUID(),
         nome: dipendenteData.nome,
         cognome: dipendenteData.cognome,
         codiceFiscale: dipendenteData.codiceFiscale,
@@ -183,10 +184,12 @@ export async function POST(request: NextRequest) {
         oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,
         sedeId: dipendenteData.sedeId || null,
         attivo: dipendenteData.attivo !== undefined ? dipendenteData.attivo : true,
-        aziendaId: userData.aziendaId
+        aziendaId: userData.aziendaId,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
-        sede: {
+        sedi: {
           select: {
             id: true,
             nome: true

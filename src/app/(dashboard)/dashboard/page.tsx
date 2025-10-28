@@ -86,7 +86,7 @@ export default async function DashboardPage() {
   
   // Ottieni l'azienda dell'utente usando Prisma con error handling
   const userData = await safePrismaQuery(() =>
-    prisma.user.findUnique({
+    prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -290,7 +290,7 @@ export default async function DashboardPage() {
   }
 
   const totalDipendenti = await safePrismaQuery(
-    () => prisma.dipendente.count({
+    () => prisma.dipendenti.count({
       where: {
         aziendaId: userData.aziendaId!,
         attivo: true
@@ -299,10 +299,25 @@ export default async function DashboardPage() {
     0
   ) || 0
 
-  const presenzeOggi = await safePrismaQuery(
-    () => prisma.presenza.count({
+  // Get dipendenti IDs for this company first
+  const dipendentiIds = await safePrismaQuery(
+    () => prisma.dipendenti.findMany({
       where: {
-        dipendente: { aziendaId: userData.aziendaId! },
+        aziendaId: userData.aziendaId!
+      },
+      select: { id: true }
+    }),
+    []
+  ) || []
+
+  const dipendenteIds = dipendentiIds.map(d => d.id)
+
+  const presenzeOggi = await safePrismaQuery(
+    () => prisma.presenze.count({
+      where: {
+        dipendenteId: {
+          in: dipendenteIds
+        },
         data: new Date()
       }
     }),
@@ -310,9 +325,11 @@ export default async function DashboardPage() {
   ) || 0
 
   const bustePagaMese = await safePrismaQuery(
-    () => prisma.bustaPaga.count({
+    () => prisma.buste_paga.count({
       where: {
-        dipendente: { aziendaId: userData.aziendaId! },
+        dipendenteId: {
+          in: dipendenteIds
+        },
         mese: new Date().getMonth() + 1,
         anno: new Date().getFullYear()
       }
@@ -321,7 +338,7 @@ export default async function DashboardPage() {
   ) || 0
 
   const totaleSalari = await safePrismaQuery(
-    () => prisma.dipendente.aggregate({
+    () => prisma.dipendenti.aggregate({
       where: {
         aziendaId: userData.aziendaId!,
         attivo: true
