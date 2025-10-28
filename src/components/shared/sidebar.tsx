@@ -36,7 +36,7 @@ export default function Sidebar() {
     } fixed lg:relative h-full z-40 shadow-lg`}>
       <div className="flex items-center h-16 px-4 bg-gradient-to-r from-background to-muted/20 border-b border-border/50 justify-between">
         {sidebarState === 'open' && (
-          <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">🚀 PayCrew</h1>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">PayCrew</h1>
         )}
         {sidebarState === 'collapsed' && (
           <button
@@ -64,13 +64,13 @@ export default function Sidebar() {
                     isActive
                       ? 'bg-gradient-to-r from-accent to-primary/10 text-foreground border-l-4 border-primary shadow-md'
                       : 'text-muted-foreground hover:bg-gradient-to-r hover:from-accent/50 hover:to-primary/5 hover:text-foreground'
-                  } group flex items-center px-3 py-2 text-sm font-medium rounded-r-md transition-all duration-150 button-scale`}
+                  } group flex items-center px-3 py-2 text-sm font-medium rounded-r-md transition-all duration-200 ease-in-out`}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <item.icon
                     className={`${
-                      isActive ? 'text-primary animate-pulse-glow' : 'text-muted-foreground group-hover:text-primary'
-                    } ${sidebarState === 'collapsed' ? 'h-6 w-6' : 'mr-3 h-5 w-5'} transition-all duration-150`}
+                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
+                    } ${sidebarState === 'collapsed' ? 'h-6 w-6' : 'mr-3 h-5 w-5'} transition-all duration-200 ease-in-out`}
                     aria-hidden="true"
                   />
                   {sidebarState === 'open' && <span>{item.name}</span>}

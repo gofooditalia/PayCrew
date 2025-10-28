@@ -23,7 +23,7 @@ const badgeVariants = cva(
           "border-transparent bg-gradient-to-r from-info to-sky-600 text-info-foreground hover:from-info/80 hover:to-sky-600/80 shadow-sm",
         // Badge specifici per stati dipendenti
         "attivo":
-          "border-transparent bg-gradient-to-r from-success to-emerald-600 text-white hover:from-success/90 hover:to-emerald-600/90 shadow-sm animate-pulse-glow",
+          "border-transparent bg-gradient-to-r from-success to-emerald-600 text-white hover:from-success/90 hover:to-emerald-600/90 shadow-sm",
         "ferie":
           "border-transparent bg-gradient-to-r from-info to-sky-600 text-white hover:from-info/90 hover:to-sky-600/90 shadow-sm",
         "part-time":
