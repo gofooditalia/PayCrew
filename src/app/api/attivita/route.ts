@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
-// Interfaccia per il risultato della query raw
-interface AttivitaRawResult {
+// Interfaccia per il risultato della query
+interface AttivitaResult {
   id: string
   tipoAttivita: string
   descrizione: string
@@ -11,9 +11,12 @@ interface AttivitaRawResult {
   tipoEntita: string | null
   datiAggiuntivi: unknown
   createdAt: Date
-  userId: string
-  userName: string | null
-  userEmail: string
+  aziendaId: string
+  user: {
+    id: string
+    name: string | null
+    email: string
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -52,11 +55,11 @@ export async function GET(request: NextRequest) {
     const where: Record<string, unknown> = {
       aziendaId: userData.aziendaId
     }
-
+    
     if (tipoAttivita) {
       where.tipoAttivita = tipoAttivita
     }
-
+    
     // Filter by date if specified
     if (giorni) {
       const dataLimite = new Date()
@@ -65,43 +68,27 @@ export async function GET(request: NextRequest) {
         gte: dataLimite
       }
     }
+    
+    // Get recent activities with user info using safe Prisma queries
+    const attivita = await prisma.attivita.findMany({
+      where: where,
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: limit
+    })
 
-    // Build the WHERE clause conditions
-    const whereConditions = [`a."aziendaId" = '${userData.aziendaId}'`]
-    
-    if (tipoAttivita) {
-      whereConditions.push(`a."tipoAttivita" = '${tipoAttivita}'`)
-    }
-    
-    if (giorni) {
-      const dataLimite = new Date(Date.now() - giorni * 24 * 60 * 60 * 1000)
-      whereConditions.push(`a."createdAt" >= '${dataLimite.toISOString()}'`)
-    }
-    
-    const whereClause = whereConditions.join(' AND ')
-    
-    // Get recent activities with user info using raw SQL
-    const attivita = await prisma.$queryRawUnsafe(`
-      SELECT
-        a.id,
-        a."tipoAttivita",
-        a.descrizione,
-        a."idEntita",
-        a."tipoEntita",
-        a."datiAggiuntivi",
-        a."createdAt",
-        u.id as "userId",
-        u.name as "userName",
-        u.email as "userEmail"
-      FROM attivita a
-      JOIN users u ON a."userId" = u.id
-      WHERE ${whereClause}
-      ORDER BY a."createdAt" DESC
-      LIMIT ${limit}
-    `)
-
-    // Transform the raw query result to match the expected format
-    const attivitaFormattate = (attivita as AttivitaRawResult[]).map(item => ({
+    // Transform the result to match the expected format
+    const attivitaFormattate = attivita.map(item => ({
       id: item.id,
       tipoAttivita: item.tipoAttivita,
       descrizione: item.descrizione,
@@ -109,10 +96,11 @@ export async function GET(request: NextRequest) {
       tipoEntita: item.tipoEntita,
       datiAggiuntivi: item.datiAggiuntivi,
       createdAt: item.createdAt,
+      aziendaId: item.aziendaId,
       user: {
-        id: item.userId,
-        name: item.userName || '',
-        email: item.userEmail
+        id: item.users.id,
+        name: item.users.name,
+        email: item.users.email
       }
     }))
 
