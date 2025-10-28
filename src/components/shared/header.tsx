@@ -43,7 +43,7 @@ export default function Header({ user, companyName }: HeaderProps) {
             {sidebarState !== 'collapsed' && (
               <button
                 type="button"
-                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary mr-4 transition-all duration-200 button-scale"
+                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary mr-4 transition-all duration-200 ease-in-out"
                 onClick={toggleSidebar}
                 aria-label="Apri menu laterale"
               >
@@ -54,7 +54,7 @@ export default function Header({ user, companyName }: HeaderProps) {
             {/* Company Name */}
             <div className="flex items-center">
               <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent" title={companyName || 'PayCrew'}>
-                🏢 {companyName || 'PayCrew'}
+                {companyName || 'PayCrew'}
               </h1>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default function Header({ user, companyName }: HeaderProps) {
             {/* Notifications - Hidden on mobile, visible on desktop and tablet */}
             <button
               type="button"
-              className="hidden sm:block p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 button-scale relative"
+              className="hidden sm:block p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 ease-in-out relative"
               aria-label="Notifiche"
             >
               <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -81,7 +81,7 @@ export default function Header({ user, companyName }: HeaderProps) {
                 aria-haspopup="true"
               >
                 <span className="sr-only">Apri menu utente</span>
-                <UserCircleIcon className="h-8 w-8 text-muted-foreground hover:text-primary transition-all duration-200 button-scale" aria-hidden="true" />
+                <UserCircleIcon className="h-8 w-8 text-muted-foreground hover:text-primary transition-all duration-200 ease-in-out" aria-hidden="true" />
               </button>
 
               {profileMenuOpen && (

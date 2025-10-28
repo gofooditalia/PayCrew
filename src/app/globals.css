@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Disabilita pseudo-elementi globali che potrebbero causare quadratini su icone */
+h1::before,
+h1::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Assicura che le icone siano sempre sopra altri elementi */
+.text-transparent {
+  position: relative;
+  z-index: 10;
+}
+
 @layer base {
   :root {
     /* Colori di base esistenti migliorati */

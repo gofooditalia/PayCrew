@@ -2,9 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import DipendentiList from '@/components/dipendenti/dipendenti-list'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { PlusIcon } from '@heroicons/react/24/outline'
 
 async function getDipendenti() {
   const supabase = await createClient()
@@ -39,7 +36,7 @@ async function getDipendenti() {
         }
       }
     },
-    orderBy: { cognome: 'asc' }
+    orderBy: { createdAt: 'desc' }
   })
 
   // Transform the data to match the expected interface
@@ -59,21 +56,6 @@ export default async function DipendentiPage() {
 
   return (
     <div className="min-h-screen animate-fade-in">
-      <div className="flex justify-between items-center mb-8 animate-slide-up">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-2">
-            👥 Dipendenti
-          </h1>
-          <p className="text-muted-foreground text-lg">Gestisci l&apos;anagrafica dei dipendenti</p>
-        </div>
-        <Link href="/dipendenti/nuovo">
-          <Button className="flex items-center gap-2 button-scale shadow-lg hover:shadow-xl">
-            <PlusIcon className="h-5 w-5" />
-            Nuovo Dipendente
-          </Button>
-        </Link>
-      </div>
-
       <DipendentiList dipendenti={dipendenti} />
     </div>
   )
