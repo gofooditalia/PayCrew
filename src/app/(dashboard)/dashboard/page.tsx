@@ -85,6 +85,7 @@ export default async function DashboardPage() {
   }
   
   // Ottieni l'azienda dell'utente usando Prisma con error handling
+  // Fixed: Prisma client regenerated to resolve TypeScript build errors
   const userData = await safePrismaQuery(() =>
     prisma.users.findUnique({
       where: { id: user.id },
