@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/prisma'
+import { prisma, safePrismaQuery, testDatabaseConnection } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -84,11 +84,13 @@ export default async function DashboardPage() {
     redirect('/login')
   }
   
-  // Ottieni l'azienda dell'utente usando Prisma
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { aziendaId: true }
-  })
+  // Ottieni l'azienda dell'utente usando Prisma con error handling
+  const userData = await safePrismaQuery(() =>
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { aziendaId: true }
+    })
+  )
   
   if (!userData?.aziendaId) {
     return (
@@ -209,40 +211,125 @@ export default async function DashboardPage() {
     )
   }
   
-  // Calcola le statistiche usando Prisma
-  const [
-    totalDipendenti,
-    presenzeOggi,
-    bustePagaMese,
-    totaleSalari
-  ] = await Promise.all([
-    prisma.dipendente.count({
+  // Calcola le statistiche usando Prisma con error handling
+  const dbConnected = await testDatabaseConnection()
+  
+  if (!dbConnected) {
+    console.error('Database not connected, showing default values')
+  }
+
+  if (!userData?.aziendaId) {
+    console.error('No aziendaId found for user')
+    return (
+      <div className="min-h-screen">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 space-y-4 sm:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-2">Benvenuto nel gestionale PayCrew</p>
+          </div>
+          <Link href="/azienda/modifica">
+            <Button variant="outline" className="flex items-center">
+              <PencilIcon className="h-4 w-4 mr-2" />
+              Modifica Azienda
+            </Button>
+          </Link>
+        </div>
+
+        {/* Stats Cards with default values */}
+        <DashboardStats
+          totalDipendenti={0}
+          presenzeOggi={0}
+          bustePagaMese={0}
+          totaleSalari="0"
+        />
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground">Azioni Rapide</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Link
+                  href="/dipendenti/nuovo"
+                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                >
+                  <h3 className="font-medium text-foreground">Nuovo Dipendente</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Aggiungi un nuovo dipendente</p>
+                </Link>
+                <Link
+                  href="/presenze"
+                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                >
+                  <h3 className="font-medium text-foreground">Registra Presenza</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Inserisci presenza giornaliera</p>
+                </Link>
+                <Link
+                  href="/buste-paga"
+                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                >
+                  <h3 className="font-medium text-foreground">Genera Busta Paga</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Crea nuovo cedolino</p>
+                </Link>
+                <Link
+                  href="/report"
+                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                >
+                  <h3 className="font-medium text-foreground">Visualizza Report</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Analisi e statistiche</p>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <AttivitaRecenti limit={5} />
+        </div>
+      </div>
+    )
+  }
+
+  const totalDipendenti = await safePrismaQuery(
+    () => prisma.dipendente.count({
       where: {
-        aziendaId: userData.aziendaId,
+        aziendaId: userData.aziendaId!,
         attivo: true
       }
     }),
-    prisma.presenza.count({
+    0
+  ) || 0
+
+  const presenzeOggi = await safePrismaQuery(
+    () => prisma.presenza.count({
       where: {
-        dipendente: { aziendaId: userData.aziendaId },
+        dipendente: { aziendaId: userData.aziendaId! },
         data: new Date()
       }
     }),
-    prisma.bustaPaga.count({
+    0
+  ) || 0
+
+  const bustePagaMese = await safePrismaQuery(
+    () => prisma.bustaPaga.count({
       where: {
-        dipendente: { aziendaId: userData.aziendaId },
+        dipendente: { aziendaId: userData.aziendaId! },
         mese: new Date().getMonth() + 1,
         anno: new Date().getFullYear()
       }
     }),
-    prisma.dipendente.aggregate({
+    0
+  ) || 0
+
+  const totaleSalari = await safePrismaQuery(
+    () => prisma.dipendente.aggregate({
       where: {
-        aziendaId: userData.aziendaId,
+        aziendaId: userData.aziendaId!,
         attivo: true
       },
       _sum: { retribuzione: true }
-    })
-  ])
+    }),
+    { _sum: { retribuzione: null } }
+  ) || { _sum: { retribuzione: null } }
 
   return (
     <div className="min-h-screen">

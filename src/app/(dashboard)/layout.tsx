@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+import { prisma, safePrismaQuery } from '@/lib/prisma'
 import { SidebarProvider } from '@/contexts/sidebar-context'
 import Sidebar from '@/components/shared/sidebar'
 import SidebarOverlay from '@/components/shared/sidebar-overlay'
@@ -20,22 +20,26 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Check if user has an associated company using Prisma
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { aziendaId: true }
-  })
+  // Check if user has an associated company using Prisma with error handling
+  const userData = await safePrismaQuery(() =>
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { aziendaId: true }
+    })
+  )
 
   // If user doesn't have a company, redirect to company creation page
   if (!userData?.aziendaId) {
     redirect('/azienda/crea')
   }
 
-  // Get company data
-  const azienda = await prisma.azienda.findUnique({
-    where: { id: userData.aziendaId },
-    select: { nome: true }
-  })
+  // Get company data with error handling
+  const azienda = await safePrismaQuery(() =>
+    prisma.azienda.findUnique({
+      where: { id: userData.aziendaId! },
+      select: { nome: true }
+    })
+  )
 
   return (
     <SidebarProvider>
