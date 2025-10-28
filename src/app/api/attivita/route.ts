@@ -107,12 +107,28 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ attivita: attivitaFormattate })
 
   } catch (error) {
-    console.error('Errore durante il recupero delle attività:', error)
+    console.error('[PRISMA_ERROR] Errore durante il recupero delle attività:', {
+      error: error instanceof Error ? error.message : 'Errore sconosciuto',
+      stack: error instanceof Error ? error.stack : undefined,
+      code: error instanceof Error && (error as any).code ? (error as any).code : 'UNKNOWN'
+    })
+    
+    // Check if it's a prepared statement error
+    if (error instanceof Error && error.message.includes('prepared statement')) {
+      console.error('[PRISMA_PREPARED_STATEMENT] Detected prepared statement conflict:', {
+        message: error.message,
+        suggestion: 'This may be a connection pooling issue in serverless environment'
+      })
+    }
     
     return NextResponse.json(
-      { 
+      {
         error: 'Errore durante il recupero delle attività',
-        details: error instanceof Error ? error.message : 'Errore sconosciuto'
+        details: error instanceof Error ? error.message : 'Errore sconosciuto',
+        prismaError: error instanceof Error ? {
+          isPreparedStatement: error.message.includes('prepared statement'),
+          code: (error as any).code || 'UNKNOWN'
+        } : null
       },
       { status: 500 }
     )
