@@ -1,11 +1,17 @@
 import { PrismaClient } from '@prisma/client'
 
+// Debug logging for Prisma engine detection
+console.log('[PRISMA_DEBUG] Node.js platform:', process.platform)
+console.log('[PRISMA_DEBUG] Node.js arch:', process.arch)
+console.log('[PRISMA_DEBUG] Node.js version:', process.version)
+console.log('[PRISMA_DEBUG] Environment:', process.env.NODE_ENV)
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  log: process.env.NODE_ENV === 'development' ? ['error', 'warn', 'query'] : ['error'],
   datasources: {
     db: {
       url: process.env.DATABASE_URL
@@ -16,6 +22,9 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
 }
+
+// Log successful initialization
+console.log('[PRISMA_DEBUG] Prisma client initialized successfully')
 
 // Helper function to safely execute Prisma queries with error handling
 export async function safePrismaQuery<T>(
