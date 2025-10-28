@@ -13,7 +13,7 @@ async function getDipendenti() {
   }
 
   // Ottieni l'azienda dell'utente usando Prisma
-  const userData = await prisma.user.findUnique({
+  const userData = await prisma.users.findUnique({
     where: { id: user.id },
     select: { aziendaId: true }
   })
@@ -23,13 +23,13 @@ async function getDipendenti() {
   }
 
   // Query dipendenti con relazioni usando Prisma
-  const dipendenti = await prisma.dipendente.findMany({
+  const dipendenti = await prisma.dipendenti.findMany({
     where: {
       aziendaId: userData.aziendaId,
       attivo: true
     },
     include: {
-      sede: {
+      sedi: {
         select: {
           id: true,
           nome: true
@@ -47,7 +47,7 @@ async function getDipendenti() {
     iban: dipendente.iban || '',
     dataCessazione: dipendente.dataCessazione || undefined,
     retribuzione: parseFloat(dipendente.retribuzione.toString()),
-    sede: dipendente.sede || undefined
+    sede: dipendente.sedi || undefined
   }))
 }
 

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's company
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })

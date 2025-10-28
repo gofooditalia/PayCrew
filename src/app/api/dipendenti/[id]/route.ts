@@ -21,7 +21,7 @@ export async function GET(
     const { id: dipendenteId } = await params
 
     // Get user's company to verify permissions
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -34,16 +34,16 @@ export async function GET(
     }
 
     // Get employee details
-    const dipendente = await prisma.dipendente.findFirst({
+    const dipendente = await prisma.dipendenti.findFirst({
       where: { 
         id: dipendenteId,
         aziendaId: userData.aziendaId 
       },
       include: {
-        sede: {
+        sedi: {
           select: {
             id: true,
-            nome: true
+              nome: true
           }
         }
       }
@@ -89,7 +89,7 @@ export async function PUT(
     const { id: dipendenteId } = await params
 
     // Get user's company to verify permissions
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -102,7 +102,7 @@ export async function PUT(
     }
 
     // Check if employee exists and belongs to user's company
-    const existingDipendente = await prisma.dipendente.findFirst({
+    const existingDipendente = await prisma.dipendenti.findFirst({
       where: { 
         id: dipendenteId,
         aziendaId: userData.aziendaId 
@@ -120,7 +120,7 @@ export async function PUT(
     const updateData = await request.json()
 
     // Update employee using Prisma with proper type conversion
-    const dipendente = await prisma.dipendente.update({
+    const dipendente = await prisma.dipendenti.update({
       where: { id: dipendenteId },
       data: {
         nome: updateData.nome,
@@ -145,7 +145,7 @@ export async function PUT(
         dataCessazione: updateData.dataCessazione ? new Date(updateData.dataCessazione) : null,
       },
       include: {
-        sede: {
+        sedi: {
           select: {
             id: true,
             nome: true
@@ -201,7 +201,7 @@ export async function DELETE(
     const { id: dipendenteId } = await params
 
     // Get user's company to verify permissions
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -214,7 +214,7 @@ export async function DELETE(
     }
 
     // Check if employee exists and belongs to user's company
-    const existingDipendente = await prisma.dipendente.findFirst({
+    const existingDipendente = await prisma.dipendenti.findFirst({
       where: { 
         id: dipendenteId,
         aziendaId: userData.aziendaId 
@@ -232,7 +232,7 @@ export async function DELETE(
     const dipendenteNome = `${existingDipendente.nome} ${existingDipendente.cognome}`
 
     // Delete employee using Prisma
-    await prisma.dipendente.delete({
+    await prisma.dipendenti.delete({
       where: { id: dipendenteId }
     })
 

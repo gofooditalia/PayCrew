@@ -15,7 +15,7 @@ export async function GET() {
     }
 
     // Get user's company using Prisma
-    const userData = await prisma.user.findUnique({
+    const userData = await prisma.users.findUnique({
       where: { id: user.id },
       select: { aziendaId: true }
     })
@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     // Get company details
-    const azienda = await prisma.azienda.findUnique({
+    const azienda = await prisma.aziende.findUnique({
       where: { id: userData.aziendaId },
       select: {
         id: true,
