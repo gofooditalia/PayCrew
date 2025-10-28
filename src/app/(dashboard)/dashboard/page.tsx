@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { prisma, safePrismaQuery, testDatabaseConnection } from '@/lib/prisma'
+import { prisma, safePrismaQuery, isDatabaseReachable } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -211,11 +211,11 @@ export default async function DashboardPage() {
     )
   }
   
-  // Calcola le statistiche usando Prisma con error handling
-  const dbConnected = await testDatabaseConnection()
+  // Check if database is reachable before attempting queries
+  const dbReachable = await isDatabaseReachable()
   
-  if (!dbConnected) {
-    console.error('Database not connected, showing default values')
+  if (!dbReachable) {
+    console.warn('Database not reachable, showing offline mode')
   }
 
   if (!userData?.aziendaId) {
