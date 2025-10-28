@@ -5,25 +5,31 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id        String     @id @default(uuid()) @db.Uuid
-  email     String     @unique
-  name      String?
-  role      UserRole   @default(USER)
-  aziendaId String?    @db.Uuid
-  createdAt DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime   @updatedAt @db.Timestamptz(6)
-  attivita  Attivita[]
-  azienda   Azienda?   @relation(fields: [aziendaId], references: [id])
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model attivita {
+  id             String        @id @db.Uuid
+  tipoAttivita   tipo_attivita
+  descrizione    String
+  idEntita       String?       @db.Uuid
+  tipoEntita     tipo_entita?
+  userId         String        @db.Uuid
+  aziendaId      String        @db.Uuid
+  datiAggiuntivi Json?
+  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
+  aziende        aziende       @relation(fields: [aziendaId], references: [id])
+  users          users         @relation(fields: [userId], references: [id])
 
-  @@map("users")
+  @@index([aziendaId])
+  @@index([createdAt])
+  @@index([tipoAttivita])
+  @@index([userId])
 }
 
-model Azienda {
-  id            String       @id @default(uuid()) @db.Uuid
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model aziende {
+  id            String       @id @db.Uuid
   nome          String
   partitaIva    String       @unique
   codiceFiscale String?
@@ -33,142 +39,15 @@ model Azienda {
   telefono      String?
   email         String?
   createdAt     DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime     @updatedAt @db.Timestamptz(6)
-  attivita      Attivita[]
-  dipendenti    Dipendente[]
-  sedi          Sede[]
-  users         User[]
-
-  @@map("aziende")
+  updatedAt     DateTime     @db.Timestamptz(6)
+  attivita      attivita[]
+  dipendenti    dipendenti[]
+  sedi          sedi[]
+  users         users[]
 }
 
-model Sede {
-  id         String       @id @default(uuid()) @db.Uuid
-  nome       String
-  indirizzo  String?
-  citta      String?
-  aziendaId  String       @db.Uuid
-  createdAt  DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime     @updatedAt @db.Timestamptz(6)
-  dipendenti Dipendente[]
-  azienda    Azienda      @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
-  turni      Turno[]
-
-  @@map("sedi")
-}
-
-model Dipendente {
-  id             String          @id @default(uuid()) @db.Uuid
-  nome           String
-  cognome        String
-  codiceFiscale  String          @unique
-  dataNascita    DateTime        @db.Date
-  luogoNascita   String?
-  indirizzo      String?
-  citta          String?
-  cap            String?
-  telefono       String?
-  email          String?
-  iban           String?
-  dataAssunzione DateTime        @db.Date
-  tipoContratto  TipoContratto
-  ccnl           CCNL
-  livello        String
-  retribuzione   Decimal         @db.Decimal(10, 2)
-  oreSettimanali Int             @default(40)
-  aziendaId      String          @db.Uuid
-  sedeId         String?         @db.Uuid
-  attivo         Boolean         @default(true)
-  dataCessazione DateTime?       @db.Date
-  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
-  bustePaga      BustaPaga[]
-  azienda        Azienda         @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
-  sede           Sede?           @relation(fields: [sedeId], references: [id])
-  documenti      Documento[]
-  feriePermessi  FeriePermessi[]
-  presenze       Presenza[]
-  turni          Turno[]
-
-  @@index([aziendaId])
-  @@index([codiceFiscale])
-  @@map("dipendenti")
-}
-
-model Documento {
-  id           String        @id @default(uuid()) @db.Uuid
-  tipo         TipoDocumento
-  numero       String?
-  dataRilascio DateTime?     @db.Date
-  dataScadenza DateTime?     @db.Date
-  storagePath  String
-  fileName     String
-  fileSize     Int?
-  mimeType     String?
-  dipendenteId String        @db.Uuid
-  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
-  dipendente   Dipendente    @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
-
-  @@index([dipendenteId])
-  @@index([dataScadenza])
-  @@map("documenti")
-}
-
-model Presenza {
-  id               String     @id @default(uuid()) @db.Uuid
-  data             DateTime   @db.Date
-  entrata          DateTime?  @db.Timestamptz(6)
-  uscita           DateTime?  @db.Timestamptz(6)
-  oreLavorate      Decimal?   @db.Decimal(5, 2)
-  oreStraordinario Decimal?   @db.Decimal(5, 2)
-  nota             String?
-  dipendenteId     String     @db.Uuid
-  createdAt        DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime   @updatedAt @db.Timestamptz(6)
-  dipendente       Dipendente @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
-
-  @@index([dipendenteId])
-  @@index([data])
-  @@map("presenze")
-}
-
-model Turno {
-  id           String     @id @default(uuid()) @db.Uuid
-  data         DateTime   @db.Date
-  oraInizio    String
-  oraFine      String
-  tipoTurno    TipoTurno
-  dipendenteId String     @db.Uuid
-  sedeId       String?    @db.Uuid
-  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
-  dipendente   Dipendente @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
-  sede         Sede?      @relation(fields: [sedeId], references: [id])
-
-  @@index([dipendenteId])
-  @@index([data])
-  @@map("turni")
-}
-
-model FeriePermessi {
-  id           String         @id @default(uuid()) @db.Uuid
-  tipo         TipoAssenza
-  dataInizio   DateTime       @db.Date
-  dataFine     DateTime       @db.Date
-  giorni       Int
-  stato        StatoRichiesta @default(IN_ATTESA)
-  motivazione  String?
-  dipendenteId String         @db.Uuid
-  createdAt    DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime       @updatedAt @db.Timestamptz(6)
-  dipendente   Dipendente     @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
-
-  @@index([dipendenteId])
-  @@index([stato])
-  @@map("ferie_permessi")
-}
-
-model BustaPaga {
-  id                String     @id @default(uuid()) @db.Uuid
+model buste_paga {
+  id                String     @id @db.Uuid
   mese              Int
   anno              Int
   retribuzioneLorda Decimal    @db.Decimal(10, 2)
@@ -186,102 +65,168 @@ model BustaPaga {
   storagePath       String?
   dipendenteId      String     @db.Uuid
   createdAt         DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime   @updatedAt @db.Timestamptz(6)
-  dipendente        Dipendente @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime   @db.Timestamptz(6)
+  dipendenti        dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
   @@unique([dipendenteId, mese, anno])
-  @@index([dipendenteId])
   @@index([anno, mese])
-  @@map("buste_paga")
+  @@index([dipendenteId])
 }
 
-model Attivita {
-  id             String       @id @default(uuid()) @db.Uuid
-  tipoAttivita   TipoAttivita
-  descrizione    String
-  idEntita       String?      @db.Uuid
-  tipoEntita     TipoEntita?
-  userId         String       @db.Uuid
-  aziendaId      String       @db.Uuid
-  datiAggiuntivi Json?
-  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
-  azienda        Azienda      @relation(fields: [aziendaId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model dipendenti {
+  id             String           @id @db.Uuid
+  nome           String
+  cognome        String
+  codiceFiscale  String           @unique
+  dataNascita    DateTime         @db.Date
+  luogoNascita   String?
+  indirizzo      String?
+  citta          String?
+  cap            String?
+  telefono       String?
+  email          String?
+  iban           String?
+  dataAssunzione DateTime         @db.Date
+  tipoContratto  tipo_contratto
+  ccnl           ccnl
+  livello        String
+  retribuzione   Decimal          @db.Decimal(10, 2)
+  oreSettimanali Int              @default(40)
+  aziendaId      String           @db.Uuid
+  sedeId         String?          @db.Uuid
+  attivo         Boolean          @default(true)
+  dataCessazione DateTime?        @db.Date
+  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime         @db.Timestamptz(6)
+  buste_paga     buste_paga[]
+  aziende        aziende          @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  sedi           sedi?            @relation(fields: [sedeId], references: [id])
+  documenti      documenti[]
+  ferie_permessi ferie_permessi[]
+  presenze       presenze[]
+  turni          turni[]
 
   @@index([aziendaId])
-  @@index([userId])
-  @@index([tipoAttivita])
-  @@index([createdAt])
-  @@map("attivita")
+  @@index([codiceFiscale])
 }
 
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  MANAGER
-  USER
+model documenti {
+  id           String         @id @db.Uuid
+  tipo         tipo_documento
+  numero       String?
+  dataRilascio DateTime?      @db.Date
+  dataScadenza DateTime?      @db.Date
+  storagePath  String
+  fileName     String
+  fileSize     Int?
+  mimeType     String?
+  dipendenteId String         @db.Uuid
+  createdAt    DateTime       @default(now()) @db.Timestamptz(6)
+  dipendenti   dipendenti     @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
-  @@map("user_role")
+  @@index([dataScadenza])
+  @@index([dipendenteId])
 }
 
-enum TipoContratto {
-  TEMPO_INDETERMINATO
-  TEMPO_DETERMINATO
-  APPRENDISTATO
-  STAGIONALE
-  PARTTIME
+model ferie_permessi {
+  id           String          @id @db.Uuid
+  tipo         tipo_assenza
+  dataInizio   DateTime        @db.Date
+  dataFine     DateTime        @db.Date
+  giorni       Int
+  stato        stato_richiesta @default(IN_ATTESA)
+  motivazione  String?
+  dipendenteId String          @db.Uuid
+  createdAt    DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime        @db.Timestamptz(6)
+  dipendenti   dipendenti      @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
-  @@map("tipo_contratto")
+  @@index([dipendenteId])
+  @@index([stato])
 }
 
-enum CCNL {
+model presenze {
+  id               String     @id @db.Uuid
+  data             DateTime   @db.Date
+  entrata          DateTime?  @db.Timestamptz(6)
+  uscita           DateTime?  @db.Timestamptz(6)
+  oreLavorate      Decimal?   @db.Decimal(5, 2)
+  oreStraordinario Decimal?   @db.Decimal(5, 2)
+  nota             String?
+  dipendenteId     String     @db.Uuid
+  createdAt        DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime   @db.Timestamptz(6)
+  dipendenti       dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+
+  @@index([data])
+  @@index([dipendenteId])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sedi {
+  id         String       @id @db.Uuid
+  nome       String
+  indirizzo  String?
+  citta      String?
+  aziendaId  String       @db.Uuid
+  createdAt  DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime     @db.Timestamptz(6)
+  dipendenti dipendenti[]
+  aziende    aziende      @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  turni      turni[]
+}
+
+model turni {
+  id           String     @id @db.Uuid
+  data         DateTime   @db.Date
+  oraInizio    String
+  oraFine      String
+  tipoTurno    tipo_turno
+  dipendenteId String     @db.Uuid
+  sedeId       String?    @db.Uuid
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+  dipendenti   dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  sedi         sedi?      @relation(fields: [sedeId], references: [id])
+
+  @@index([data])
+  @@index([dipendenteId])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model users {
+  id        String     @id @db.Uuid
+  email     String     @unique
+  name      String?
+  role      user_role  @default(USER)
+  aziendaId String?    @db.Uuid
+  createdAt DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime   @db.Timestamptz(6)
+  attivita  attivita[]
+  aziende   aziende?   @relation(fields: [aziendaId], references: [id])
+}
+
+enum ccnl {
   TURISMO
   COMMERCIO
   METALMECCANICI
   ALTRO
-
-  @@map("ccnl")
 }
 
-enum TipoDocumento {
-  CARTA_IDENTITA
-  PERMESSO_SOGGIORNO
-  CODICE_FISCALE
-  CONTRATTO
-  VISITA_MEDICA
-  ALTRO
-
-  @@map("tipo_documento")
+enum stato_richiesta {
+  IN_ATTESA
+  APPROVATA
+  RIFIUTATA
 }
 
-enum TipoTurno {
-  MATTINA
-  PRANZO
-  SERA
-  NOTTE
-  SPEZZATO
-
-  @@map("tipo_turno")
-}
-
-enum TipoAssenza {
+enum tipo_assenza {
   FERIE
   PERMESSO
   MALATTIA
   CONGEDO
-
-  @@map("tipo_assenza")
 }
 
-enum StatoRichiesta {
-  IN_ATTESA
-  APPROVATA
-  RIFIUTATA
-
-  @@map("stato_richiesta")
-}
-
-enum TipoAttivita {
+enum tipo_attivita {
   CREAZIONE_DIPENDENTE
   MODIFICA_DIPENDENTE
   ELIMINAZIONE_DIPENDENTE
@@ -291,15 +236,43 @@ enum TipoAttivita {
   RICHIESTA_FERIE
   APPROVAZIONE_FERIE
   RIFIUTO_FERIE
-
-  @@map("tipo_attivita")
 }
 
-enum TipoEntita {
+enum tipo_contratto {
+  TEMPO_INDETERMINATO
+  TEMPO_DETERMINATO
+  APPRENDISTATO
+  STAGIONALE
+  PARTTIME
+}
+
+enum tipo_documento {
+  CARTA_IDENTITA
+  PERMESSO_SOGGIORNO
+  CODICE_FISCALE
+  CONTRATTO
+  VISITA_MEDICA
+  ALTRO
+}
+
+enum tipo_entita {
   DIPENDENTE
   PRESENZA
   BUSTA_PAGA
   FERIE_PERMESSI
+}
 
-  @@map("tipo_entita")
+enum tipo_turno {
+  MATTINA
+  PRANZO
+  SERA
+  NOTTE
+  SPEZZATO
+}
+
+enum user_role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  USER
 }
