@@ -26,7 +26,15 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { sidebarState, toggleSidebar } = useSidebar()
+  const { sidebarState, toggleSidebar, closeSidebar } = useSidebar()
+
+  // Funzione per gestire il click sui link di navigazione
+  const handleLinkClick = () => {
+    // Chiudi la sidebar solo su mobile/tablet (schermi < 1024px)
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      closeSidebar()
+    }
+  }
 
   return (
     <div className={`flex flex-col bg-gradient-to-b from-background via-background to-muted/10 border-r border-border/50 transition-all duration-300 ease-in-out ${
@@ -60,6 +68,7 @@ export default function Sidebar() {
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={handleLinkClick}
                   className={`${
                     isActive
                       ? 'bg-gradient-to-r from-accent to-primary/10 text-foreground border-l-4 border-primary shadow-md'
