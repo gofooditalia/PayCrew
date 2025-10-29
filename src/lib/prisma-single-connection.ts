@@ -1,53 +1,37 @@
 import { PrismaClient } from '@prisma/client'
 
+// Debug logging for Prisma engine detection
+console.log('[PRISMA_DEBUG] Node.js platform:', process.platform)
+console.log('[PRISMA_DEBUG] Node.js arch:', process.arch)
+console.log('[PRISMA_DEBUG] Node.js version:', process.version)
+console.log('[PRISMA_DEBUG] Environment:', process.env.NODE_ENV)
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Create a Prisma client with proper connection handling
-function createPrismaClientWithConnectionPool(): PrismaClient {
-  const databaseUrl = process.env.DATABASE_URL
-  const directUrl = process.env.DIRECT_URL
-
-  // Use DATABASE_URL for both development and production since pooler connection works
-  // DIRECT_URL has authentication issues in development
-  // Add connection pooling parameters to prevent prepared statement conflicts
-  let effectiveUrl = databaseUrl
-  if (databaseUrl) {
-    effectiveUrl = databaseUrl + (databaseUrl.includes('?') ? '&' : '?') + 'connection_limit=1&pgbouncer=true'
-  }
-
+// Create a single-use Prisma client for serverless environments
+function createSingleUsePrismaClient(): PrismaClient {
   const client = new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn', 'query'] : ['error'],
     datasources: {
       db: {
-        url: effectiveUrl
-      }
-    },
-    // Add connection management to prevent prepared statement conflicts
-    __internal: {
-      engine: {
-        // Disable prepared statement caching completely
-        disablePreparedStatements: true
+        url: process.env.DATABASE_URL
       }
     }
-  } as any)
+  })
 
   return client
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClientWithConnectionPool()
+export const prisma = globalForPrisma.prisma ?? createSingleUsePrismaClient()
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
 }
 
-// Ensure connection is established before logging
-prisma.$connect().then(() => {
-  console.log('[PRISMA_DEBUG] Prisma client with connection pooling initialized successfully')
-}).catch((error: any) => {
-  console.error('[PRISMA_ERROR] Failed to connect to database:', error)
-})
+// Log successful initialization
+console.log('[PRISMA_DEBUG] Prisma client with single-use pattern initialized successfully')
 
 // Helper function to safely execute Prisma queries with error handling
 export async function safePrismaQuery<T>(
@@ -77,18 +61,6 @@ export async function safePrismaQuery<T>(
         }
       } catch (reconnectError) {
         console.error('Failed to reconnect:', reconnectError)
-      }
-    }
-    
-    // Handle "Engine is not yet connected" errors
-    if (error instanceof Error && error.message.includes('Engine is not yet connected')) {
-      console.warn('[PRISMA_ENGINE] Engine not connected, waiting before retry...')
-      // Wait a bit and retry once
-      await new Promise(resolve => setTimeout(resolve, 200))
-      try {
-        return await query()
-      } catch (retryError) {
-        console.error('Retry failed:', retryError)
       }
     }
     
