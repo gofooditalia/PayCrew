@@ -66,8 +66,8 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
 
   return (
     <div className="animate-fade-in w-full">
-      {/* Fixed Header Section */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border/50">
+      {/* Header Section - Non sticky */}
+      <div className="bg-background/95 backdrop-blur-sm border-b border-border/50">
         <div className="p-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
@@ -117,11 +117,11 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Dipendente</TableHead>
-                    <TableHead>Contatti</TableHead>
-                    <TableHead>Tipo Contratto</TableHead>
-                    <TableHead>Retribuzione</TableHead>
-                    <TableHead className="text-right">Azioni</TableHead>
+                    <TableHead className="w-[40%] sm:w-auto">Dipendente</TableHead>
+                    <TableHead className="hidden sm:table-cell">Contatti</TableHead>
+                    <TableHead className="hidden sm:table-cell">Tipo Contratto</TableHead>
+                    <TableHead className="hidden sm:table-cell">Retribuzione</TableHead>
+                    <TableHead className="text-right w-[20%] sm:w-auto">Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -149,18 +149,18 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <div className="text-xs text-foreground font-medium truncate">{dipendente.email}</div>
                         {dipendente.telefono && (
                           <div className="text-xs text-muted-foreground">{dipendente.telefono}</div>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <div className="text-xs text-muted-foreground flex items-center">
                           {dipendente.tipoContratto}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <div className="text-sm font-bold text-foreground bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent flex items-center">
                           {currencyFormatter(dipendente.retribuzione)}
                         </div>
