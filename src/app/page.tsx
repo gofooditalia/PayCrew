@@ -4,11 +4,18 @@ import { redirect } from 'next/navigation'
 export default async function RootPage() {
   const supabase = await createClient()
   
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  // Se l'utente è autenticato, reindirizza al dashboard
-  if (user) {
-    redirect('/dashboard')
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    
+    if (error) {
+      console.error('Root page auth error:', error.message)
+    }
+    
+    if (user) {
+      redirect('/dashboard')
+    }
+  } catch (err) {
+    console.error('Root page auth check error:', err)
   }
   
   // Altrimenti reindirizza al login

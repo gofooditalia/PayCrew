@@ -54,7 +54,11 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getUser()
+  try {
+    await supabase.auth.getUser()
+  } catch (err) {
+    console.error('Middleware auth error:', err)
+  }
 
   return response
 }
