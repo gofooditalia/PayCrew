@@ -115,6 +115,51 @@ export default function Sidebar() {
             }
           })}
         </nav>
+        
+        {/* Crediti in fondo alla sidebar */}
+        <div className="px-2 py-4 mt-auto border-t border-border/50">
+          {sidebarState === 'open' && (
+            <div className="text-xs text-muted-foreground space-y-1">
+              <div className="flex items-center gap-1">
+                <span>Fatto con ❤️ da</span>
+              </div>
+              <a
+                href="mailto:italiagofood@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+              >
+                <img
+                  src="/gofood.svg"
+                  alt="GO!Food Italia"
+                  className="h-4 w-auto"
+                />
+                GO!Food Italia
+              </a>
+            </div>
+          )}
+          {sidebarState === 'collapsed' && (
+            <div className="flex justify-center">
+              <a
+                href="mailto:italiagofood@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors group relative"
+              >
+                <img
+                  src="/gofood.svg"
+                  alt="GO!Food Italia"
+                  className="h-4 w-auto"
+                />
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gradient-to-r from-popover to-background text-popover-foreground text-xs rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-border/50 backdrop-blur-sm">
+                  <div className="flex flex-col">
+                    <span>Fatto con ❤️ da GO!Food Italia</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
