@@ -40,7 +40,7 @@ model aziende {
   telefono      String?
   email         String?
   createdAt     DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime     @db.Timestamptz(6)
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(6)
   attivita      attivita[]
   dipendenti    dipendenti[]
   sedi          sedi[]
@@ -66,7 +66,7 @@ model buste_paga {
   storagePath       String?
   dipendenteId      String     @db.Uuid
   createdAt         DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime   @db.Timestamptz(6)
+  updatedAt         DateTime   @updatedAt @db.Timestamptz(6)
   dipendenti        dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
   @@unique([dipendenteId, mese, anno])
@@ -99,7 +99,7 @@ model dipendenti {
   attivo         Boolean          @default(true)
   dataCessazione DateTime?        @db.Date
   createdAt      DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime         @db.Timestamptz(6)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
   buste_paga     buste_paga[]
   aziende        aziende          @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
   sedi           sedi?            @relation(fields: [sedeId], references: [id])
@@ -140,7 +140,7 @@ model ferie_permessi {
   motivazione  String?
   dipendenteId String          @db.Uuid
   createdAt    DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime        @db.Timestamptz(6)
+  updatedAt    DateTime        @updatedAt @db.Timestamptz(6)
   dipendenti   dipendenti      @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
   @@index([dipendenteId])
@@ -157,7 +157,7 @@ model presenze {
   nota             String?
   dipendenteId     String     @db.Uuid
   createdAt        DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime   @db.Timestamptz(6)
+  updatedAt        DateTime   @updatedAt @db.Timestamptz(6)
   dipendenti       dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
   @@index([data])
@@ -172,7 +172,7 @@ model sedi {
   citta      String?
   aziendaId  String       @db.Uuid
   createdAt  DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime     @db.Timestamptz(6)
+  updatedAt  DateTime     @updatedAt @db.Timestamptz(6)
   dipendenti dipendenti[]
   aziende    aziende      @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
   turni      turni[]
@@ -202,7 +202,7 @@ model users {
   role      user_role  @default(USER)
   aziendaId String?    @db.Uuid
   createdAt DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime   @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(6)
   attivita  attivita[]
   aziende   aziende?   @relation(fields: [aziendaId], references: [id])
 }
