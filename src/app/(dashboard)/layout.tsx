@@ -75,7 +75,7 @@ export default async function DashboardLayout({
       where: { id: user.id },
       select: { aziendaId: true }
     })
-  )
+  ) as { aziendaId?: string } | null
 
   // If user doesn't have a company, redirect to company creation page
   if (!userData?.aziendaId) {
@@ -88,7 +88,7 @@ export default async function DashboardLayout({
       where: { id: userData.aziendaId! },
       select: { nome: true }
     })
-  )
+  ) as { nome?: string } | null
 
   return (
     <SidebarProvider>
