@@ -141,6 +141,26 @@ export default function RegisterPage() {
                 Accedi
               </a>
             </p>
+            
+            {/* Crediti GO!Food Italia */}
+            <div className="mt-4 text-xs text-gray-500 flex items-center justify-center gap-1">
+              <div className="text-gray-400">
+                Fatto con ❤️ da
+              </div>
+              <a
+                href="mailto:italiagofood@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+              >
+                <img
+                  src="/gofood.svg"
+                  alt="GO!Food Italia"
+                  className="h-4 w-auto"
+                />
+                GO!Food Italia
+              </a>
+            </div>
           </div>
         </form>
       </div>

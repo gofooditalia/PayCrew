@@ -101,12 +101,6 @@ export default async function DashboardPage() {
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground mt-2">Benvenuto nel gestionale PayCrew</p>
           </div>
-          <Link href="/azienda/modifica">
-            <Button variant="outline" className="flex items-center">
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Modifica Azienda
-            </Button>
-          </Link>
         </div>
 
         {/* Stats Cards */}
@@ -228,12 +222,6 @@ export default async function DashboardPage() {
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground mt-2">Benvenuto nel gestionale PayCrew</p>
           </div>
-          <Link href="/azienda/modifica">
-            <Button variant="outline" className="flex items-center">
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Modifica Azienda
-            </Button>
-          </Link>
         </div>
 
         {/* Stats Cards with default values */}
@@ -309,7 +297,7 @@ export default async function DashboardPage() {
       select: { id: true }
     }),
     []
-  ) || []
+  ) as Array<{ id: string }> || []
 
   const dipendenteIds = dipendentiIds.map(d => d.id)
 
@@ -347,7 +335,7 @@ export default async function DashboardPage() {
       _sum: { retribuzione: true }
     }),
     { _sum: { retribuzione: null } }
-  ) || { _sum: { retribuzione: null } }
+  ) as { _sum: { retribuzione: number | null } } || { _sum: { retribuzione: null } }
 
   return (
     <div className="min-h-screen">
@@ -356,12 +344,6 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-2">Benvenuto nel gestionale PayCrew</p>
         </div>
-        <Link href="/azienda/modifica">
-          <Button variant="outline" className="flex items-center">
-            <PencilIcon className="h-4 w-4 mr-2" />
-            Modifica Azienda
-          </Button>
-        </Link>
       </div>
 
       {/* Stats Cards */}
