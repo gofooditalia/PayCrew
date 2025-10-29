@@ -8,13 +8,17 @@ export type TipoAttivita =
   | 'GENERAZIONE_BUSTA_PAGA'
   | 'RICHIESTA_FERIE'
   | 'APPROVAZIONE_FERIE'
-  | 'RIFIUTO_FERIE';
+  | 'RIFIUTO_FERIE'
+  | 'CREAZIONE_TURNO'
+  | 'MODIFICA_TURNO'
+  | 'ELIMINAZIONE_TURNO';
 
 export type TipoEntita =
   | 'DIPENDENTE'
   | 'PRESENZA'
   | 'BUSTA_PAGA'
-  | 'FERIE_PERMESSI';
+  | 'FERIE_PERMESSI'
+  | 'TURNO';
 
 // Array di valori validi per le validazioni
 export const TIPI_ATTIVITA_VALIDI: readonly TipoAttivita[] = [
@@ -26,14 +30,18 @@ export const TIPI_ATTIVITA_VALIDI: readonly TipoAttivita[] = [
   'GENERAZIONE_BUSTA_PAGA',
   'RICHIESTA_FERIE',
   'APPROVAZIONE_FERIE',
-  'RIFIUTO_FERIE'
+  'RIFIUTO_FERIE',
+  'CREAZIONE_TURNO',
+  'MODIFICA_TURNO',
+  'ELIMINAZIONE_TURNO'
 ] as const;
 
 export const TIPI_ENTITA_VALIDI: readonly TipoEntita[] = [
   'DIPENDENTE',
   'PRESENZA',
   'BUSTA_PAGA',
-  'FERIE_PERMESSI'
+  'FERIE_PERMESSI',
+  'TURNO'
 ] as const;
 
 export class AttivitaValidator {

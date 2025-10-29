@@ -30,6 +30,15 @@ export interface FeriePermessiData {
   giorni: number
 }
 
+export interface TurnoData {
+  id: string
+  dipendenteId: string
+  data: Date
+  oraInizio: string
+  oraFine: string
+  tipoTurno: string
+}
+
 export interface LogAttivitaParams {
   tipoAttivita: string
   descrizione: string
@@ -305,6 +314,58 @@ export class AttivitaLogger {
         tipo: feriePermessi.tipo,
         giorni: feriePermessi.giorni
       } as Record<string, unknown>
+    })
+  }
+
+  static async logCreazioneTurno(turno: TurnoData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+    await this.logAttivita({
+      tipoAttivita: 'CREAZIONE_TURNO',
+      descrizione: `Nuovo turno creato per: ${dipendenteNome}`,
+      idEntita: turno.id,
+      tipoEntita: 'TURNO',
+      userId,
+      aziendaId,
+      datiAggiuntivi: {
+        turnoId: turno.id,
+        dipendenteId: turno.dipendenteId,
+        data: turno.data,
+        oraInizio: turno.oraInizio,
+        oraFine: turno.oraFine,
+        tipoTurno: turno.tipoTurno
+      } as Record<string, unknown>
+    })
+  }
+
+  static async logModificaTurno(turno: TurnoData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+    await this.logAttivita({
+      tipoAttivita: 'MODIFICA_TURNO',
+      descrizione: `Turno modificato per: ${dipendenteNome}`,
+      idEntita: turno.id,
+      tipoEntita: 'TURNO',
+      userId,
+      aziendaId,
+      datiAggiuntivi: {
+        turnoId: turno.id,
+        dipendenteId: turno.dipendenteId,
+        data: turno.data,
+        oraInizio: turno.oraInizio,
+        oraFine: turno.oraFine,
+        tipoTurno: turno.tipoTurno
+      } as Record<string, unknown>
+    })
+  }
+
+  static async logEliminazioneTurno(turnoId: string, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+    await this.logAttivita({
+      tipoAttivita: 'ELIMINAZIONE_TURNO',
+      descrizione: `Turno eliminato per: ${dipendenteNome}`,
+      idEntita: turnoId,
+      tipoEntita: 'TURNO',
+      userId,
+      aziendaId,
+      datiAggiuntivi: {
+        turnoId
+      }
     })
   }
 }
