@@ -5,7 +5,8 @@ import { it } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Pencil, Trash2, MessageSquare } from 'lucide-react'
 
 interface Presenza {
   id: string
@@ -58,6 +59,7 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
             <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
             <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
             <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
+            <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
             <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
           </tr>
         </thead>
@@ -86,6 +88,29 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
                   </Badge>
                 ) : (
                   '-'
+                )}
+              </td>
+              <td className="p-4 text-center">
+                {presenza.nota && presenza.nota.trim() !== '' ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80" align="center">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm text-gray-900">Nota</h4>
+                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{presenza.nota}</p>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <span className="text-gray-400">-</span>
                 )}
               </td>
               <td className="p-4 text-right">
