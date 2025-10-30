@@ -15,6 +15,15 @@ export interface PresenzaData {
   data: Date | string
 }
 
+export interface TurnoData {
+  id: string
+  dipendenteId: string
+  data: Date | string
+  tipoTurno: string
+  oraInizio: string
+  oraFine: string
+}
+
 export interface BustaPagaData {
   id: string
   dipendenteId: string
@@ -236,6 +245,72 @@ export class AttivitaLogger {
         dipendenteId: presenza.dipendenteId,
         data: presenza.data
       } as Record<string, unknown>
+    })
+  }
+
+  static async logEliminazionePresenza(presenzaId: string, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+    await this.logAttivita({
+      tipoAttivita: 'ELIMINAZIONE_PRESENZA',
+      descrizione: `Presenza eliminata per: ${dipendenteNome}`,
+      idEntita: presenzaId,
+      tipoEntita: 'PRESENZA',
+      userId,
+      aziendaId,
+      datiAggiuntivi: {
+        presenzaId
+      }
+    })
+  }
+
+  static async logCreazioneTurno(turno: TurnoData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+    await this.logAttivita({
+      tipoAttivita: 'CREAZIONE_TURNO',
+      descrizione: `Turno ${turno.tipoTurno} creato per: ${dipendenteNome}`,
+      idEntita: turno.id,
+      tipoEntita: 'TURNO',
+      userId,
+      aziendaId,
+      datiAggiuntivi: {
+        turnoId: turno.id,
+        dipendenteId: turno.dipendenteId,
+        data: turno.data,
+        tipoTurno: turno.tipoTurno,
+        oraInizio: turno.oraInizio,
+        oraFine: turno.oraFine
+      } as Record<string, unknown>
+    })
+  }
+
+  static async logModificaTurno(turno: TurnoData, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+    await this.logAttivita({
+      tipoAttivita: 'MODIFICA_TURNO',
+      descrizione: `Turno ${turno.tipoTurno} modificato per: ${dipendenteNome}`,
+      idEntita: turno.id,
+      tipoEntita: 'TURNO',
+      userId,
+      aziendaId,
+      datiAggiuntivi: {
+        turnoId: turno.id,
+        dipendenteId: turno.dipendenteId,
+        data: turno.data,
+        tipoTurno: turno.tipoTurno,
+        oraInizio: turno.oraInizio,
+        oraFine: turno.oraFine
+      } as Record<string, unknown>
+    })
+  }
+
+  static async logEliminazioneTurno(turnoId: string, dipendenteNome: string, userId: string, aziendaId: string): Promise<void> {
+    await this.logAttivita({
+      tipoAttivita: 'ELIMINAZIONE_TURNO',
+      descrizione: `Turno eliminato per: ${dipendenteNome}`,
+      idEntita: turnoId,
+      tipoEntita: 'TURNO',
+      userId,
+      aziendaId,
+      datiAggiuntivi: {
+        turnoId
+      }
     })
   }
 
