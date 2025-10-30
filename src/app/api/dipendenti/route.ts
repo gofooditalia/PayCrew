@@ -164,7 +164,6 @@ export async function POST(request: NextRequest) {
     // Create new employee using Prisma with proper type conversion
     const dipendente = await prisma.dipendenti.create({
       data: {
-        id: crypto.randomUUID(),
         nome: dipendenteData.nome,
         cognome: dipendenteData.cognome,
         codiceFiscale: dipendenteData.codiceFiscale,
@@ -184,9 +183,7 @@ export async function POST(request: NextRequest) {
         oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,
         sedeId: dipendenteData.sedeId || null,
         attivo: dipendenteData.attivo !== undefined ? dipendenteData.attivo : true,
-        aziendaId: userData.aziendaId,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        aziendaId: userData.aziendaId
       },
       include: {
         sedi: {
