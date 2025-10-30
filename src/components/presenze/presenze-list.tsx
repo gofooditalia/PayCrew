@@ -74,15 +74,15 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
               <td className="p-4">{formatTime(presenza.uscita)}</td>
               <td className="p-4">
                 {presenza.oreLavorate !== null ? (
-                  <Badge variant="secondary">{presenza.oreLavorate.toFixed(2)}h</Badge>
+                  <Badge variant="secondary">{Number(presenza.oreLavorate).toFixed(2)}h</Badge>
                 ) : (
                   '-'
                 )}
               </td>
               <td className="p-4">
-                {presenza.oreStraordinario && presenza.oreStraordinario > 0 ? (
+                {presenza.oreStraordinario && Number(presenza.oreStraordinario) > 0 ? (
                   <Badge className="bg-orange-100 text-orange-800">
-                    +{presenza.oreStraordinario.toFixed(2)}h
+                    +{Number(presenza.oreStraordinario).toFixed(2)}h
                   </Badge>
                 ) : (
                   '-'
