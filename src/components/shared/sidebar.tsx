@@ -17,7 +17,7 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true },
   { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true },
-  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: false },
+  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true },
   { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: false },
   { name: 'Buste Paga', href: '/buste-paga', icon: DocumentTextIcon, enabled: false },
   { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: false },
