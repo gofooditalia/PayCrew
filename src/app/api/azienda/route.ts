@@ -45,22 +45,17 @@ export async function POST(request: NextRequest) {
         id: userId,
         email: userEmail,
         role: 'ADMIN',
-        aziendaId: azienda.id,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        aziendaId: azienda.id
       }
     })
 
     // Crea la sede principale
     await prisma.sedi.create({
       data: {
-        id: crypto.randomUUID(),
         nome: 'Sede Principale',
         indirizzo: aziendaDataFiltered.indirizzo || '',
         citta: aziendaDataFiltered.citta || '',
-        aziendaId: azienda.id,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        aziendaId: azienda.id
       }
     })
 

@@ -10,7 +10,7 @@ datasource db {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model attivita {
-  id             String        @id @db.Uuid
+  id             String        @id @default(uuid()) @db.Uuid
   tipoAttivita   tipo_attivita
   descrizione    String
   idEntita       String?       @db.Uuid
@@ -30,7 +30,7 @@ model attivita {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model aziende {
-  id            String       @id @db.Uuid
+  id            String       @id @default(uuid()) @db.Uuid
   nome          String
   partitaIva    String       @unique
   codiceFiscale String?
@@ -40,7 +40,7 @@ model aziende {
   telefono      String?
   email         String?
   createdAt     DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime     @db.Timestamptz(6)
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(6)
   attivita      attivita[]
   dipendenti    dipendenti[]
   sedi          sedi[]
@@ -48,7 +48,7 @@ model aziende {
 }
 
 model buste_paga {
-  id                String     @id @db.Uuid
+  id                String     @id @default(uuid()) @db.Uuid
   mese              Int
   anno              Int
   retribuzioneLorda Decimal    @db.Decimal(10, 2)
@@ -66,7 +66,7 @@ model buste_paga {
   storagePath       String?
   dipendenteId      String     @db.Uuid
   createdAt         DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime   @db.Timestamptz(6)
+  updatedAt         DateTime   @updatedAt @db.Timestamptz(6)
   dipendenti        dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
   @@unique([dipendenteId, mese, anno])
@@ -76,7 +76,7 @@ model buste_paga {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model dipendenti {
-  id             String           @id @db.Uuid
+  id             String           @id @default(uuid()) @db.Uuid
   nome           String
   cognome        String
   codiceFiscale  String           @unique
@@ -99,7 +99,7 @@ model dipendenti {
   attivo         Boolean          @default(true)
   dataCessazione DateTime?        @db.Date
   createdAt      DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime         @db.Timestamptz(6)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
   buste_paga     buste_paga[]
   aziende        aziende          @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
   sedi           sedi?            @relation(fields: [sedeId], references: [id])
@@ -113,7 +113,7 @@ model dipendenti {
 }
 
 model documenti {
-  id           String         @id @db.Uuid
+  id           String         @id @default(uuid()) @db.Uuid
   tipo         tipo_documento
   numero       String?
   dataRilascio DateTime?      @db.Date
@@ -131,7 +131,7 @@ model documenti {
 }
 
 model ferie_permessi {
-  id           String          @id @db.Uuid
+  id           String          @id @default(uuid()) @db.Uuid
   tipo         tipo_assenza
   dataInizio   DateTime        @db.Date
   dataFine     DateTime        @db.Date
@@ -140,7 +140,7 @@ model ferie_permessi {
   motivazione  String?
   dipendenteId String          @db.Uuid
   createdAt    DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime        @db.Timestamptz(6)
+  updatedAt    DateTime        @updatedAt @db.Timestamptz(6)
   dipendenti   dipendenti      @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
   @@index([dipendenteId])
@@ -148,7 +148,7 @@ model ferie_permessi {
 }
 
 model presenze {
-  id               String     @id @db.Uuid
+  id               String     @id @default(uuid()) @db.Uuid
   data             DateTime   @db.Date
   entrata          DateTime?  @db.Timestamptz(6)
   uscita           DateTime?  @db.Timestamptz(6)
@@ -157,7 +157,7 @@ model presenze {
   nota             String?
   dipendenteId     String     @db.Uuid
   createdAt        DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime   @db.Timestamptz(6)
+  updatedAt        DateTime   @updatedAt @db.Timestamptz(6)
   dipendenti       dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
 
   @@index([data])
@@ -166,20 +166,20 @@ model presenze {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model sedi {
-  id         String       @id @db.Uuid
+  id         String       @id @default(uuid()) @db.Uuid
   nome       String
   indirizzo  String?
   citta      String?
   aziendaId  String       @db.Uuid
   createdAt  DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime     @db.Timestamptz(6)
+  updatedAt  DateTime     @updatedAt @db.Timestamptz(6)
   dipendenti dipendenti[]
   aziende    aziende      @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
   turni      turni[]
 }
 
 model turni {
-  id           String     @id @db.Uuid
+  id           String     @id @default(uuid()) @db.Uuid
   data         DateTime   @db.Date
   oraInizio    String
   oraFine      String
@@ -196,13 +196,13 @@ model turni {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model users {
-  id        String     @id @db.Uuid
+  id        String     @id @default(uuid()) @db.Uuid
   email     String     @unique
   name      String?
   role      user_role  @default(USER)
   aziendaId String?    @db.Uuid
   createdAt DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime   @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(6)
   attivita  attivita[]
   aziende   aziende?   @relation(fields: [aziendaId], references: [id])
 }
@@ -233,6 +233,10 @@ enum tipo_attivita {
   ELIMINAZIONE_DIPENDENTE
   REGISTRAZIONE_PRESENZA
   MODIFICA_PRESENZA
+  ELIMINAZIONE_PRESENZA
+  CREAZIONE_TURNO
+  MODIFICA_TURNO
+  ELIMINAZIONE_TURNO
   GENERAZIONE_BUSTA_PAGA
   RICHIESTA_FERIE
   APPROVAZIONE_FERIE
@@ -259,6 +263,7 @@ enum tipo_documento {
 enum tipo_entita {
   DIPENDENTE
   PRESENZA
+  TURNO
   BUSTA_PAGA
   FERIE_PERMESSI
 }
