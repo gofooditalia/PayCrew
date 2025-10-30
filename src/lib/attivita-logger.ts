@@ -83,7 +83,7 @@ export class AttivitaLogger {
           id, "tipoAttivita", descrizione, "idEntita", "tipoEntita",
           "userId", "aziendaId", "datiAggiuntivi", "createdAt"
         ) VALUES (
-          gen_random_uuid(), $1::tipo_attivita, $2, $3, $4::tipo_entita, $5, $6, $7, NOW()
+          gen_random_uuid(), $1::tipo_attivita, $2, $3::uuid, $4::tipo_entita, $5::uuid, $6::uuid, $7, NOW()
         )
         RETURNING id, "tipoAttivita", "createdAt"
       `,
