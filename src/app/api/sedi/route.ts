@@ -85,13 +85,10 @@ export async function POST(request: NextRequest) {
     // Create new location
     const sede = await prisma.sedi.create({
       data: {
-        id: crypto.randomUUID(),
         nome: sedeData.nome,
         indirizzo: sedeData.indirizzo || null,
         citta: sedeData.citta || null,
-        aziendaId: userData.aziendaId,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        aziendaId: userData.aziendaId
       }
     })
 
