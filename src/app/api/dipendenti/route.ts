@@ -81,8 +81,14 @@ export async function GET(request: NextRequest) {
       prisma.dipendenti.count({ where })
     ])
 
+    // Map sedi to sede for frontend compatibility
+    const dipendentiWithSede = dipendenti.map(({ sedi, ...dip }) => ({
+      ...dip,
+      sede: sedi
+    }))
+
     return NextResponse.json({
-      dipendenti,
+      dipendenti: dipendentiWithSede,
       pagination: {
         page,
         limit,

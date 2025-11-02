@@ -1,24 +1,46 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import js from "@eslint/js";
+import nextPlugin from "eslint-config-next";
+import globals from "globals";
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals"),
+  // Global ignores - must be first
   {
     ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/out/**",
+      "**/build/**",
+      "**/dist/**",
+      "**/.vercel/**",
+      "**/next-env.d.ts",
     ],
+  },
+  // ESLint recommended rules
+  js.configs.recommended,
+  // Next.js recommended rules
+  ...(Array.isArray(nextPlugin) ? nextPlugin : [nextPlugin]),
+  // Global configuration
+  {
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+        React: "readonly",
+      },
+    },
+    rules: {
+      // Disable rules for unused vars in specific cases
+      "no-unused-vars": ["warn", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_"
+      }],
+      // Allow console in development
+      "no-console": "off",
+    },
   },
 ];
 

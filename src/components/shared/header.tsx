@@ -98,7 +98,7 @@ export default function Header({ user, companyName }: HeaderProps) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push('/azienda/modifica')}>
-                  Profilo
+                  Profilo Azienda
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

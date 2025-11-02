@@ -15,7 +15,7 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 ## 🛠️ Stack Tecnologico
 
 ### Frontend
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Linguaggio**: TypeScript
 - **Styling**: Tailwind CSS
 - **UI Components**: shadcn/ui
@@ -49,12 +49,17 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] Componenti UI per gestione dipendenti
 - [x] Validazione form con Zod
 
-### 🔄 Sprint 3 - Presenze e Turni (In Corso)
-- [ ] Registro presenze
-- [ ] Gestione turni
-- [ ] Calcolo ore lavorate
+### ✅ Sprint 3 - Presenze e Turni (Parzialmente Completato)
+- [x] Registro presenze con filtri e ricerca
+- [x] Calcolo ore lavorate automatico
+- [x] Note con popover in lista presenze
+- [x] Gestione sedi aziendali (CRUD completo)
+- [x] Assegnazione sede ai dipendenti
+- [ ] Gestione turni (NON implementato - spostato a Sprint 4)
 
-### ⏳ Sprint 4 - Buste Paga e Report (Pianificato)
+### ⏳ Sprint 4 - Turni e Buste Paga (Pianificato)
+- [ ] Gestione turni e pianificazione settimanale
+- [ ] Calendario turni con vista mensile
 - [ ] Calcolo buste paga
 - [ ] Generazione PDF cedolini
 - [ ] Report avanzati

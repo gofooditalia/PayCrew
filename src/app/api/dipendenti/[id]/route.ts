@@ -56,7 +56,14 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ dipendente })
+    // Map sedi to sede for frontend compatibility
+    const { sedi, ...dipendenteData } = dipendente
+    const responseData = {
+      ...dipendenteData,
+      sede: sedi
+    }
+
+    return NextResponse.json({ dipendente: responseData })
 
   } catch (error) {
     console.error('Errore durante il recupero del dipendente:', error)
@@ -157,9 +164,16 @@ export async function PUT(
     // Log dell'attività di modifica dipendente
     await AttivitaLogger.logModificaDipendente(dipendente, user.id, userData.aziendaId)
 
+    // Map sedi to sede for frontend compatibility
+    const { sedi, ...dipendenteData } = dipendente
+    const responseData = {
+      ...dipendenteData,
+      sede: sedi
+    }
+
     return NextResponse.json({
       message: 'Dipendente aggiornato con successo',
-      dipendente
+      dipendente: responseData
     })
 
   } catch (error) {

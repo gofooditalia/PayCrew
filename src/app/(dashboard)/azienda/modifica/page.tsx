@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import SediManagement from '@/components/azienda/sedi-management'
 
 export default function ModificaAziendaPage() {
   const router = useRouter()
@@ -137,12 +138,13 @@ export default function ModificaAziendaPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Modifica Azienda</h1>
-          <p className="text-gray-600">Aggiorna le informazioni della tua azienda</p>
+          <h1 className="text-3xl font-bold text-gray-900">Profilo Azienda</h1>
+          <p className="text-gray-600">Gestisci le informazioni della tua azienda e le sedi operative</p>
         </div>
       </div>
 
-      <Card>
+      <div className="space-y-6">
+        <Card>
         <CardHeader>
           <CardTitle>Informazioni Azienda</CardTitle>
         </CardHeader>
@@ -295,6 +297,9 @@ export default function ModificaAziendaPage() {
           </form>
         </CardContent>
       </Card>
+
+      {aziendaId && <SediManagement aziendaId={aziendaId} />}
+      </div>
     </div>
   )
 }

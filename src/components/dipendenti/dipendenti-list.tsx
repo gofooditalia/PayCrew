@@ -32,6 +32,7 @@ interface Dipendente {
   tipoContratto: string
   livello: string
   retribuzione: number
+  oreSettimanali: number
   attivo: boolean
   sede?: {
     id: string
@@ -119,7 +120,7 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                   <TableRow>
                     <TableHead className="w-[40%] sm:w-auto">Dipendente</TableHead>
                     <TableHead className="hidden sm:table-cell">Contatti</TableHead>
-                    <TableHead className="hidden sm:table-cell">Tipo Contratto</TableHead>
+                    <TableHead className="hidden sm:table-cell">Contratto</TableHead>
                     <TableHead className="hidden sm:table-cell">Retribuzione</TableHead>
                     <TableHead className="text-right w-[20%] sm:w-auto">Azioni</TableHead>
                   </TableRow>
@@ -138,9 +139,6 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                             <div className="text-sm font-semibold text-foreground">
                               {dipendente.nome} {dipendente.cognome}
                             </div>
-                            <div className="text-xs text-muted-foreground flex items-center">
-                              Assunto il {formatDate(dipendente.dataAssunzione)}
-                            </div>
                             {dipendente.sede && (
                               <div className="text-xs text-muted-foreground flex items-center">
                                 {dipendente.sede.nome}
@@ -156,8 +154,14 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                         )}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <div className="text-xs text-muted-foreground flex items-center">
+                        <div className="text-xs font-medium text-foreground">
                           {dipendente.tipoContratto}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Assunto il {formatDate(dipendente.dataAssunzione)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {dipendente.oreSettimanali} ore
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">

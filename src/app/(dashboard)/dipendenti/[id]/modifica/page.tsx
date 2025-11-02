@@ -183,12 +183,12 @@ export default function ModificaDipendentePage() {
         return
       }
 
-      setSuccess('Informazioni dipendente aggiornate con successo!')
+      // Redirect to employee list after successful update
+      router.push('/dipendenti')
     } catch (err) {
       setError(`Si è verificato un errore durante l'aggiornamento: ${err instanceof Error ? err.message : 'Errore sconosciuto'}`)
+      setSubmitting(false)
     }
-    
-    setSubmitting(false)
   }
 
   if (loadingData) {
