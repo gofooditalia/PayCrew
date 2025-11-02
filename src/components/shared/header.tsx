@@ -98,7 +98,16 @@ export default function Header({ user, companyName }: HeaderProps) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push('/azienda/modifica')}>
-                  Profilo Azienda
+                  <span className="flex items-center gap-2 w-full">
+                    Profilo Azienda
+                    <span className="text-[10px] font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-0.5 rounded-full">
+                      Nuovo
+                    </span>
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/changelog')}>
+                  Novità e Changelog
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

@@ -15,13 +15,13 @@ import {
 } from '@heroicons/react/24/outline'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true },
-  { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true },
-  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true },
-  { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: false },
-  { name: 'Buste Paga', href: '/buste-paga', icon: DocumentTextIcon, enabled: false },
-  { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: false },
-  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: false },
+  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true, isNew: false },
+  { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true, isNew: false },
+  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: true },
+  { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: false, isNew: false },
+  { name: 'Buste Paga', href: '/buste-paga', icon: DocumentTextIcon, enabled: false, isNew: false },
+  { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: false, isNew: false },
+  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: false, isNew: false },
 ]
 
 export default function Sidebar() {
@@ -82,10 +82,26 @@ export default function Sidebar() {
                     } ${sidebarState === 'collapsed' ? 'h-6 w-6' : 'mr-3 h-5 w-5'} transition-all duration-200 ease-in-out`}
                     aria-hidden="true"
                   />
-                  {sidebarState === 'open' && <span>{item.name}</span>}
+                  {sidebarState === 'open' && (
+                    <span className="flex items-center gap-2">
+                      {item.name}
+                      {item.isNew && (
+                        <span className="text-[10px] font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                          Nuovo
+                        </span>
+                      )}
+                    </span>
+                  )}
                   {sidebarState === 'collapsed' && (
                     <div className="absolute left-full ml-2 px-2 py-1 bg-gradient-to-r from-popover to-background text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-border/50 backdrop-blur-sm">
-                      {item.name}
+                      <div className="flex items-center gap-2">
+                        {item.name}
+                        {item.isNew && (
+                          <span className="text-[10px] font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-1.5 py-0.5 rounded-full">
+                            Nuovo
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </Link>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { UserGroupIcon, ClockIcon, DocumentTextIcon, CurrencyEuroIcon, PencilIcon } from '@heroicons/react/24/outline'
 import { AttivitaRecenti } from '@/components/attivita/attivita-recenti'
 import { formatCurrency } from '@/lib/utils/currency'
+import FeatureAnnouncement from '@/components/dashboard/feature-announcement'
 import Link from 'next/link'
 
 // Client component for dashboard stats
@@ -345,6 +346,9 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground mt-2">Benvenuto nel gestionale PayCrew</p>
         </div>
       </div>
+
+      {/* Feature Announcement */}
+      <FeatureAnnouncement />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
