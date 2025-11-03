@@ -358,37 +358,39 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
               <Label htmlFor="tipoContratto" className="mb-1">
                 Tipo Contratto *
               </Label>
-              <Select
+              <select
                 id="tipoContratto"
                 name="tipoContratto"
                 required
                 value={formData.tipoContratto}
                 onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="TEMPO_INDETERMINATO">Tempo Indeterminato</option>
                 <option value="TEMPO_DETERMINATO">Tempo Determinato</option>
                 <option value="APPRENDISTATO">Apprendistato</option>
                 <option value="STAGIONALE">Stagionale</option>
                 <option value="PARTTIME">Part-time</option>
-              </Select>
+              </select>
             </div>
             
             <div>
               <Label htmlFor="ccnl" className="mb-1">
                 CCNL *
               </Label>
-              <Select
+              <select
                 id="ccnl"
                 name="ccnl"
                 required
                 value={formData.ccnl}
                 onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="TURISMO">Turismo</option>
                 <option value="COMMERCIO">Commercio</option>
                 <option value="METALMECCANICI">Metalmeccanici</option>
                 <option value="ALTRO">Altro</option>
-              </Select>
+              </select>
             </div>
             
             <div>
@@ -441,11 +443,12 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
               <Label htmlFor="sedeId" className="mb-1">
                 Sede di Lavoro
               </Label>
-              <Select
+              <select
                 id="sedeId"
                 name="sedeId"
                 value={formData.sedeId}
                 onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">Seleziona una sede</option>
                 {sedi.map((sede) => (
@@ -453,7 +456,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                     {sede.nome}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
           </CardContent>
         </Card>
