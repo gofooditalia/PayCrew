@@ -97,7 +97,7 @@ export default function Sidebar() {
                     <span className="flex items-center gap-2">
                       {item.name}
                       {item.isNew && (
-                        <span className="text-[10px] font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                        <span className="text-xs font-bold bg-success text-success-foreground px-2 py-0.5 rounded-full shadow-sm" aria-label="Nuova funzionalità">
                           Nuovo
                         </span>
                       )}
@@ -108,7 +108,7 @@ export default function Sidebar() {
                       <div className="flex items-center gap-2">
                         {item.name}
                         {item.isNew && (
-                          <span className="text-[10px] font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-1.5 py-0.5 rounded-full">
+                          <span className="text-xs font-bold bg-success text-success-foreground px-1.5 py-0.5 rounded-full" aria-label="Nuova funzionalità">
                             Nuovo
                           </span>
                         )}
