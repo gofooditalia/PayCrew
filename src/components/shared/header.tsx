@@ -100,7 +100,7 @@ export default function Header({ user, companyName }: HeaderProps) {
                 <DropdownMenuItem onClick={() => router.push('/azienda/modifica')}>
                   <span className="flex items-center gap-2 w-full">
                     Profilo Azienda
-                    <span className="text-[10px] font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold bg-success text-success-foreground px-2 py-0.5 rounded-full" aria-label="Nuova funzionalità">
                       Nuovo
                     </span>
                   </span>

@@ -116,12 +116,12 @@ export default function ChangelogPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {release.type === 'feature' && (
-                    <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold rounded-full">
+                    <span className="px-3 py-1 bg-success text-success-foreground text-xs font-bold rounded-full">
                       NUOVE FUNZIONALITÀ
                     </span>
                   )}
                   {release.type === 'fix' && (
-                    <span className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-semibold rounded-full">
+                    <span className="px-3 py-1 bg-warning text-warning-foreground text-xs font-bold rounded-full">
                       BUG FIX
                     </span>
                   )}
