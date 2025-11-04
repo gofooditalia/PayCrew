@@ -35,11 +35,11 @@ export default function ResponsiveLayout({ children }: { children: React.ReactNo
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${getMarginClass()}`}>
         {children}
       </div>
-      
-      {/* Mobile overlay - only shown when sidebar is open on mobile */}
+
+      {/* Mobile overlay with gray backdrop - only shown when sidebar is open on mobile */}
       {sidebarState === 'open' && isMobile && (
         <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-30 lg:hidden"
+          className="fixed inset-0 bg-gray-600 bg-opacity-50 z-30 lg:hidden transition-opacity duration-300"
           onClick={closeSidebar}
         />
       )}

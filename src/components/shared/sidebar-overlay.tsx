@@ -17,13 +17,6 @@ export default function SidebarOverlay() {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [sidebarState, closeSidebar])
 
-  if (sidebarState !== 'open') return null
-
-  return (
-    <div
-      className="fixed inset-0 bg-gray-600 bg-opacity-75 z-30 lg:hidden transition-opacity ease-in-out duration-300"
-      onClick={closeSidebar}
-      aria-hidden="true"
-    />
-  )
+  // Overlay disabled - no visual backdrop
+  return null
 }

@@ -5,6 +5,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PayCrew - Gestionale Paghe",
   description: "Sistema gestionale per amministrazione del personale",
+  icons: {
+    icon: [
+      { url: '/paycrew.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/paycrew.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({

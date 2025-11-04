@@ -1,0 +1,9 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black rounded square -->
+  <rect x="0" y="0" width="200" height="200" fill="#000000" rx="40"/>
+  
+  <!-- P C in Futura Bold -->
+  <text x="100" y="135" font-family="Futura, 'Century Gothic', Arial, sans-serif" font-size="110" font-weight="700" text-anchor="middle" fill="#FFFFFF" letter-spacing="-8">
+    PC
+  </text>
+</svg>

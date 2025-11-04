@@ -171,31 +171,31 @@ export default async function DashboardPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Link
                   href="/dipendenti/nuovo"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
                 >
                   <h3 className="font-medium text-foreground">Nuovo Dipendente</h3>
                   <p className="text-sm text-muted-foreground mt-1">Aggiungi un nuovo dipendente</p>
                 </Link>
                 <Link
                   href="/presenze"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
                 >
                   <h3 className="font-medium text-foreground">Registra Presenza</h3>
                   <p className="text-sm text-muted-foreground mt-1">Inserisci presenza giornaliera</p>
                 </Link>
                 <Link
+                  href="/turni"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                >
+                  <h3 className="font-medium text-foreground">Gestisci Turni</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Pianifica turni di lavoro</p>
+                </Link>
+                <Link
                   href="/buste-paga"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
                 >
                   <h3 className="font-medium text-foreground">Genera Busta Paga</h3>
                   <p className="text-sm text-muted-foreground mt-1">Crea nuovo cedolino</p>
-                </Link>
-                <Link
-                  href="/report"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
-                >
-                  <h3 className="font-medium text-foreground">Visualizza Report</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Analisi e statistiche</p>
                 </Link>
               </div>
             </CardContent>
@@ -243,31 +243,31 @@ export default async function DashboardPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Link
                   href="/dipendenti/nuovo"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
                 >
                   <h3 className="font-medium text-foreground">Nuovo Dipendente</h3>
                   <p className="text-sm text-muted-foreground mt-1">Aggiungi un nuovo dipendente</p>
                 </Link>
                 <Link
                   href="/presenze"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
                 >
                   <h3 className="font-medium text-foreground">Registra Presenza</h3>
                   <p className="text-sm text-muted-foreground mt-1">Inserisci presenza giornaliera</p>
                 </Link>
                 <Link
+                  href="/turni"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                >
+                  <h3 className="font-medium text-foreground">Gestisci Turni</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Pianifica turni di lavoro</p>
+                </Link>
+                <Link
                   href="/buste-paga"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                  className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
                 >
                   <h3 className="font-medium text-foreground">Genera Busta Paga</h3>
                   <p className="text-sm text-muted-foreground mt-1">Crea nuovo cedolino</p>
-                </Link>
-                <Link
-                  href="/report"
-                  className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
-                >
-                  <h3 className="font-medium text-foreground">Visualizza Report</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Analisi e statistiche</p>
                 </Link>
               </div>
             </CardContent>
@@ -408,40 +408,40 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-foreground">Azioni Rapide</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
               <Link
                 href="/dipendenti/nuovo"
-                className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
               >
                 <h3 className="font-medium text-foreground">Nuovo Dipendente</h3>
                 <p className="text-sm text-muted-foreground mt-1">Aggiungi un nuovo dipendente</p>
               </Link>
               <Link
                 href="/presenze"
-                className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
               >
                 <h3 className="font-medium text-foreground">Registra Presenza</h3>
                 <p className="text-sm text-muted-foreground mt-1">Inserisci presenza giornaliera</p>
               </Link>
               <Link
+                href="/turni"
+                className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+              >
+                <h3 className="font-medium text-foreground">Gestisci Turni</h3>
+                <p className="text-sm text-muted-foreground mt-1">Pianifica turni di lavoro</p>
+              </Link>
+              <Link
                 href="/buste-paga"
-                className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
+                className="p-3 border border-border rounded-lg hover:bg-accent transition-all duration-200"
               >
                 <h3 className="font-medium text-foreground">Genera Busta Paga</h3>
                 <p className="text-sm text-muted-foreground mt-1">Crea nuovo cedolino</p>
-              </Link>
-              <Link
-                href="/report"
-                className="p-4 border border-border rounded-lg hover:bg-accent transition-all duration-200"
-              >
-                <h3 className="font-medium text-foreground">Visualizza Report</h3>
-                <p className="text-sm text-muted-foreground mt-1">Analisi e statistiche</p>
               </Link>
             </div>
           </CardContent>

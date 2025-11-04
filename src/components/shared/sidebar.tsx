@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSidebar } from '@/contexts/sidebar-context'
+import Image from 'next/image'
 import {
   HomeIcon,
   UserGroupIcon,
@@ -37,14 +38,24 @@ export default function Sidebar() {
   }
 
   return (
-    <div className={`flex flex-col bg-gradient-to-b from-background via-background to-muted/10 border-r border-border/50 transition-all duration-300 ease-in-out ${
+    <div className={`flex flex-col bg-background border-r border-border/50 transition-all duration-300 ease-in-out ${
       sidebarState === 'open' ? 'w-64' : sidebarState === 'collapsed' ? 'w-16' : 'w-64'
     } ${
       sidebarState === 'closed' ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'
     } fixed lg:relative h-full z-40 shadow-lg`}>
       <div className="flex items-center h-16 px-4 bg-gradient-to-r from-background to-muted/20 border-b border-border/50 justify-between">
         {sidebarState === 'open' && (
-          <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">PayCrew</h1>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/paycrew.svg"
+              alt="PayCrew Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+              priority
+            />
+            <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">PayCrew</h1>
+          </div>
         )}
         {sidebarState === 'collapsed' && (
           <button
