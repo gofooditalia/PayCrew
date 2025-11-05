@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { MoreHorizontal, Edit, Trash2, FileText, Eye } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface CedoliniListProps {
   bustePaga: any[]
@@ -34,8 +35,39 @@ export function CedoliniList({
 }: CedoliniListProps) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-sm text-gray-500">Caricamento cedolini...</div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Dipendente</TableHead>
+              <TableHead>Mese</TableHead>
+              <TableHead>Retribuzione</TableHead>
+              <TableHead>Stato</TableHead>
+              <TableHead className="text-right">Azioni</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(8)].map((_, i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <Skeleton className="h-5 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-8 w-8 rounded ml-auto" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     )
   }

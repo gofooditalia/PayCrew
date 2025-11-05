@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { Turno } from '@/types/turni'
 import { tipo_turno } from '@prisma/client'
 import { TurniList } from '@/components/turni/turni-list'
+import { TurniListSkeleton } from '@/components/turni/turni-list-skeleton'
 import { TurnoFormDialog } from '@/components/turni/turno-form-dialog'
 import { TurniFiltri } from '@/components/turni/turni-filters'
 import { PianificazioneMultiplaDialog } from '@/components/turni/pianificazione-multipla-dialog'
@@ -259,9 +260,7 @@ export default function TurniPage() {
 
       {/* Contenuto */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <TurniListSkeleton rows={8} />
       ) : (
         <div className="space-y-4">
           {/* Stats */}

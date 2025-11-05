@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Loader2 } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { ReportFiltri } from './report-filtri'
+import { ReportSkeleton } from './report-skeleton'
 import type { ReportPresenzeMensile } from '@/types/report'
 import {
   Table,
@@ -122,9 +123,7 @@ export function ReportPresenze() {
       />
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <ReportSkeleton rows={8} columns={8} />
       ) : report ? (
         <>
           {/* Statistiche Principali */}
