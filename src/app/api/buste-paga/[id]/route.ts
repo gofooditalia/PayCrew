@@ -12,9 +12,10 @@ import {
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const {
       data: { user },
@@ -38,7 +39,7 @@ export async function GET(
 
     const bustaPaga = await prisma.buste_paga.findFirst({
       where: {
-        id: params.id,
+        id: id,
         dipendenti: {
           aziendaId: userRecord.aziendaId,
         },
@@ -108,9 +109,10 @@ export async function GET(
  */
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const {
       data: { user },
@@ -135,7 +137,7 @@ export async function PUT(
     // Verifica che la busta paga esista e appartenga all'azienda
     const bustaPagaEsistente = await prisma.buste_paga.findFirst({
       where: {
-        id: params.id,
+        id: id,
         dipendenti: {
           aziendaId: userRecord.aziendaId,
         },
@@ -151,7 +153,7 @@ export async function PUT(
 
     // Parse body
     const body = await request.json();
-    const validatedData = bustaPagaUpdateSchema.parse({ ...body, id: params.id });
+    const validatedData = bustaPagaUpdateSchema.parse({ ...body, id: id });
 
     // Ricalcola i totali se necessario
     const datiAggiornati = calcolaTotali({
@@ -187,7 +189,7 @@ export async function PUT(
 
     // Aggiorna busta paga
     const bustaPagaAggiornata = await prisma.buste_paga.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...(validatedData.retribuzioneLorda && {
           retribuzioneLorda: validatedData.retribuzioneLorda,
@@ -311,9 +313,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const {
       data: { user },
@@ -338,7 +341,7 @@ export async function DELETE(
     // Verifica che la busta paga esista e appartenga all'azienda
     const bustaPaga = await prisma.buste_paga.findFirst({
       where: {
-        id: params.id,
+        id: id,
         dipendenti: {
           aziendaId: userRecord.aziendaId,
         },
@@ -354,7 +357,7 @@ export async function DELETE(
 
     // Elimina busta paga
     await prisma.buste_paga.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     // TODO: Activity logging
