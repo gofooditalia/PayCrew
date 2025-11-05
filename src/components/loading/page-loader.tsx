@@ -3,10 +3,15 @@ import { cn } from '@/lib/utils'
 
 interface PageLoaderProps {
   /**
-   * Messaggio da mostrare sotto lo spinner
+   * Messaggio principale (titolo) da mostrare sotto lo spinner
    * @default "Caricamento..."
    */
   message?: string
+  /**
+   * Sottotitolo opzionale da mostrare sotto il messaggio principale
+   * @example "Stiamo caricando i tuoi dati, attendere prego."
+   */
+  subtitle?: string
   /**
    * Mostra il messaggio sotto lo spinner
    * @default true
@@ -43,13 +48,25 @@ const sizeClasses = {
  *
  * @example
  * ```tsx
+ * // Semplice
  * if (loading) {
  *   return <PageLoader message="Caricamento dipendente..." />
+ * }
+ *
+ * // Con titolo + sottotitolo
+ * if (loading) {
+ *   return (
+ *     <PageLoader
+ *       message="Caricamento Dashboard..."
+ *       subtitle="Stiamo caricando i tuoi dati, attendere prego."
+ *     />
+ *   )
  * }
  * ```
  */
 export function PageLoader({
   message = 'Caricamento...',
+  subtitle,
   showMessage = true,
   className,
   size = 'default'
@@ -62,14 +79,21 @@ export function PageLoader({
       <div className="text-center">
         <Loader2
           className={cn(
-            "mx-auto text-primary animate-spin",
+            "mx-auto text-primary animate-spin mb-4",
             sizeClasses[size]
           )}
         />
         {showMessage && (
-          <p className="mt-4 text-muted-foreground">
-            {message}
-          </p>
+          <>
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              {message}
+            </h2>
+            {subtitle && (
+              <p className="text-muted-foreground">
+                {subtitle}
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
