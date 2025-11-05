@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 export default function PresenzePage() {
   const [presenze, setPresenze] = useState([])
   const [dipendenti, setDipendenti] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Inizia con true per mostrare skeleton
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPresenza, setEditingPresenza] = useState<any>(null)
 

@@ -7,6 +7,7 @@ import { Table } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Pencil, Trash2, MessageSquare } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Presenza {
   id: string
@@ -38,6 +39,63 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
 
   const formatDate = (date: string | Date) => {
     return format(new Date(date), 'dd/MM/yyyy', { locale: it })
+  }
+
+  // Mostra skeleton durante il caricamento iniziale
+  if (isLoading && presenze.length === 0) {
+    return (
+      <div className="rounded-md border">
+        <Table>
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Data</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Entrata</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
+              <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
+              <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...Array(10)].map((_, i) => (
+              <tr key={i} className="border-b">
+                <td className="p-4">
+                  <Skeleton className="h-5 w-32" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-24" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-16" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-16" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-6 w-14" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-6 w-14" />
+                </td>
+                <td className="p-4 text-center">
+                  <div className="flex justify-center">
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                </td>
+                <td className="p-4 text-right">
+                  <div className="flex justify-end gap-2">
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+    )
   }
 
   if (presenze.length === 0) {
