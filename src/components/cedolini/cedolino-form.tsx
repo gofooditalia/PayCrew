@@ -520,7 +520,7 @@ export function CedolinoForm({
                 </div>
               )}
 
-              {bonus > 0 && (
+              {bonus !== undefined && bonus > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Bonus:</span>
                   <span className="font-medium text-green-600">
