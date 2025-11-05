@@ -157,34 +157,48 @@ export async function PUT(
 
     // Ricalcola i totali se necessario
     const datiAggiornati = calcolaTotali({
-      ...bustaPagaEsistente,
-      ...validatedData,
-      retribuzioneLorda: validatedData.retribuzioneLorda
+      retribuzioneLorda: validatedData.retribuzioneLorda !== undefined
         ? Number(validatedData.retribuzioneLorda)
         : Number(bustaPagaEsistente.retribuzioneLorda),
-      straordinari: validatedData.straordinari
+      straordinari: validatedData.straordinari !== undefined
         ? Number(validatedData.straordinari)
         : Number(bustaPagaEsistente.straordinari),
-      altreCompetenze: validatedData.altreCompetenze
+      altreCompetenze: validatedData.altreCompetenze !== undefined
         ? Number(validatedData.altreCompetenze)
         : Number(bustaPagaEsistente.altreCompetenze),
-      contributiINPS: validatedData.contributiINPS
+      contributiINPS: validatedData.contributiINPS !== undefined
         ? Number(validatedData.contributiINPS)
         : Number(bustaPagaEsistente.contributiINPS),
-      irpef: validatedData.irpef
+      irpef: validatedData.irpef !== undefined
         ? Number(validatedData.irpef)
         : Number(bustaPagaEsistente.irpef),
-      altreRitenute: validatedData.altreRitenute
+      altreRitenute: validatedData.altreRitenute !== undefined
         ? Number(validatedData.altreRitenute)
         : Number(bustaPagaEsistente.altreRitenute),
-      tfr: validatedData.tfr
+      tfr: validatedData.tfr !== undefined
         ? Number(validatedData.tfr)
         : Number(bustaPagaEsistente.tfr),
-      acconto1: validatedData.acconto1 ?? (bustaPagaEsistente.acconto1 ? Number(bustaPagaEsistente.acconto1) : 0),
-      acconto2: validatedData.acconto2 ?? (bustaPagaEsistente.acconto2 ? Number(bustaPagaEsistente.acconto2) : 0),
-      acconto3: validatedData.acconto3 ?? (bustaPagaEsistente.acconto3 ? Number(bustaPagaEsistente.acconto3) : 0),
-      acconto4: validatedData.acconto4 ?? (bustaPagaEsistente.acconto4 ? Number(bustaPagaEsistente.acconto4) : 0),
-      bonus: validatedData.bonus ?? (bustaPagaEsistente.bonus ? Number(bustaPagaEsistente.bonus) : 0),
+      oreLavorate: validatedData.oreLavorate !== undefined
+        ? Number(validatedData.oreLavorate)
+        : Number(bustaPagaEsistente.oreLavorate),
+      oreStraordinario: validatedData.oreStraordinario !== undefined
+        ? Number(validatedData.oreStraordinario)
+        : Number(bustaPagaEsistente.oreStraordinario),
+      acconto1: validatedData.acconto1 !== undefined
+        ? validatedData.acconto1
+        : (bustaPagaEsistente.acconto1 ? Number(bustaPagaEsistente.acconto1) : 0),
+      acconto2: validatedData.acconto2 !== undefined
+        ? validatedData.acconto2
+        : (bustaPagaEsistente.acconto2 ? Number(bustaPagaEsistente.acconto2) : 0),
+      acconto3: validatedData.acconto3 !== undefined
+        ? validatedData.acconto3
+        : (bustaPagaEsistente.acconto3 ? Number(bustaPagaEsistente.acconto3) : 0),
+      acconto4: validatedData.acconto4 !== undefined
+        ? validatedData.acconto4
+        : (bustaPagaEsistente.acconto4 ? Number(bustaPagaEsistente.acconto4) : 0),
+      bonus: validatedData.bonus !== undefined
+        ? validatedData.bonus
+        : (bustaPagaEsistente.bonus ? Number(bustaPagaEsistente.bonus) : 0),
     });
 
     // Aggiorna busta paga
