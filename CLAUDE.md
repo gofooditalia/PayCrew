@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PayCrew is a modern web application for managing employees and payroll, primarily optimized for the restaurant sector. It's a full-stack Next.js 15 application using Supabase for backend services and Prisma as the ORM.
 
-**Stack**: Next.js 15 (App Router), TypeScript, Supabase (PostgreSQL), Prisma, Tailwind CSS, shadcn/ui
+**Stack**: Next.js 15 (App Router), TypeScript, Supabase (PostgreSQL), Prisma, Tailwind CSS, shadcn/ui, PWA
+
+**Progressive Web App**: PayCrew è configurato come PWA con funzionalità offline, installabilità, e caching avanzato. Vedere `PWA-SETUP.md` per dettagli completi.
 
 ## Essential Commands
 
