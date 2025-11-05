@@ -93,10 +93,13 @@ src/
 │   │   ├── dashboard/       # Main dashboard with stats
 │   │   ├── dipendenti/      # Employee management
 │   │   ├── presenze/        # Attendance tracking
+│   │   ├── turni/           # Shift management
+│   │   ├── cedolini/        # Payroll management (frontend)
+│   │   ├── buste-paga/      # Redirects to /cedolini
 │   │   ├── azienda/         # Company settings
-│   │   ├── buste-paga/      # Payroll
 │   │   └── report/          # Reports
 │   └── api/                 # API route handlers
+│       └── buste-paga/      # Payroll API (backend naming)
 ├── components/
 │   ├── ui/                  # shadcn/ui components
 │   ├── shared/              # Sidebar, Header, Layout
@@ -232,19 +235,26 @@ The Prisma client uses connection pooling with:
 **Shift Management** ❌ (NOT Implemented - Moved to Sprint 4)
 - Database schema exists (turni table) but no frontend implementation
 
-### 🔄 Sprint 4 (Next - In Planning)
-**Shift Management** (From Sprint 3 - Not Yet Implemented)
-- Shift scheduling interface
-- Weekly shift planning and calendar view
-- Shift templates and recurring schedules
-- Employee shift assignment
+### ✅ Sprint 4 - Complete
+**Shift Management** ✅
+- Complete CRUD for shifts (turni)
+- Filters by employee, location, shift type, date range
+- Multiple shift creation (pianificazione multipla)
 - Integration with attendance tracking
 
-**Payroll System**
-- Payroll calculations engine
-- Monthly payslip generation
-- PDF generation for payslips (cedolini)
-- Payroll history and reports
+**Payroll System (Cedolini)** ✅
+- Complete payroll CRUD interface
+- Monthly payslip management with filters
+- Payroll detail view dialog with all calculations
+- Payroll reports (cedolini and presenze)
+- History and tracking
+- Note: Backend API uses `/api/buste-paga`, frontend unified under `/cedolini`
+- `/buste-paga` route redirects to `/cedolini` for consistency
+
+**UX/Performance Improvements** ✅
+- Skeleton loading components on all pages (100% coverage)
+- Unified loading states (PageLoader for pages, Skeleton for lists)
+- Professional loading experience across the application
 
 ## Common Pitfalls
 
