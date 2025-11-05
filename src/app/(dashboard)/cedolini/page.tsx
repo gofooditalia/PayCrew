@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CedoliniList } from '@/components/cedolini/cedolini-list'
 import { CedolinoForm } from '@/components/cedolini/cedolino-form'
+import { CedolinoDettaglioDialog } from '@/components/cedolini/cedolino-dettaglio-dialog'
 import { CedoliniFiltri } from '@/components/cedolini/cedolini-filtri'
 import { Plus, FileText } from 'lucide-react'
 import { toast } from 'sonner'
@@ -16,6 +17,8 @@ export default function CedoliniPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingBusta, setEditingBusta] = useState<any>(null)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedBusta, setSelectedBusta] = useState<any>(null)
 
   // Filtri
   const [filtri, setFiltri] = useState({
@@ -77,6 +80,11 @@ export default function CedoliniPage() {
   const handleEdit = (busta: any) => {
     setEditingBusta(busta)
     setDialogOpen(true)
+  }
+
+  const handleViewDetail = (busta: any) => {
+    setSelectedBusta(busta)
+    setDetailDialogOpen(true)
   }
 
   const handleDelete = async (id: string) => {
@@ -176,10 +184,18 @@ export default function CedoliniPage() {
             bustePaga={bustePaga}
             isLoading={isLoading}
             onEdit={handleEdit}
+            onViewDetail={handleViewDetail}
             onDelete={handleDelete}
           />
         </CardContent>
       </Card>
+
+      {/* Dialog Dettaglio */}
+      <CedolinoDettaglioDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        busta={selectedBusta}
+      />
 
       {/* Dialog Form */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

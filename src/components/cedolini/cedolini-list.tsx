@@ -24,6 +24,7 @@ interface CedoliniListProps {
   bustePaga: any[]
   isLoading: boolean
   onEdit: (busta: any) => void
+  onViewDetail: (busta: any) => void
   onDelete: (id: string) => void
 }
 
@@ -31,6 +32,7 @@ export function CedoliniList({
   bustePaga,
   isLoading,
   onEdit,
+  onViewDetail,
   onDelete,
 }: CedoliniListProps) {
   if (isLoading) {
@@ -212,12 +214,7 @@ export function CedoliniList({
                         <Edit className="mr-2 h-4 w-4" />
                         Modifica
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          // TODO: Implementare visualizzazione dettaglio
-                          console.log('Visualizza dettaglio', busta)
-                        }}
-                      >
+                      <DropdownMenuItem onClick={() => onViewDetail(busta)}>
                         <Eye className="mr-2 h-4 w-4" />
                         Dettaglio
                       </DropdownMenuItem>
