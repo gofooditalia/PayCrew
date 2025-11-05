@@ -49,3 +49,5 @@ next-env.d.ts
 
 # generated files
 /src/generated/
+*.xlsx
+*.pdf

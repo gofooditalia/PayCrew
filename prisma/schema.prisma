@@ -65,6 +65,16 @@ model buste_paga {
   oreStraordinario  Decimal    @default(0) @db.Decimal(6, 2)
   storagePath       String?
   dipendenteId      String     @db.Uuid
+  // Nuovi campi per gestione pagamenti interna
+  acconto1          Decimal?   @default(0) @db.Decimal(10, 2)
+  acconto2          Decimal?   @default(0) @db.Decimal(10, 2)
+  acconto3          Decimal?   @default(0) @db.Decimal(10, 2)
+  acconto4          Decimal?   @default(0) @db.Decimal(10, 2)
+  totaleAcconti     Decimal?   @default(0) @db.Decimal(10, 2)
+  bonus             Decimal?   @default(0) @db.Decimal(10, 2)
+  importoBonifico   Decimal?   @db.Decimal(10, 2)
+  differenza        Decimal?   @db.Decimal(10, 2)
+  note              String?
   createdAt         DateTime   @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime   @updatedAt @db.Timestamptz(6)
   dipendenti        dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
@@ -238,6 +248,8 @@ enum tipo_attivita {
   MODIFICA_TURNO
   ELIMINAZIONE_TURNO
   GENERAZIONE_BUSTA_PAGA
+  MODIFICA_BUSTA_PAGA
+  ELIMINAZIONE_BUSTA_PAGA
   RICHIESTA_FERIE
   APPROVAZIONE_FERIE
   RIFIUTO_FERIE

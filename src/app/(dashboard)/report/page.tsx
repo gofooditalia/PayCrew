@@ -1,57 +1,33 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+'use client'
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ReportCedolini } from '@/components/report/report-cedolini'
+import { ReportPresenze } from '@/components/report/report-presenze'
 
 export default function ReportPage() {
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Report</h1>
-        <p className="text-gray-600 mb-4">Visualizza report e analisi delle attività</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Report</h1>
+        <p className="text-muted-foreground">
+          Analizza cedolini, presenze e costi aziendali
+        </p>
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Report Attività</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Report delle attività recenti con filtri e statistiche.
-            </p>
-            <div className="mt-4">
-              <Badge variant="secondary">In sviluppo</Badge>
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="cedolini" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="cedolini">Report Cedolini</TabsTrigger>
+          <TabsTrigger value="presenze">Report Presenze</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Report Buste Paga</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Report delle buste paga generate per dipendenti.
-            </p>
-            <div className="mt-4">
-              <Badge variant="secondary">In sviluppo</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="cedolini" className="space-y-4">
+          <ReportCedolini />
+        </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Report Presenze</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Report delle presenze e assenze dei dipendenti.
-            </p>
-            <div className="mt-4">
-              <Badge variant="secondary">In sviluppo</Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="presenze" className="space-y-4">
+          <ReportPresenze />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
