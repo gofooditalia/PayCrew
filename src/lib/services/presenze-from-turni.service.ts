@@ -1,0 +1,301 @@
+/**
+ * PresenzeFromTurniService
+ *
+ * Service per generare automaticamente presenze dai turni pianificati
+ */
+
+import { prisma } from '@/lib/prisma'
+import { calcolaOreTraOrari } from '@/lib/utils/ore-calculator'
+import type { Prisma } from '@prisma/client'
+
+export interface GenerazioneOptions {
+  dataInizio: Date
+  dataFine: Date
+  dipendenteId?: string
+  sedeId?: string
+  sovrascriviEsistenti?: boolean
+  userId: string
+  aziendaId: string
+}
+
+export interface GenerazioneResult {
+  generated: number
+  skipped: number
+  updated: number
+  errors: string[]
+}
+
+export class PresenzeFromTurniService {
+
+  /**
+   * Genera presenze da tutti i turni in un range di date
+   */
+  static async generaPresenzeRange(
+    options: GenerazioneOptions
+  ): Promise<GenerazioneResult> {
+    const result: GenerazioneResult = {
+      generated: 0,
+      skipped: 0,
+      updated: 0,
+      errors: []
+    }
+
+    try {
+      // Costruisci query turni
+      const where: Prisma.turniWhereInput = {
+        data: {
+          gte: options.dataInizio,
+          lte: options.dataFine
+        },
+        dipendenti: {
+          aziendaId: options.aziendaId
+        }
+      }
+
+      if (options.dipendenteId) {
+        where.dipendenteId = options.dipendenteId
+      }
+
+      if (options.sedeId) {
+        where.sedeId = options.sedeId
+      }
+
+      // Recupera turni nel range
+      const turni = await prisma.turni.findMany({
+        where,
+        include: {
+          dipendenti: {
+            select: {
+              id: true,
+              nome: true,
+              cognome: true,
+              oreSettimanali: true
+            }
+          }
+        },
+        orderBy: {
+          data: 'asc'
+        }
+      })
+
+      // Genera presenza per ogni turno
+      for (const turno of turni) {
+        try {
+          const generata = await this.generaPresenzaDaTurno(
+            turno,
+            options.sovrascriviEsistenti || false
+          )
+
+          if (generata === 'generated') {
+            result.generated++
+          } else if (generata === 'updated') {
+            result.updated++
+          } else if (generata === 'skipped') {
+            result.skipped++
+          }
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Errore sconosciuto'
+          result.errors.push(
+            `Turno ${turno.id} (${turno.dipendenti.nome} ${turno.dipendenti.cognome} - ${turno.data.toLocaleDateString()}): ${errorMsg}`
+          )
+        }
+      }
+
+      return result
+    } catch (error) {
+      console.error('Errore generazione presenze:', error)
+      throw new Error('Errore durante la generazione delle presenze')
+    }
+  }
+
+  /**
+   * Genera una singola presenza da un turno
+   *
+   * @returns 'generated' | 'updated' | 'skipped'
+   */
+  static async generaPresenzaDaTurno(
+    turno: any,
+    sovrascriviEsistente: boolean = false
+  ): Promise<'generated' | 'updated' | 'skipped'> {
+
+    // Verifica se esiste già una presenza per questo turno/dipendente/data
+    const presenzaEsistente = await prisma.presenze.findFirst({
+      where: {
+        dipendenteId: turno.dipendenteId,
+        data: turno.data
+      }
+    })
+
+    // Se esiste e non vogliamo sovrascrivere, skip
+    if (presenzaEsistente && !sovrascriviEsistente) {
+      return 'skipped'
+    }
+
+    // Calcola ore lavorate basandosi sugli orari del turno
+    const { oreLavorate, oreStraordinario } = this.calcolaOreDaTurno(
+      turno.oraInizio,
+      turno.oraFine,
+      turno.dipendenti.oreSettimanali
+    )
+
+    // Crea DateTime completi per entrata e uscita
+    const dataString = turno.data.toISOString().split('T')[0]
+    const entrata = new Date(`${dataString}T${turno.oraInizio}:00`)
+    const uscita = new Date(`${dataString}T${turno.oraFine}:00`)
+
+    // Dati presenza
+    const presenzaData: Prisma.presenzeCreateInput = {
+      data: turno.data,
+      entrata,
+      uscita,
+      oreLavorate,
+      oreStraordinario,
+      stato: 'DA_CONFERMARE',
+      generataDaTurno: true,
+      dipendenti: {
+        connect: { id: turno.dipendenteId }
+      },
+      turni: {
+        connect: { id: turno.id }
+      }
+    }
+
+    if (presenzaEsistente) {
+      // Aggiorna presenza esistente
+      await prisma.presenze.update({
+        where: { id: presenzaEsistente.id },
+        data: {
+          entrata,
+          uscita,
+          oreLavorate,
+          oreStraordinario,
+          stato: 'DA_CONFERMARE',
+          generataDaTurno: true,
+          turnoId: turno.id
+        }
+      })
+      return 'updated'
+    } else {
+      // Crea nuova presenza
+      await prisma.presenze.create({
+        data: presenzaData
+      })
+      return 'generated'
+    }
+  }
+
+  /**
+   * Calcola ore lavorate e straordinari da orari turno
+   */
+  private static calcolaOreDaTurno(
+    oraInizio: string,
+    oraFine: string,
+    oreSettimanali: number
+  ): { oreLavorate: number; oreStraordinario: number } {
+
+    // Calcola ore giornaliere standard (assumendo 5 giorni lavorativi)
+    const oreGiornaliere = Math.round((oreSettimanali / 5) * 100) / 100
+
+    // Calcola ore totali tra inizio e fine
+    const oreTotali = calcolaOreTraOrari(oraInizio, oraFine)
+
+    // Applica pausa pranzo automatica se lavora più di 6 ore
+    const pausaPranzoOre = oreTotali >= 6 ? 0.5 : 0 // 30 minuti
+    const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
+
+    // Calcola straordinari
+    const oreLavorate = Math.min(oreLavorateNette, oreGiornaliere || 8)
+    const oreStraordinario = Math.max(0, oreLavorateNette - (oreGiornaliere || 8))
+
+    return {
+      oreLavorate,
+      oreStraordinario
+    }
+  }
+
+  /**
+   * Conferma una presenza generata da turno
+   */
+  static async confermaPresenza(
+    presenzaId: string,
+    modifiche?: {
+      entrata?: string
+      uscita?: string
+      nota?: string
+    }
+  ) {
+    const presenza = await prisma.presenze.findUnique({
+      where: { id: presenzaId },
+      include: {
+        dipendenti: true
+      }
+    })
+
+    if (!presenza) {
+      throw new Error('Presenza non trovata')
+    }
+
+    // Se ci sono modifiche agli orari, ricalcola ore
+    let updateData: Prisma.presenzeUpdateInput = {
+      stato: 'CONFERMATA'
+    }
+
+    if (modifiche?.entrata || modifiche?.uscita) {
+      const dataString = presenza.data.toISOString().split('T')[0]
+      const nuovaEntrata = modifiche.entrata
+        ? new Date(`${dataString}T${modifiche.entrata}:00`)
+        : presenza.entrata
+      const nuovaUscita = modifiche.uscita
+        ? new Date(`${dataString}T${modifiche.uscita}:00`)
+        : presenza.uscita
+
+      if (nuovaEntrata && nuovaUscita) {
+        // Ricalcola ore
+        const oreTotali = calcolaOreTraOrari(
+          modifiche.entrata || presenza.entrata?.toISOString().split('T')[1].substring(0, 5) || '00:00',
+          modifiche.uscita || presenza.uscita?.toISOString().split('T')[1].substring(0, 5) || '00:00'
+        )
+
+        const oreGiornaliere = Math.round((presenza.dipendenti.oreSettimanali / 5) * 100) / 100
+        const pausaPranzoOre = oreTotali >= 6 ? 0.5 : 0
+        const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
+
+        updateData = {
+          ...updateData,
+          stato: 'MODIFICATA', // Se modifica orari, stato diventa MODIFICATA
+          entrata: nuovaEntrata,
+          uscita: nuovaUscita,
+          oreLavorate: Math.min(oreLavorateNette, oreGiornaliere || 8),
+          oreStraordinario: Math.max(0, oreLavorateNette - (oreGiornaliere || 8))
+        }
+      }
+    }
+
+    if (modifiche?.nota) {
+      updateData.nota = modifiche.nota
+    }
+
+    return await prisma.presenze.update({
+      where: { id: presenzaId },
+      data: updateData
+    })
+  }
+
+  /**
+   * Marca una presenza come assente
+   */
+  static async marcaAssente(
+    presenzaId: string,
+    nota?: string
+  ) {
+    return await prisma.presenze.update({
+      where: { id: presenzaId },
+      data: {
+        stato: 'ASSENTE',
+        oreLavorate: 0,
+        oreStraordinario: 0,
+        nota: nota || 'Dipendente assente'
+      }
+    })
+  }
+}

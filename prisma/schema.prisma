@@ -159,20 +159,26 @@ model ferie_permessi {
 }
 
 model presenze {
-  id               String     @id @default(uuid()) @db.Uuid
-  data             DateTime   @db.Date
-  entrata          DateTime?  @db.Timestamptz(6)
-  uscita           DateTime?  @db.Timestamptz(6)
-  oreLavorate      Decimal?   @db.Decimal(5, 2)
-  oreStraordinario Decimal?   @db.Decimal(5, 2)
+  id               String          @id @default(uuid()) @db.Uuid
+  data             DateTime        @db.Date
+  entrata          DateTime?       @db.Timestamptz(6)
+  uscita           DateTime?       @db.Timestamptz(6)
+  oreLavorate      Decimal?        @db.Decimal(5, 2)
+  oreStraordinario Decimal?        @db.Decimal(5, 2)
   nota             String?
-  dipendenteId     String     @db.Uuid
-  createdAt        DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime   @updatedAt @db.Timestamptz(6)
-  dipendenti       dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  dipendenteId     String          @db.Uuid
+  turnoId          String?         @db.Uuid
+  stato            stato_presenza  @default(DA_CONFERMARE)
+  generataDaTurno  Boolean         @default(false)
+  createdAt        DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(6)
+  dipendenti       dipendenti      @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  turni            turni?          @relation(fields: [turnoId], references: [id], onDelete: SetNull)
 
   @@index([data])
   @@index([dipendenteId])
+  @@index([turnoId])
+  @@index([stato])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -200,6 +206,7 @@ model turni {
   createdAt    DateTime   @default(now()) @db.Timestamptz(6)
   dipendenti   dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
   sedi         sedi?      @relation(fields: [sedeId], references: [id])
+  presenze     presenze[]
 
   @@index([data])
   @@index([dipendenteId])
@@ -223,6 +230,13 @@ enum ccnl {
   COMMERCIO
   METALMECCANICI
   ALTRO
+}
+
+enum stato_presenza {
+  DA_CONFERMARE
+  CONFERMATA
+  ASSENTE
+  MODIFICATA
 }
 
 enum stato_richiesta {
