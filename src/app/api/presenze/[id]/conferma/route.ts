@@ -117,14 +117,14 @@ export async function PUT(
       presenza: result
     }, { status: 200 })
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Errore PUT /api/presenze/[id]/conferma:', error)
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
           error: 'Dati non validi',
-          details: error.errors
+          details: error.issues
         },
         { status: 400 }
       )
