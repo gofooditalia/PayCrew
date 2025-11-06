@@ -124,14 +124,14 @@ export async function POST(request: NextRequest) {
       }
     }, { status: 200 })
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Errore POST /api/presenze/from-turni:', error)
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
           error: 'Dati non validi',
-          details: error.errors
+          details: error.issues
         },
         { status: 400 }
       )
