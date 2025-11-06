@@ -5,7 +5,9 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 ## 🚀 Caratteristiche Principali
 
 - **Gestione Dipendenti**: Anagrafica completa con documenti e dati contrattuali
-- **Presenze e Turni**: Registro presenze e pianificazione turni settimanali
+- **Turni**: Pianificazione turni singoli e multipli (settimanale/mensile)
+- **Presenze**: Auto-generazione da turni con stati e conferma
+- **Workflow Integrato**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
 - **Buste Paga**: Calcolo automatico con generazione PDF cedolini
 - **Documenti**: Upload e gestione scadenze documentali
 - **Dashboard**: Analytics e KPI in tempo reale
@@ -49,20 +51,32 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] Componenti UI per gestione dipendenti
 - [x] Validazione form con Zod
 
-### ✅ Sprint 3 - Presenze e Turni (Parzialmente Completato)
+### ✅ Sprint 3 - Presenze (Completato)
 - [x] Registro presenze con filtri e ricerca
 - [x] Calcolo ore lavorate automatico
 - [x] Note con popover in lista presenze
 - [x] Gestione sedi aziendali (CRUD completo)
 - [x] Assegnazione sede ai dipendenti
-- [ ] Gestione turni (NON implementato - spostato a Sprint 4)
+- [x] Skeleton loading su tutte le pagine dinamiche
 
-### ⏳ Sprint 4 - Turni e Buste Paga (Pianificato)
-- [ ] Gestione turni e pianificazione settimanale
-- [ ] Calendario turni con vista mensile
-- [ ] Calcolo buste paga
-- [ ] Generazione PDF cedolini
-- [ ] Report avanzati
+### ✅ Sprint 4 - Turni e Buste Paga (Completato)
+- [x] **Gestione turni completa** con filtri avanzati
+- [x] **Pianificazione multipla turni** (settimanale/mensile)
+- [x] **Auto-generazione presenze da turni**
+- [x] **Stati presenze** (DA_CONFERMARE, CONFERMATA, MODIFICATA, ASSENTE)
+- [x] **Badge e azioni rapide** per conferma presenze
+- [x] Calcolo buste paga con PDF cedolini
+- [x] Report presenze e cedolini
+- [x] Sistema completo buste paga
+
+### 🎉 Sprint 5 - Integrazione Turni-Presenze (Completato)
+- [x] **Relazione turno → presenza** nel database
+- [x] **Service layer** PresenzeFromTurniService
+- [x] **API batch generation** presenze da turni
+- [x] **API conferma/modifica** presenze con stati
+- [x] **UI completa** con badge colorati per stati
+- [x] **Test automatizzati** (11/12 passati - 91.7%)
+- [x] **Workflow completo**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
 
 ## 🚀 Release v0.2.0 - Versione Stabile
 
@@ -186,6 +200,9 @@ Per il diagramma completo delle relazioni, vedi [`paycrew-architecture-diagram.m
 ## 🧪 Testing
 
 ```bash
+# Test integrazione turni-presenze (11/12 test - 91.7% successo)
+npm run test:turni-presenze
+
 # Esegui test unitari
 npm run test
 
