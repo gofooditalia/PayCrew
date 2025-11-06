@@ -1,7 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Toaster } from '@/components/ui/sonner'
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt'
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "PayCrew - Gestionale Paghe",
@@ -55,16 +66,7 @@ export const metadata: Metadata = {
     description: "Sistema gestionale per amministrazione del personale e paghe",
     images: ["/icons/icon-512x512.png"],
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
-  ],
+  metadataBase: new URL("https://pay-crew.vercel.app"),
 };
 
 export default function RootLayout({
