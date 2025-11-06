@@ -17,6 +17,8 @@ interface Presenza {
   oreLavorate: number | null
   oreStraordinario: number | null
   nota: string | null
+  stato?: 'DA_CONFERMARE' | 'CONFERMATA' | 'ASSENTE' | 'MODIFICATA'
+  generataDaTurno?: boolean
   dipendenti: {
     nome: string
     cognome: string
@@ -27,10 +29,11 @@ interface PresenzeListProps {
   presenze: Presenza[]
   onEdit: (presenza: Presenza) => void
   onDelete: (id: string) => void
+  onConfirm?: (id: string) => void
   isLoading?: boolean
 }
 
-export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: PresenzeListProps) {
+export function PresenzeList({ presenze, onEdit, onDelete, onConfirm, isLoading }: PresenzeListProps) {
   const formatTime = (time: string | Date | null) => {
     if (!time) return '-'
     const date = new Date(time)
@@ -39,6 +42,41 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
 
   const formatDate = (date: string | Date) => {
     return format(new Date(date), 'dd/MM/yyyy', { locale: it })
+  }
+
+  const getStatoBadge = (stato?: string) => {
+    switch (stato) {
+      case 'DA_CONFERMARE':
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+            Da Confermare
+          </Badge>
+        )
+      case 'CONFERMATA':
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-300">
+            Confermata
+          </Badge>
+        )
+      case 'MODIFICATA':
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+            Modificata
+          </Badge>
+        )
+      case 'ASSENTE':
+        return (
+          <Badge className="bg-red-100 text-red-800 border-red-300">
+            Assente
+          </Badge>
+        )
+      default:
+        return (
+          <Badge variant="secondary">
+            Manuale
+          </Badge>
+        )
+    }
   }
 
   // Mostra skeleton durante il caricamento iniziale
@@ -54,6 +92,7 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
               <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
             </tr>
@@ -78,6 +117,9 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
                 </td>
                 <td className="p-4">
                   <Skeleton className="h-6 w-14" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-6 w-24" />
                 </td>
                 <td className="p-4 text-center">
                   <div className="flex justify-center">
@@ -117,6 +159,7 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
             <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
             <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
             <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
+            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
             <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
             <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
           </tr>
@@ -148,6 +191,9 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
                   '-'
                 )}
               </td>
+              <td className="p-4">
+                {getStatoBadge(presenza.stato)}
+              </td>
               <td className="p-4 text-center">
                 {presenza.nota && presenza.nota.trim() !== '' ? (
                   <Popover>
@@ -173,6 +219,17 @@ export function PresenzeList({ presenze, onEdit, onDelete, isLoading }: Presenze
               </td>
               <td className="p-4 text-right">
                 <div className="flex justify-end gap-2">
+                  {presenza.stato === 'DA_CONFERMARE' && onConfirm && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => onConfirm(presenza.id)}
+                      disabled={isLoading}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      Conferma
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"

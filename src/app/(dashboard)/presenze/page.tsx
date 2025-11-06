@@ -122,6 +122,29 @@ export default function PresenzePage() {
     }
   }
 
+  const handleConfirm = async (id: string) => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/presenze/${id}/conferma`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ azione: 'CONFERMA' })
+      })
+
+      if (response.ok) {
+        toast.success('Presenza confermata con successo')
+        fetchPresenze()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Errore nella conferma della presenza')
+      }
+    } catch (error) {
+      toast.error('Errore di connessione')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -150,6 +173,7 @@ export default function PresenzePage() {
               setDialogOpen(true)
             }}
             onDelete={handleDelete}
+            onConfirm={handleConfirm}
             isLoading={isLoading}
           />
         </CardContent>
