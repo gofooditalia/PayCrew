@@ -18,7 +18,7 @@ const confermaSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -30,6 +30,9 @@ export async function PUT(
         { status: 401 }
       )
     }
+
+    // Await params in Next.js 16
+    const { id } = await params
 
     // Recupera l'azienda dell'utente
     const utente = await prisma.users.findUnique({
@@ -47,7 +50,7 @@ export async function PUT(
     // Verifica che la presenza esista e appartenga all'azienda
     const presenza = await prisma.presenze.findFirst({
       where: {
-        id: params.id,
+        id: id,
         dipendenti: {
           aziendaId: utente.aziendaId
         }
@@ -79,7 +82,7 @@ export async function PUT(
       case 'CONFERMA':
         // Conferma senza modifiche
         result = await PresenzeFromTurniService.confermaPresenza(
-          params.id,
+          id,
           validatedData.nota ? { nota: validatedData.nota } : undefined
         )
         break
@@ -92,7 +95,7 @@ export async function PUT(
             { status: 400 }
           )
         }
-        result = await PresenzeFromTurniService.confermaPresenza(params.id, {
+        result = await PresenzeFromTurniService.confermaPresenza(id, {
           entrata: validatedData.entrata,
           uscita: validatedData.uscita,
           nota: validatedData.nota
@@ -102,7 +105,7 @@ export async function PUT(
       case 'ASSENTE':
         // Marca come assente
         result = await PresenzeFromTurniService.marcaAssente(
-          params.id,
+          id,
           validatedData.nota
         )
         break
