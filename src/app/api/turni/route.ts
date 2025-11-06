@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { turnoCreateSchema, turniFiltriSchema } from '@/lib/validation/turni-validator'
 import { AttivitaLogger } from '@/lib/attivita-logger'
+import { PresenzeFromTurniService } from '@/lib/services/presenze-from-turni.service'
 
 /**
  * GET /api/turni
@@ -269,6 +270,23 @@ export async function POST(request: Request) {
     // Activity logging
     const dipendenteNomeCompleto = `${dipendente.nome} ${dipendente.cognome}`
     await AttivitaLogger.logCreazioneTurno(nuovoTurno, dipendenteNomeCompleto, user.id, dbUser.aziendaId)
+
+    // Auto-genera presenza da turno
+    try {
+      await PresenzeFromTurniService.generaPresenzaDaTurno(
+        {
+          ...nuovoTurno,
+          dipendenti: {
+            ...nuovoTurno.dipendenti,
+            oreSettimanali: dipendente.oreSettimanali
+          }
+        },
+        false // Non sovrascrivere se esiste già
+      )
+    } catch (presenzaError) {
+      // Log error ma non bloccare la creazione del turno
+      console.error('Errore auto-generazione presenza:', presenzaError)
+    }
 
     return NextResponse.json(nuovoTurno, { status: 201 })
 

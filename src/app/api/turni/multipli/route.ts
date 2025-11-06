@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
 import { AttivitaLogger } from '@/lib/attivita-logger'
+import { PresenzeFromTurniService } from '@/lib/services/presenze-from-turni.service'
 
 /**
  * POST /api/turni/multipli
@@ -163,6 +164,52 @@ export async function POST(request: Request) {
         giorni: validatedData.giorni
       }
     })
+
+    // Auto-genera presenze dai turni creati
+    try {
+      // Recupera i turni appena creati (createMany non li ritorna)
+      const turniCreatiRecords = await prisma.turni.findMany({
+        where: {
+          dipendenteId: validatedData.dipendenteId,
+          data: {
+            gte: dataInizio,
+            lte: dataFine
+          },
+          oraInizio: validatedData.oraInizio,
+          oraFine: validatedData.oraFine,
+          tipoTurno: validatedData.tipoTurno
+        },
+        include: {
+          dipendenti: {
+            select: {
+              id: true,
+              nome: true,
+              cognome: true,
+              oreSettimanali: true
+            }
+          }
+        }
+      })
+
+      // Genera presenza per ogni turno
+      let presenzeGenerate = 0
+      for (const turno of turniCreatiRecords) {
+        try {
+          const result = await PresenzeFromTurniService.generaPresenzaDaTurno(turno, false)
+          if (result === 'generated') {
+            presenzeGenerate++
+          }
+        } catch (presenzaError) {
+          // Log ma non bloccare
+          console.error(`Errore generazione presenza per turno ${turno.id}:`, presenzaError)
+        }
+      }
+
+      console.log(`Auto-generate ${presenzeGenerate}/${turniCreati.count} presenze da turni multipli`)
+    } catch (autoGenError) {
+      // Log error ma non bloccare la risposta
+      console.error('Errore auto-generazione presenze batch:', autoGenError)
+    }
 
     return NextResponse.json({
       success: true,
