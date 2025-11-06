@@ -7,6 +7,26 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### 🎯 [0.5.1] - 2025-11-06 - UX Improvements Presenze
+
+#### Added
+- **Reset/Undo Presenze**: Possibilità di annullare conferme o assenze e ripristinare stato DA_CONFERMARE
+- **API PUT /api/presenze/[id]/reset**: Nuovo endpoint per reset presenze confermate/assenti
+- **Pulsanti Annulla**: "Annulla Conferma" e "Annulla Assenza" nelle liste presenze
+- **UX Guidata**: Messaggio informativo con pulsante diretto "Vai a Gestione Turni" quando pagina presenze è vuota
+- **Link diretto**: Icona calendario + link a /turni per guidare l'utente nel workflow
+
+#### Changed
+- **Sidebar UI**: Rimossi badge "Nuovo" da tutte le voci menu (Turni, Presenze, Cedolini, Report)
+- **Stato vuoto presenze**: Da messaggio generico a guida contestuale con CTA
+
+#### UX Improvements
+- Workflow più chiaro: gli utenti capiscono immediatamente che devono prima creare turni
+- Possibilità di correggere errori umani senza modificare il database manualmente
+- Interfaccia più pulita senza badge obsoleti
+
+---
+
 ### 🎉 [0.5.0] - 2025-11-06 - Integrazione Turni-Presenze
 
 #### Added

@@ -58,6 +58,8 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] Gestione sedi aziendali (CRUD completo)
 - [x] Assegnazione sede ai dipendenti
 - [x] Skeleton loading su tutte le pagine dinamiche
+- [x] **Reset/Undo presenze confermate o assenti**
+- [x] **Messaggio guidato per stato vuoto con link a Turni**
 
 ### ✅ Sprint 4 - Turni e Buste Paga (Completato)
 - [x] **Gestione turni completa** con filtri avanzati
@@ -95,8 +97,10 @@ PayCrew v0.5.0 introduce il workflow completo di gestione turni con auto-generaz
 - **Pianificazione Multipla**: Creazione batch turni per settimanale/mensile
 - **Auto-generazione Presenze**: Le presenze vengono create automaticamente dai turni pianificati
 - **Stati Presenza**: DA_CONFERMARE → CONFERMATA / MODIFICATA / ASSENTE
-- **Azioni Rapide**: Conferma presenze con un click direttamente dalla lista
+- **Azioni Rapide**: Conferma/Assente presenze con un click direttamente dalla lista
+- **Reset/Undo**: Annulla conferme o assenze per ripristinare stato DA_CONFERMARE
 - **Badge Visivi**: Indicatori colorati per stato presenza (giallo, verde, blu, rosso)
+- **UX Guidata**: Messaggio informativo con link diretto alla sezione Turni quando non ci sono presenze
 
 #### Elaborazione Cedolini
 - **Calcolo Automatico**: Generazione cedolini con calcolo ore lavorate e straordinari
