@@ -18,8 +18,8 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true, isNew: false },
   { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true, isNew: false },
-  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: true },
   { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: true, isNew: true },
+  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: true },
   { name: 'Cedolini', href: '/cedolini', icon: DocumentTextIcon, enabled: true, isNew: true },
   { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: true, isNew: true },
   { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: false, isNew: false },
