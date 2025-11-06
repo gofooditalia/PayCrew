@@ -78,26 +78,47 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] **Test automatizzati** (11/12 passati - 91.7%)
 - [x] **Workflow completo**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
 
-## 🚀 Release v0.2.0 - Versione Stabile
+## 🚀 Release v0.5.0 - Integrazione Turni-Presenze
 
-PayCrew v0.2.0 è stata rilasciata con tutte le funzionalità degli Sprint 1 e 2 complete:
+PayCrew v0.5.0 introduce il workflow completo di gestione turni con auto-generazione presenze:
 
 ### ✅ Funzionalità Disponibili
-- **Gestione Aziende**: CRUD completo con sedi multiple
-- **Gestione Dipendenti**: Anagrafica completa con documenti
-- **Autenticazione**: Sistema completo con ruoli e permessi
-- **API Routes**: Tutti gli endpoint necessari
-- **UI Components**: Interfaccia completa e responsive
+
+#### Core Features
+- **Gestione Aziende e Sedi**: CRUD completo con supporto multi-sede
+- **Gestione Dipendenti**: Anagrafica completa con documenti, contratti, scadenze
+- **Autenticazione**: Sistema multi-livello con ruoli (SUPER_ADMIN, ADMIN, MANAGER, USER)
+- **Activity Logger**: Sistema audit trail per tutte le operazioni critiche
+
+#### Workflow Turni → Presenze
+- **Pianificazione Turni**: CRUD completo con filtri avanzati per dipendente, sede, tipo, date
+- **Pianificazione Multipla**: Creazione batch turni per settimanale/mensile
+- **Auto-generazione Presenze**: Le presenze vengono create automaticamente dai turni pianificati
+- **Stati Presenza**: DA_CONFERMARE → CONFERMATA / MODIFICATA / ASSENTE
+- **Azioni Rapide**: Conferma presenze con un click direttamente dalla lista
+- **Badge Visivi**: Indicatori colorati per stato presenza (giallo, verde, blu, rosso)
+
+#### Elaborazione Cedolini
+- **Calcolo Automatico**: Generazione cedolini con calcolo ore lavorate e straordinari
+- **PDF Cedolini**: Generazione PDF professionali con dettaglio completo retribuzione
+- **Storico Cedolini**: Report mensili per dipendente con filtri avanzati
+
+#### Reports e Analytics
+- **Dashboard**: KPI in tempo reale (dipendenti attivi, presenze, turni, cedolini)
+- **Report Presenze**: Export e visualizzazione report presenze filtrabili
+- **Report Cedolini**: Storico e analisi cedolini per periodo
 
 ### 🌐 Deploy
-La versione stabile è pronta per il deploy su piattaforme alternative:
-- **Netlify**: Raccomandato per stabilità
-- **Railway**: Ottimo per backend
-- **Render**: Supporto Next.js eccellente
+L'applicazione è attualmente in beta test e deployata su:
+- **Vercel**: https://pay-crew.vercel.app/ (ambiente di test)
+- **Database**: Supabase PostgreSQL con Session pooler per performance ottimali
+- **Storage**: Supabase Storage per documenti e PDF cedolini
 
-Per istruzioni dettagliate, vedi [`DEPLOYMENT_ALTERNATIVES.md`](DEPLOYMENT_ALTERNATIVES.md).
-
-**Nota**: A causa di problemi temporanei con Vercel (guasto AWS globale), si raccomandano piattaforme alternative per il deploy in produzione.
+### 🧪 Testing
+Test automatizzati disponibili per validare il workflow turni-presenze:
+```bash
+npm run test:turni-presenze  # 11/12 test passati (91.7% successo)
+```
 
 ## 🚀 Quick Start
 
