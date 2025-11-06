@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:turni-presenze": "npx tsx scripts/test-turni-presenze-flow.js",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "verify:deployment": "node scripts/verify-prisma-deployment.js",
