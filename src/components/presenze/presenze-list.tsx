@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Pencil, Trash2, MessageSquare } from 'lucide-react'
+import { MessageSquare, Calendar } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import Link from 'next/link'
 
 interface Presenza {
   id: string
@@ -27,13 +28,13 @@ interface Presenza {
 
 interface PresenzeListProps {
   presenze: Presenza[]
-  onEdit: (presenza: Presenza) => void
-  onDelete: (id: string) => void
   onConfirm?: (id: string) => void
+  onMarkAsAbsent?: (id: string) => void
+  onReset?: (id: string, currentStatus: string) => void
   isLoading?: boolean
 }
 
-export function PresenzeList({ presenze, onEdit, onDelete, onConfirm, isLoading }: PresenzeListProps) {
+export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, isLoading }: PresenzeListProps) {
   const formatTime = (time: string | Date | null) => {
     if (!time) return '-'
     const date = new Date(time)
@@ -142,8 +143,24 @@ export function PresenzeList({ presenze, onEdit, onDelete, onConfirm, isLoading 
 
   if (presenze.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p>Nessuna presenza registrata</p>
+      <div className="text-center py-12 space-y-4">
+        <div className="space-y-3">
+          <p className="text-gray-700 font-medium text-lg">Nessuna presenza da gestire</p>
+          <p className="text-gray-500 text-sm">
+            Le presenze vengono generate automaticamente dai turni registrati.
+          </p>
+          <p className="text-gray-500 text-sm">
+            Vai alla sezione <span className="font-semibold text-blue-600">Turni</span> per pianificare i turni del personale.
+          </p>
+        </div>
+        <div className="flex justify-center pt-2">
+          <Link href="/turni">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Calendar className="mr-2 h-4 w-4" />
+              Vai a Gestione Turni
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }
@@ -220,33 +237,43 @@ export function PresenzeList({ presenze, onEdit, onDelete, onConfirm, isLoading 
               <td className="p-4 text-right">
                 <div className="flex justify-end gap-2">
                   {presenza.stato === 'DA_CONFERMARE' && onConfirm && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => onConfirm(presenza.id)}
+                        disabled={isLoading}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        Conferma
+                      </Button>
+                      {onMarkAsAbsent && (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => onMarkAsAbsent(presenza.id)}
+                          disabled={isLoading}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Assente
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  {(presenza.stato === 'CONFERMATA' || presenza.stato === 'ASSENTE') && onReset && presenza.stato && (
                     <Button
                       size="sm"
-                      variant="default"
-                      onClick={() => onConfirm(presenza.id)}
+                      variant="outline"
+                      onClick={() => onReset(presenza.id, presenza.stato!)}
                       disabled={isLoading}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="text-orange-600 hover:text-orange-700 border-orange-300 hover:bg-orange-50"
                     >
-                      Conferma
+                      Annulla {presenza.stato === 'CONFERMATA' ? 'Conferma' : 'Assenza'}
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onEdit(presenza)}
-                    disabled={isLoading}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onDelete(presenza.id)}
-                    disabled={isLoading}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {presenza.stato === 'MODIFICATA' && (
+                    <span className="text-sm text-gray-500">Modificata</span>
+                  )}
                 </div>
               </td>
             </tr>
