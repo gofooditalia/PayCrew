@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   MagnifyingGlassIcon,
   PencilIcon,
-  TrashIcon,
   EyeIcon,
   PlusIcon
 } from '@heroicons/react/24/outline'
@@ -42,10 +42,13 @@ interface Dipendente {
 
 interface DipendentiListProps {
   dipendenti: Dipendente[]
+  statoFiltro: string
 }
 
-export default function DipendentiList({ dipendenti }: DipendentiListProps) {
+export default function DipendentiList({ dipendenti, statoFiltro }: DipendentiListProps) {
   const [searchTerm, setSearchTerm] = useState('')
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const filteredDipendenti = dipendenti.filter(dipendente =>
     `${dipendente.nome} ${dipendente.cognome} ${dipendente.email}`.toLowerCase().includes(searchTerm.toLowerCase())
@@ -64,6 +67,16 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
       return new Date(date).toLocaleDateString('it-IT')
     }
   }, [])
+
+  const handleStatoChange = (newStato: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (newStato === 'attivi') {
+      params.delete('stato')
+    } else {
+      params.set('stato', newStato)
+    }
+    router.push(`/dipendenti${params.toString() ? `?${params.toString()}` : ''}`)
+  }
 
   return (
     <div className="animate-fade-in w-full">
@@ -93,6 +106,37 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                   <PlusIcon className="h-4 w-4" />
                 </Button>
               </Link>
+            </div>
+          </div>
+
+          {/* Filtro Stato */}
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Mostra:</span>
+            <div className="flex gap-2">
+              <Button
+                variant={statoFiltro === 'attivi' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleStatoChange('attivi')}
+                className="text-xs"
+              >
+                Solo Attivi
+              </Button>
+              <Button
+                variant={statoFiltro === 'non_attivi' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleStatoChange('non_attivi')}
+                className="text-xs"
+              >
+                Solo Non Attivi
+              </Button>
+              <Button
+                variant={statoFiltro === 'tutti' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleStatoChange('tutti')}
+                className="text-xs"
+              >
+                Tutti
+              </Button>
             </div>
           </div>
         </div>
@@ -136,8 +180,11 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                             </span>
                           </div>
                           <div className="ml-3">
-                            <div className="text-sm font-semibold text-foreground">
+                            <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                               {dipendente.nome} {dipendente.cognome}
+                              {!dipendente.attivo && (
+                                <Badge variant="destructive" className="text-xs">Non Attivo</Badge>
+                              )}
                             </div>
                             {dipendente.sede && (
                               <div className="text-xs text-muted-foreground flex items-center">
@@ -181,9 +228,6 @@ export default function DipendentiList({ dipendenti }: DipendentiListProps) {
                               <PencilIcon className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

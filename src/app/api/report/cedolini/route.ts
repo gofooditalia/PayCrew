@@ -45,6 +45,7 @@ export async function GET(request: Request) {
     const where: Prisma.buste_pagaWhereInput = {
       dipendenti: {
         aziendaId: userRecord.aziendaId,
+        attivo: true, // Solo dipendenti attivi
         ...(sedeId && { sedeId }),
       },
       mese,

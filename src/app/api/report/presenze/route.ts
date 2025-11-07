@@ -48,10 +48,11 @@ export async function GET(request: Request) {
     const primoGiorno = new Date(anno, mese - 1, 1);
     const ultimoGiorno = new Date(anno, mese, 0, 23, 59, 59);
 
-    // Recupera tutti i dipendenti dell'azienda (con filtro sede opzionale)
+    // Recupera tutti i dipendenti attivi dell'azienda (con filtro sede opzionale)
     const dipendenti = await prisma.dipendenti.findMany({
       where: {
         aziendaId: userRecord.aziendaId,
+        attivo: true, // Solo dipendenti attivi
         ...(sedeId && { sedeId }),
       },
       include: {

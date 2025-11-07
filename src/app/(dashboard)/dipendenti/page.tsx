@@ -3,11 +3,11 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import DipendentiList from '@/components/dipendenti/dipendenti-list'
 
-async function getDipendenti() {
+async function getDipendenti(statoFiltro?: string) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/login')
   }
@@ -22,11 +22,18 @@ async function getDipendenti() {
     return []
   }
 
+  // Costruisci il filtro per lo stato
+  const statoFilter = statoFiltro === 'tutti'
+    ? {}
+    : statoFiltro === 'non_attivi'
+    ? { attivo: false }
+    : { attivo: true } // default: solo attivi
+
   // Query dipendenti con relazioni usando Prisma
   const dipendenti = await prisma.dipendenti.findMany({
     where: {
       aziendaId: userData.aziendaId,
-      attivo: true
+      ...statoFilter
     },
     include: {
       sedi: {
@@ -51,12 +58,17 @@ async function getDipendenti() {
   }))
 }
 
-export default async function DipendentiPage() {
-  const dipendenti = await getDipendenti()
+export default async function DipendentiPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ stato?: string }>
+}) {
+  const params = await searchParams
+  const dipendenti = await getDipendenti(params.stato)
 
   return (
     <div className="min-h-screen animate-fade-in">
-      <DipendentiList dipendenti={dipendenti} />
+      <DipendentiList dipendenti={dipendenti} statoFiltro={params.stato || 'attivi'} />
     </div>
   )
 }

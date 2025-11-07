@@ -5,9 +5,21 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import Link from 'next/link'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { PageLoader } from '@/components/loading'
+import { useToast } from '@/hooks/use-toast'
 
 interface Dipendente {
   id: string
@@ -46,11 +58,13 @@ export default function ModificaDipendentePage() {
   const params = useParams()
   const router = useRouter()
   const supabase = createClient()
-  
+  const { toast } = useToast()
+
   const [dipendente, setDipendente] = useState<Dipendente | null>(null)
   const [sedi, setSedi] = useState<Sede[]>([])
   const [loadingData, setLoadingData] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   
@@ -149,6 +163,36 @@ export default function ModificaDipendentePage() {
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }))
+  }
+
+  const handleDelete = async () => {
+    if (!dipendente) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/dipendenti/${dipendente.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Errore durante l\'eliminazione del dipendente')
+      }
+
+      toast({
+        title: "Dipendente eliminato",
+        description: `${dipendente.nome} ${dipendente.cognome} è stato eliminato con successo.`,
+      })
+
+      // Redirect to dipendenti list after successful deletion
+      router.push('/dipendenti')
+    } catch (err) {
+      toast({
+        title: "Errore",
+        description: err instanceof Error ? err.message : 'Errore durante l\'eliminazione',
+        variant: "destructive",
+      })
+      setIsDeleting(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -590,6 +634,69 @@ export default function ModificaDipendentePage() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="mt-6 border-red-200 bg-red-50/50">
+        <CardHeader>
+          <CardTitle className="text-red-600 flex items-center gap-2">
+            <ExclamationTriangleIcon className="h-5 w-5" />
+            Zona Pericolosa
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              L'eliminazione del dipendente è un'azione permanente e irreversibile.
+              Tutti i dati associati (presenze, turni, cedolini) verranno eliminati definitivamente.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                  disabled={isDeleting || submitting}
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  {isDeleting ? 'Eliminazione in corso...' : 'Elimina Dipendente Definitivamente'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Conferma eliminazione definitiva</AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Stai per eliminare permanentemente <strong>{dipendente?.nome} {dipendente?.cognome}</strong> dal sistema.
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-4">
+                        Questa azione eliminerà:
+                      </p>
+                      <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-muted-foreground">
+                        <li>Tutti i dati anagrafici</li>
+                        <li>Tutte le presenze registrate</li>
+                        <li>Tutti i turni assegnati</li>
+                        <li>Tutti i cedolini generati</li>
+                      </ul>
+                      <p className="text-sm font-semibold text-red-600 mt-4">
+                        Questa azione non può essere annullata.
+                      </p>
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Sì, elimina definitivamente
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -232,19 +232,26 @@ export default function TurniPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Turni</h1>
           <p className="text-muted-foreground">
             Gestisci i turni e la pianificazione del personale
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setPianificazioneDialogOpen(true)}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => setPianificazioneDialogOpen(true)}
+            className="w-full sm:w-auto"
+          >
             <CalendarRange className="mr-2 h-4 w-4" />
             Pianificazione Multipla
           </Button>
-          <Button onClick={handleCreate}>
+          <Button
+            onClick={handleCreate}
+            className="w-full sm:w-auto"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nuovo Turno
           </Button>
