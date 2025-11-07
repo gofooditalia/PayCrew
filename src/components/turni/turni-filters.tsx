@@ -19,7 +19,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { X } from 'lucide-react'
+import { X, Filter, ChevronDown } from 'lucide-react'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 
 interface TurniFiltriProps {
   dipendenti: Array<{ id: string; nome: string; cognome: string }>
@@ -34,6 +39,7 @@ interface TurniFiltriProps {
 }
 
 export function TurniFiltri({ dipendenti, sedi, onFilterChange }: TurniFiltriProps) {
+  const [isOpen, setIsOpen] = useState(false)
   const [dipendenteId, setDipendenteId] = useState<string>('all')
   const [sedeId, setSedeId] = useState<string>('all')
   const [tipoTurno, setTipoTurno] = useState<string>('all')
@@ -123,22 +129,46 @@ export function TurniFiltri({ dipendenti, sedi, onFilterChange }: TurniFiltriPro
     setDataFine(fineMese.toISOString().split('T')[0])
   }
 
-  return (
-    <div className="space-y-4 p-4 bg-muted/50 rounded-lg border">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Filtri</h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleReset}
-          className="h-8 px-2"
-        >
-          <X className="h-4 w-4 mr-1" />
-          Reset
-        </Button>
-      </div>
+  // Conta filtri attivi
+  const filtriAttivi = [
+    dipendenteId !== 'all',
+    sedeId !== 'all',
+    tipoTurno !== 'all'
+  ].filter(Boolean).length
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
+      <div className="border rounded-lg px-4 bg-background">
+        <div className="flex items-center justify-between">
+          <CollapsibleTrigger asChild>
+            <button className="flex flex-1 items-center gap-2 py-3 hover:opacity-80 transition-opacity">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Filtri</span>
+              {filtriAttivi > 0 && (
+                <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-primary rounded-full">
+                  {filtriAttivi}
+                </span>
+              )}
+              <ChevronDown className={`h-4 w-4 text-muted-foreground ml-auto transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+          </CollapsibleTrigger>
+
+          {filtriAttivi > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="h-8 px-2 text-muted-foreground hover:text-foreground ml-2"
+            >
+              <X className="h-4 w-4 mr-1" />
+              <span className="text-xs">Reset</span>
+            </Button>
+          )}
+        </div>
+
+        <CollapsibleContent>
+          <div className="space-y-4 pb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Dipendente */}
         <div className="space-y-2">
           <Label htmlFor="dipendente">Dipendente</Label>
@@ -219,30 +249,33 @@ export function TurniFiltri({ dipendenti, sedi, onFilterChange }: TurniFiltriPro
         </div>
       </div>
 
-      {/* Quick filters */}
-      <div className="flex gap-2 flex-wrap">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={setSettimanaCorrente}
-        >
-          Questa settimana
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={setSettimanaProssima}
-        >
-          Prossima settimana
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={setMeseCorrente}
-        >
-          Questo mese
-        </Button>
+            {/* Quick filters */}
+            <div className="flex gap-2 flex-wrap pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={setSettimanaCorrente}
+              >
+                Questa settimana
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={setSettimanaProssima}
+              >
+                Prossima settimana
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={setMeseCorrente}
+              >
+                Questo mese
+              </Button>
+            </div>
+          </div>
+        </CollapsibleContent>
       </div>
-    </div>
+    </Collapsible>
   )
 }

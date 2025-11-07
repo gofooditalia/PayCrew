@@ -7,6 +7,22 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### 🎨 [0.5.2] - 2025-11-07 - UI Improvements Filtri Turni
+
+#### Changed
+- **Componente Filtri Turni**: Migrato da Accordion a Collapsible per migliore UX
+- **Stato iniziale filtri**: Filtri chiusi di default per interfaccia più pulita
+- **Animazione chevron**: Rotazione smooth dell'icona chevron all'apertura/chiusura
+- **Pulizia componenti**: Rimosso componente accordion.tsx non utilizzato
+
+#### Technical Details
+- Sostituito `@radix-ui/react-accordion` con `@radix-ui/react-collapsible`
+- Aggiunto state management con `useState(false)` per controllo apertura
+- Migliorata semantica: Collapsible più appropriato per sezione singola vs Accordion per sezioni multiple
+- File modificato: `src/components/turni/turni-filters.tsx`
+
+---
+
 ### 🎯 [0.5.1] - 2025-11-06 - UX Improvements Presenze
 
 #### Added
