@@ -24,9 +24,11 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Calculator } from 'lucide-react'
+import { Calculator, RefreshCw, Check, Edit3, RotateCcw } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface CedolinoFormProps {
   dipendenti: any[]
@@ -86,6 +88,74 @@ export function CedolinoForm({
     differenza: 0,
   })
 
+  const [isCalculating, setIsCalculating] = useState(false)
+
+  // Stato per tracciare se il valore delle ore è calcolato automaticamente o modificato manualmente
+  const [oreStatus, setOreStatus] = useState<{
+    isCalculated: boolean
+    calculatedValue: number | null
+  }>({
+    isCalculated: false,
+    calculatedValue: null,
+  })
+
+  // Funzione per calcolare automaticamente le ore lavorate dal report presenze
+  const calcolaOreLavorate = async () => {
+    const dipendenteId = form.getValues('dipendenteId')
+    const mese = form.getValues('mese')
+    const anno = form.getValues('anno')
+
+    if (!dipendenteId) {
+      toast.error('Seleziona prima un dipendente')
+      return
+    }
+
+    if (!mese || !anno) {
+      toast.error('Seleziona mese e anno')
+      return
+    }
+
+    setIsCalculating(true)
+
+    try {
+      const response = await fetch(
+        `/api/report/presenze?mese=${mese}&anno=${anno}`
+      )
+
+      if (!response.ok) {
+        throw new Error('Errore nel recupero delle presenze')
+      }
+
+      const data = await response.json()
+
+      // Trova il dipendente nel report
+      const dipendente = data.dipendenti.find(
+        (d: any) => d.dipendenteId === dipendenteId
+      )
+
+      if (!dipendente) {
+        toast.error('Nessuna presenza trovata per questo dipendente nel periodo selezionato')
+        return
+      }
+
+      // Imposta le ore lavorate nel form e aggiorna lo stato
+      form.setValue('oreLavorate', dipendente.oreLavorate)
+      setOreStatus({
+        isCalculated: true,
+        calculatedValue: dipendente.oreLavorate,
+      })
+
+      toast.success(
+        `Ore calcolate: ${dipendente.oreLavorate.toFixed(2)}h (${dipendente.giorniLavorati} giorni)`
+      )
+    } catch (error) {
+      console.error('Errore calcolo ore:', error)
+      toast.error('Errore nel calcolo delle ore lavorate')
+    } finally {
+      setIsCalculating(false)
+    }
+  }
+
   // Watch per ricalcolo automatico - usa watch specifici invece di watchAll
   const retribuzioneLorda = form.watch('retribuzioneLorda')
   const bonus = form.watch('bonus')
@@ -93,6 +163,60 @@ export function CedolinoForm({
   const acconto2 = form.watch('acconto2')
   const acconto3 = form.watch('acconto3')
   const acconto4 = form.watch('acconto4')
+  const dipendenteId = form.watch('dipendenteId')
+  const mese = form.watch('mese')
+  const anno = form.watch('anno')
+  const oreLavorate = form.watch('oreLavorate')
+
+  // Funzione per ripristinare il valore calcolato
+  const ripristinaValoreCalcolato = () => {
+    if (oreStatus.calculatedValue !== null) {
+      form.setValue('oreLavorate', oreStatus.calculatedValue)
+      setOreStatus({
+        isCalculated: true,
+        calculatedValue: oreStatus.calculatedValue,
+      })
+      toast.success('Valore ripristinato al calcolo automatico')
+    }
+  }
+
+  // Traccia se l'utente modifica manualmente il valore delle ore
+  useEffect(() => {
+    if (
+      oreStatus.isCalculated &&
+      oreStatus.calculatedValue !== null &&
+      oreLavorate !== undefined &&
+      oreLavorate !== oreStatus.calculatedValue
+    ) {
+      // L'utente ha modificato manualmente il valore
+      setOreStatus((prev) => ({
+        ...prev,
+        isCalculated: false,
+      }))
+    }
+  }, [oreLavorate, oreStatus.calculatedValue, oreStatus.isCalculated])
+
+  // Calcola automaticamente le ore quando cambiano dipendente/mese/anno (solo per nuovi cedolini)
+  useEffect(() => {
+    if (!initialData && dipendenteId && mese && anno) {
+      // Calcola automaticamente dopo un piccolo delay per evitare troppe chiamate
+      const timer = setTimeout(() => {
+        calcolaOreLavorate()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [dipendenteId, mese, anno])
+
+  // Calcola automaticamente il bonus (4% del compenso base)
+  useEffect(() => {
+    const retriLorda = Number(retribuzioneLorda) || 0
+    const bonusCalcolato = retriLorda * 0.04
+
+    // Aggiorna il bonus solo se il valore è cambiato
+    if (bonusCalcolato !== (Number(bonus) || 0)) {
+      form.setValue('bonus', bonusCalcolato)
+    }
+  }, [retribuzioneLorda])
 
   // Ricalcola i totali quando cambiano i valori
   useEffect(() => {
@@ -262,11 +386,73 @@ export function CedolinoForm({
               name="oreLavorate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ore Lavorate *</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Ore Lavorate *</FormLabel>
+                      {/* Badge per mostrare lo stato */}
+                      {oreStatus.calculatedValue !== null && (
+                        <>
+                          {oreStatus.isCalculated ? (
+                            <Badge
+                              variant="outline"
+                              className="text-xs bg-green-50 text-green-700 border-green-200"
+                            >
+                              <Check className="mr-1 h-3 w-3" />
+                              Calcolato
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                            >
+                              <Edit3 className="mr-1 h-3 w-3" />
+                              Modificato
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* Pulsante per ripristinare il valore calcolato */}
+                      {!oreStatus.isCalculated && oreStatus.calculatedValue !== null && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={ripristinaValoreCalcolato}
+                          className="h-7 text-xs"
+                        >
+                          <RotateCcw className="mr-1 h-3 w-3" />
+                          Ripristina
+                        </Button>
+                      )}
+                      {/* Pulsante calcola */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={calcolaOreLavorate}
+                        disabled={isCalculating}
+                        className="h-7 text-xs"
+                      >
+                        {isCalculating ? (
+                          <>
+                            <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
+                            Calcolo...
+                          </>
+                        ) : (
+                          <>
+                            <Calculator className="mr-1 h-3 w-3" />
+                            Calcola
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                   <FormControl>
                     <Input
                       type="number"
-                      step="0.01"
+                      step="1"
                       placeholder="0"
                       {...field}
                       value={field.value ?? ''}
@@ -276,6 +462,13 @@ export function CedolinoForm({
                       }}
                     />
                   </FormControl>
+                  <FormDescription className="text-xs">
+                    {oreStatus.isCalculated
+                      ? 'Valore calcolato automaticamente dalle presenze del mese'
+                      : oreStatus.calculatedValue !== null
+                      ? `Valore modificato manualmente. Calcolato originale: ${oreStatus.calculatedValue.toFixed(2)}h`
+                      : 'Usa "Calcola" per importare le ore dalle presenze del mese'}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -299,10 +492,12 @@ export function CedolinoForm({
                         const value = e.target.value
                         field.onChange(value === '' ? undefined : parseFloat(value))
                       }}
+                      disabled
+                      className="bg-gray-50 cursor-not-allowed"
                     />
                   </FormControl>
                   <FormDescription>
-                    Compenso mensile contrattuale del dipendente
+                    Compenso mensile contrattuale del dipendente (non modificabile)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -415,39 +610,12 @@ export function CedolinoForm({
           </CardContent>
         </Card>
 
-        {/* Bonus e Note */}
+        {/* Note */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Informazioni Aggiuntive</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="bonus"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bonus</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      value={field.value ?? ''}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        field.onChange(value === '' ? undefined : parseFloat(value))
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Eventuali bonus o compensi aggiuntivi
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+          <CardContent>
             <FormField
               control={form.control}
               name="note"
@@ -522,7 +690,7 @@ export function CedolinoForm({
 
               {bonus !== undefined && bonus > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Bonus:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Bonus (4%):</span>
                   <span className="font-medium text-green-600">
                     +{formatCurrency(bonus)}
                   </span>
