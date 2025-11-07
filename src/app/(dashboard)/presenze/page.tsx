@@ -1,18 +1,33 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PresenzeList } from '@/components/presenze/presenze-list'
+import { PresenzeFilters, FilterValues } from '@/components/presenze/presenze-filters'
 import { toast } from 'sonner'
 
 export default function PresenzePage() {
   const [presenze, setPresenze] = useState([])
-  const [isLoading, setIsLoading] = useState(true) // Inizia con true per mostrare skeleton
+  const [dipendenti, setDipendenti] = useState([])
+  const [sedi, setSedi] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentFilters, setCurrentFilters] = useState<FilterValues | null>(null)
 
-  const fetchPresenze = async () => {
+  const fetchPresenze = useCallback(async (filters: FilterValues) => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/presenze?limit=50')
+      setCurrentFilters(filters)
+
+      // Costruisci query string
+      const params = new URLSearchParams()
+      if (filters.dataDa) params.append('dataInizio', filters.dataDa)
+      if (filters.dataA) params.append('dataFine', filters.dataA)
+      if (filters.dipendenteId) params.append('dipendenteId', filters.dipendenteId)
+      if (filters.stato) params.append('stato', filters.stato)
+      if (filters.sedeId) params.append('sedeId', filters.sedeId)
+      params.append('limit', '100')
+
+      const response = await fetch(`/api/presenze?${params.toString()}`)
       if (response.ok) {
         const data = await response.json()
         setPresenze(data.presenze || [])
@@ -23,10 +38,38 @@ export default function PresenzePage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
+  const refreshPresenze = useCallback(() => {
+    if (currentFilters) {
+      fetchPresenze(currentFilters)
+    }
+  }, [currentFilters, fetchPresenze])
+
+  // Carica dipendenti e sedi per i filtri
   useEffect(() => {
-    fetchPresenze()
+    const fetchDipendentiSedi = async () => {
+      try {
+        const [dipRes, sediRes] = await Promise.all([
+          fetch('/api/dipendenti'),
+          fetch('/api/sedi')
+        ])
+
+        if (dipRes.ok) {
+          const dipData = await dipRes.json()
+          setDipendenti(dipData.dipendenti || [])
+        }
+
+        if (sediRes.ok) {
+          const sediData = await sediRes.json()
+          setSedi(sediData.sedi || [])
+        }
+      } catch (error) {
+        console.error('Errore caricamento dati filtri:', error)
+      }
+    }
+
+    fetchDipendentiSedi()
   }, [])
 
   const handleConfirm = async (id: string) => {
@@ -40,7 +83,7 @@ export default function PresenzePage() {
 
       if (response.ok) {
         toast.success('Presenza confermata con successo')
-        fetchPresenze()
+        refreshPresenze()
       } else {
         const error = await response.json()
         toast.error(error.error || 'Errore nella conferma della presenza')
@@ -65,8 +108,8 @@ export default function PresenzePage() {
 
       if (response.ok) {
         toast.success('Dipendente segnato come assente')
-        fetchPresenze()
-      } else {
+        refreshPresenze()
+      } else{
         const error = await response.json()
         toast.error(error.error || 'Errore nella registrazione dell\'assenza')
       }
@@ -93,7 +136,7 @@ export default function PresenzePage() {
 
       if (response.ok) {
         toast.success('Stato della presenza ripristinato')
-        fetchPresenze()
+        refreshPresenze()
       } else {
         const error = await response.json()
         toast.error(error.error || 'Errore nel ripristino della presenza')
@@ -114,6 +157,12 @@ export default function PresenzePage() {
         </div>
       </div>
 
+      <PresenzeFilters
+        onFilterChange={fetchPresenze}
+        dipendenti={dipendenti}
+        sedi={sedi}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Registro Presenze</CardTitle>
@@ -124,6 +173,7 @@ export default function PresenzePage() {
             onConfirm={handleConfirm}
             onMarkAsAbsent={handleMarkAsAbsent}
             onReset={handleReset}
+            onRefresh={refreshPresenze}
             isLoading={isLoading}
           />
         </CardContent>

@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     const filters = {
       dipendenteId: searchParams.get('dipendenteId') || undefined,
       sedeId: searchParams.get('sedeId') || undefined,
+      stato: searchParams.get('stato') || undefined,
       dataInizio: searchParams.get('dataInizio') || undefined,
       dataFine: searchParams.get('dataFine') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
@@ -57,6 +58,10 @@ export async function GET(request: NextRequest) {
         ...where.dipendenti,
         sedeId: validatedFilters.sedeId
       }
+    }
+
+    if (validatedFilters.stato) {
+      where.stato = validatedFilters.stato
     }
 
     if (validatedFilters.dataInizio || validatedFilters.dataFine) {

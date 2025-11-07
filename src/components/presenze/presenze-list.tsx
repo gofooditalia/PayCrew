@@ -1,14 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { MessageSquare, Calendar } from 'lucide-react'
+import { MessageSquare, Calendar, Edit, Plus } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
+import { NoteDialog } from './note-dialog'
+import { toast } from 'sonner'
 
 interface Presenza {
   id: string
@@ -31,10 +34,25 @@ interface PresenzeListProps {
   onConfirm?: (id: string) => void
   onMarkAsAbsent?: (id: string) => void
   onReset?: (id: string, currentStatus: string) => void
+  onRefresh?: () => void
   isLoading?: boolean
 }
 
-export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, isLoading }: PresenzeListProps) {
+export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onRefresh, isLoading }: PresenzeListProps) {
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false)
+  const [selectedPresenza, setSelectedPresenza] = useState<Presenza | null>(null)
+
+  const handleOpenNoteDialog = (presenza: Presenza) => {
+    setSelectedPresenza(presenza)
+    setNoteDialogOpen(true)
+  }
+
+  const handleNoteSaved = () => {
+    toast.success('Nota salvata con successo')
+    if (onRefresh) {
+      onRefresh()
+    }
+  }
   const formatTime = (time: string | Date | null) => {
     if (!time) return '-'
     const date = new Date(time)
@@ -166,23 +184,24 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, isL
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <thead>
-          <tr className="border-b bg-gray-50">
-            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
-            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Data</th>
-            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Entrata</th>
-            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
-            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
-            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
-            <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
-            <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
-            <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
-          </tr>
-        </thead>
-        <tbody>
-          {presenze.map((presenza) => (
+    <>
+      <div className="rounded-md border">
+        <Table>
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Data</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Entrata</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
+              <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
+              <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {presenze.map((presenza) => (
             <tr key={presenza.id} className="border-b hover:bg-gray-50">
               <td className="p-4">
                 <span className="font-medium">
@@ -212,27 +231,48 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, isL
                 {getStatoBadge(presenza.stato)}
               </td>
               <td className="p-4 text-center">
-                {presenza.nota && presenza.nota.trim() !== '' ? (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80" align="center">
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-sm text-gray-900">Nota</h4>
-                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{presenza.nota}</p>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <span className="text-gray-400">-</span>
-                )}
+                <div className="flex items-center justify-center gap-1">
+                  {presenza.nota && presenza.nota.trim() !== '' ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80" align="center">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-sm text-gray-900">Nota</h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenNoteDialog(presenza)}
+                              className="h-7 w-7 p-0 text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                              title="Modifica nota"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                          <p className="text-sm text-gray-600 whitespace-pre-wrap">{presenza.nota}</p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleOpenNoteDialog(presenza)}
+                      className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                      title="Aggiungi nota"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </td>
               <td className="p-4 text-right">
                 <div className="flex justify-end gap-2">
@@ -281,5 +321,17 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, isL
         </tbody>
       </Table>
     </div>
+
+    {selectedPresenza && (
+      <NoteDialog
+        open={noteDialogOpen}
+        onOpenChange={setNoteDialogOpen}
+        currentNote={selectedPresenza.nota}
+        presenzaId={selectedPresenza.id}
+        dipendenteName={`${selectedPresenza.dipendenti.nome} ${selectedPresenza.dipendenti.cognome}`}
+        onSave={handleNoteSaved}
+      />
+    )}
+  </>
   )
 }

@@ -68,6 +68,7 @@ export const turnoSchema = z.object({
 export const presenzeFilterSchema = z.object({
   dipendenteId: z.string().uuid().optional(),
   sedeId: z.string().uuid().optional(),
+  stato: z.enum(['DA_CONFERMARE', 'CONFERMATA', 'ASSENTE', 'MODIFICATA']).optional(),
   dataInizio: z.string().optional(),
   dataFine: z.string().optional(),
   page: z.number().int().positive().default(1).optional(),
