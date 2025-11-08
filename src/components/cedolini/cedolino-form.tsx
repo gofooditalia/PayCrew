@@ -644,74 +644,96 @@ export function CedolinoForm({
               <CardTitle className="text-lg">Riepilogo Pagamento</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  Compenso Base:
+          <CardContent>
+            {/* Layout come operazione matematica */}
+            <div className="space-y-1 font-mono text-sm">
+              {/* Compenso Base */}
+              <div className="flex justify-between items-center py-2">
+                <span className="text-gray-700 dark:text-gray-300">
+                  Compenso Base
                 </span>
-                <span className="font-medium">
+                <span className="font-semibold text-base tabular-nums">
                   {formatCurrency(calcoli.retribuzioneLorda)}
                 </span>
               </div>
 
-              {calcoli.totaleAcconti > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Totale Acconti:
-                  </span>
-                  <span className="font-medium text-amber-600">
-                    -{formatCurrency(calcoli.totaleAcconti)}
-                  </span>
-                </div>
-              )}
-
+              {/* Contributi INPS */}
               {calcoli.contributiINPS > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Contributi (9.19%):
+                <div className="flex justify-between items-center py-1 pl-4">
+                  <span className="text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <span className="font-bold">−</span>
+                    <span>Contributi INPS (9.19%)</span>
                   </span>
-                  <span className="font-medium text-red-600">
-                    -{formatCurrency(calcoli.contributiINPS)}
+                  <span className="font-semibold text-red-600 dark:text-red-400 tabular-nums">
+                    {formatCurrency(calcoli.contributiINPS)}
                   </span>
                 </div>
               )}
 
+              {/* IRPEF */}
               {calcoli.irpef > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    IRPEF (23%):
+                <div className="flex justify-between items-center py-1 pl-4">
+                  <span className="text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <span className="font-bold">−</span>
+                    <span>IRPEF (23%)</span>
                   </span>
-                  <span className="font-medium text-red-600">
-                    -{formatCurrency(calcoli.irpef)}
+                  <span className="font-semibold text-red-600 dark:text-red-400 tabular-nums">
+                    {formatCurrency(calcoli.irpef)}
                   </span>
                 </div>
               )}
 
+              {/* Bonus */}
               {bonus !== undefined && bonus > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Bonus (4%):</span>
-                  <span className="font-medium text-green-600">
-                    +{formatCurrency(bonus)}
+                <div className="flex justify-between items-center py-1 pl-4">
+                  <span className="text-green-600 dark:text-green-400 flex items-center gap-2">
+                    <span className="font-bold">+</span>
+                    <span>Bonus (4%)</span>
+                  </span>
+                  <span className="font-semibold text-green-600 dark:text-green-400 tabular-nums">
+                    {formatCurrency(bonus)}
                   </span>
                 </div>
               )}
-            </div>
 
-            <Separator />
+              {/* Separatore */}
+              <div className="border-t-2 border-gray-400 dark:border-gray-600 my-2"></div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between text-base">
-                <span className="font-medium">Netto Totale:</span>
-                <span className="font-bold text-lg">
+              {/* Netto Totale */}
+              <div className="flex justify-between items-center py-2 bg-blue-50 dark:bg-blue-950/30 px-3 rounded">
+                <span className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <span>=</span>
+                  <span>Netto Totale</span>
+                </span>
+                <span className="font-bold text-lg text-blue-700 dark:text-blue-400 tabular-nums">
                   {formatCurrency(calcoli.netto)}
                 </span>
               </div>
 
-              <div className="flex justify-between text-base">
-                <span className="font-medium">Differenza da Erogare:</span>
+              {/* Acconti Erogati */}
+              {calcoli.totaleAcconti > 0 && (
+                <div className="flex justify-between items-center py-1 pl-4 mt-2">
+                  <span className="text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    <span className="font-bold">−</span>
+                    <span>Acconti Erogati</span>
+                  </span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400 tabular-nums">
+                    {formatCurrency(calcoli.totaleAcconti)}
+                  </span>
+                </div>
+              )}
+
+              {/* Separatore finale */}
+              <div className="border-t-2 border-gray-400 dark:border-gray-600 my-2"></div>
+
+              {/* Differenza da Erogare */}
+              <div className="flex justify-between items-center py-3 bg-gradient-to-r from-primary/10 to-primary/5 px-3 rounded">
+                <span className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 text-base">
+                  <span>=</span>
+                  <span>Differenza da Erogare</span>
+                </span>
                 <span
-                  className={`font-bold text-lg ${
+                  className={`font-bold text-xl tabular-nums ${
                     calcoli.differenza >= 0
                       ? 'text-green-600 dark:text-green-400'
                       : 'text-red-600 dark:text-red-400'
