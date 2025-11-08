@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PayCrew is a modern web application for managing employees and payroll, primarily optimized for the restaurant sector. It's a full-stack Next.js 15 application using Supabase for backend services and Prisma as the ORM.
+PayCrew is a modern web application for managing employees and payroll, primarily optimized for the restaurant sector. It's a full-stack Next.js 16 application using Supabase for backend services and Prisma as the ORM.
 
-**Stack**: Next.js 15 (App Router), TypeScript, Supabase (PostgreSQL), Prisma, Tailwind CSS, shadcn/ui, PWA
+**Stack**: Next.js 16 (App Router), TypeScript, Supabase (PostgreSQL), Prisma, Tailwind CSS, shadcn/ui, PWA
 
 **Progressive Web App**: PayCrew è configurato come PWA con funzionalità offline, installabilità, e caching avanzato. Vedere `PWA-SETUP.md` per dettagli completi.
 
@@ -259,7 +259,7 @@ The Prisma client uses connection pooling with:
 ## Common Pitfalls
 
 1. **RLS Policies**: Always include `aziendaId` filter in queries for models with RLS
-2. **Async Cookies**: In Next.js 15+, always await `cookies()` call
+2. **Async Cookies**: In Next.js 16+, always await `cookies()` call
 3. **Enum Casting**: Use explicit casting in raw SQL queries with enums
 4. **Decimal Types**: Convert Prisma Decimal to Number for JSON serialization
 5. **Activity Logging**: Use the centralized `AttivitaLogger` class, never direct Prisma inserts

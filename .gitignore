@@ -65,3 +65,6 @@ next-env.d.ts
 # Lighthouse reports
 *.vercel.app-*.json
 lighthouse-report-*.json
+
+# Internal documentation and archives
+/docs/archive/
