@@ -12,6 +12,7 @@ import PrestazioneForm from './prestazione-form'
 
 interface Prestazione {
   id: string
+  collaboratoreId: string
   tipo: string
   descrizione: string
   dataInizio: string
