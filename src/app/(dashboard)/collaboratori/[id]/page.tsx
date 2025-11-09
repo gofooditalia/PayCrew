@@ -120,23 +120,11 @@ export default function CollaboratoreDettaglioPage({ params }: { params: Promise
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => router.push('/collaboratori')} className="hover:bg-primary/10">
-              <ArrowLeftIcon className="h-5 w-5" />
-            </Button>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                  {collaboratore.nome} {collaboratore.cognome}
-                </h1>
-                <Badge variant={collaboratore.attivo ? 'default' : 'secondary'} className="text-xs">
-                  {collaboratore.attivo ? 'Attivo' : 'Non Attivo'}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">{collaboratore.codiceFiscale}</p>
-            </div>
-          </div>
+        {/* Prima riga: Indietro e Profilo */}
+        <div className="flex items-center justify-between mb-3">
+          <Button variant="ghost" size="sm" onClick={() => router.push('/collaboratori')} className="hover:bg-primary/10">
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Button>
           <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -237,6 +225,17 @@ export default function CollaboratoreDettaglioPage({ params }: { params: Promise
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Seconda riga: Nome e Badge */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            {collaboratore.nome} {collaboratore.cognome}
+          </h1>
+          <Badge variant={collaboratore.attivo ? 'default' : 'secondary'} className="text-xs">
+            {collaboratore.attivo ? 'Attivo' : 'Non Attivo'}
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">{collaboratore.codiceFiscale}</p>
       </div>
 
       {/* Statistiche */}
