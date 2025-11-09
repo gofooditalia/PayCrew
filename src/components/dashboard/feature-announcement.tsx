@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { XMarkIcon, SparklesIcon, CalendarIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, SparklesIcon, CalendarIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { BuildingOfficeIcon, ClockIcon } from '@heroicons/react/24/solid'
 import Link from 'next/link'
 
@@ -31,11 +31,19 @@ const FEATURES = [
     link: '/turni',
     linkText: 'Vai a Turni',
     color: 'from-purple-500 to-pink-500'
+  },
+  {
+    icon: UsersIcon,
+    title: 'Collaboratori',
+    description: 'Gestisci collaboratori esterni con calcolo automatico compensi orari o a progetto e export CSV',
+    link: '/collaboratori',
+    linkText: 'Vai a Collaboratori',
+    color: 'from-orange-500 to-amber-500'
   }
 ]
 
 const STORAGE_KEY = 'paycrew_features_announcement_dismissed'
-const CURRENT_VERSION = 'v1.1' // Incrementa questa versione quando ci sono nuove feature
+const CURRENT_VERSION = 'v1.2' // Incrementa questa versione quando ci sono nuove feature
 
 export default function FeatureAnnouncement() {
   const [isDismissed, setIsDismissed] = useState(true)
