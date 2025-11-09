@@ -48,6 +48,9 @@ model aziende {
   users          users[]
   collaboratori  collaboratori[]
   prestazioni    prestazioni[]
+  orari_lavoro   orari_lavoro[]
+  fasce_orarie   fasce_orarie[]
+  festivita      festivita[]
 }
 
 model buste_paga {
@@ -382,4 +385,61 @@ enum stato_pagamento {
   DA_PAGARE
   PAGATO
   ANNULLATO
+}
+
+/// Orari di lavoro standard configurabili per l'azienda
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model orari_lavoro {
+  id                String   @id @default(uuid()) @db.Uuid
+  nome              String   // es. "Orario Full-time", "Part-time mattina"
+  oraInizio         String   // formato HH:mm es. "08:00"
+  oraFine           String   // formato HH:mm es. "17:00"
+  pausaPranzoInizio String?  // formato HH:mm es. "12:00"
+  pausaPranzoFine   String?  // formato HH:mm es. "13:00"
+  oreTotali         Decimal  @db.Decimal(4, 2) // ore totali giornaliere
+  aziendaId         String   @db.Uuid
+  attivo            Boolean  @default(true)
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+  aziende           aziende  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+
+  @@index([aziendaId])
+  @@index([attivo])
+}
+
+/// Fasce orarie predefinite per turni
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model fasce_orarie {
+  id              String   @id @default(uuid()) @db.Uuid
+  nome            String   // es. "Mattina", "Pomeriggio", "Sera"
+  tipoTurno       tipo_turno
+  oraInizio       String   // formato HH:mm
+  oraFine         String   // formato HH:mm
+  maggiorazione   Decimal  @default(0) @db.Decimal(5, 2) // percentuale maggiorazione (es. 20 per +20%)
+  aziendaId       String   @db.Uuid
+  attivo          Boolean  @default(true)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+  aziende         aziende  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+
+  @@index([aziendaId])
+  @@index([tipoTurno])
+  @@index([attivo])
+}
+
+/// Festività e chiusure aziendali
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model festivita {
+  id            String   @id @default(uuid()) @db.Uuid
+  nome          String   // es. "Natale", "Ferragosto", "Chiusura estiva"
+  data          DateTime @db.Date
+  ricorrente    Boolean  @default(false) // se true, si ripete ogni anno
+  maggiorazione Decimal  @default(0) @db.Decimal(5, 2) // percentuale maggiorazione
+  aziendaId     String   @db.Uuid
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+  aziende       aziende  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+
+  @@index([aziendaId])
+  @@index([data])
 }
