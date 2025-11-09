@@ -9,20 +9,12 @@ import Link from 'next/link'
 
 const FEATURES = [
   {
-    icon: BuildingOfficeIcon,
-    title: 'Gestione Sedi',
-    description: 'Organizza le tue filiali e assegna i dipendenti alle diverse sedi operative',
-    link: '/azienda/modifica',
-    linkText: 'Configura Sedi',
-    color: 'from-blue-500 to-cyan-500'
-  },
-  {
-    icon: ClockIcon,
-    title: 'Presenze',
-    description: 'Monitora gli orari di lavoro con calcolo automatico delle ore lavorate e straordinari',
-    link: '/presenze',
-    linkText: 'Vai a Presenze',
-    color: 'from-green-500 to-emerald-500'
+    icon: UsersIcon,
+    title: 'Collaboratori',
+    description: 'Gestisci collaboratori esterni con calcolo automatico compensi orari o a progetto e export CSV',
+    link: '/collaboratori',
+    linkText: 'Vai a Collaboratori',
+    color: 'from-orange-500 to-amber-500'
   },
   {
     icon: CalendarIcon,
@@ -33,12 +25,20 @@ const FEATURES = [
     color: 'from-purple-500 to-pink-500'
   },
   {
-    icon: UsersIcon,
-    title: 'Collaboratori',
-    description: 'Gestisci collaboratori esterni con calcolo automatico compensi orari o a progetto e export CSV',
-    link: '/collaboratori',
-    linkText: 'Vai a Collaboratori',
-    color: 'from-orange-500 to-amber-500'
+    icon: ClockIcon,
+    title: 'Presenze',
+    description: 'Monitora gli orari di lavoro con calcolo automatico delle ore lavorate e straordinari',
+    link: '/presenze',
+    linkText: 'Vai a Presenze',
+    color: 'from-green-500 to-emerald-500'
+  },
+  {
+    icon: BuildingOfficeIcon,
+    title: 'Gestione Sedi',
+    description: 'Organizza le tue filiali e assegna i dipendenti alle diverse sedi operative',
+    link: '/azienda/modifica',
+    linkText: 'Configura Sedi',
+    color: 'from-blue-500 to-cyan-500'
   }
 ]
 
