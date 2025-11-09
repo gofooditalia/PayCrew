@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PlusIcon, MagnifyingGlassIcon, EyeIcon, PencilIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, EyeIcon, PencilIcon, ChartBarIcon, FunnelIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import CollaboratoreForm from './collaboratore-form'
 import ReportCollaboratori from './report-collaboratori'
 import { formatCurrency } from '@/lib/utils/currency'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { ChevronDown } from 'lucide-react'
 
 interface Collaboratore {
   id: string
@@ -41,6 +43,7 @@ export default function CollaboratoriList() {
   const [showReport, setShowReport] = useState(false)
   const [editingCollaboratore, setEditingCollaboratore] = useState<Collaboratore | null>(null)
   const [filtroAttivo, setFiltroAttivo] = useState<'tutti' | 'attivi' | 'non-attivi'>('attivi')
+  const [filtriOpen, setFiltriOpen] = useState(false)
 
   const fetchCollaboratori = async () => {
     try {
@@ -83,6 +86,14 @@ export default function CollaboratoriList() {
     return prestazioni.reduce((sum, p) => sum + p.importoTotale, 0)
   }
 
+  const getFiltroLabel = () => {
+    switch (filtroAttivo) {
+      case 'tutti': return 'Tutti'
+      case 'attivi': return 'Attivi'
+      case 'non-attivi': return 'Non Attivi'
+    }
+  }
+
   if (showReport) {
     return (
       <div className="space-y-4">
@@ -109,9 +120,10 @@ export default function CollaboratoriList() {
 
   return (
     <div className="space-y-4">
-      {/* Header con azioni */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex-1 w-full sm:max-w-sm">
+      {/* Header con azioni - Mobile ottimizzato */}
+      <div className="flex items-center gap-2 justify-between">
+        {/* Barra ricerca */}
+        <div className="flex-1 min-w-[180px] max-w-sm">
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
@@ -123,42 +135,57 @@ export default function CollaboratoriList() {
             />
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowReport(true)}>
-            <ChartBarIcon className="h-5 w-5 mr-2" />
-            Report
+
+        {/* Pulsanti azioni - Solo icone su mobile */}
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={() => setShowReport(true)}>
+            <ChartBarIcon className="h-5 w-5" />
+            <span className="hidden sm:inline ml-2">Report</span>
           </Button>
-          <Button onClick={() => setShowForm(true)}>
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Nuovo Collaboratore
+          <Button size="sm" onClick={() => setShowForm(true)}>
+            <PlusIcon className="h-5 w-5" />
+            <span className="hidden sm:inline ml-2">Nuovo</span>
           </Button>
         </div>
       </div>
 
-      {/* Filtri stato */}
-      <div className="flex gap-2">
-        <Button
-          variant={filtroAttivo === 'tutti' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFiltroAttivo('tutti')}
-        >
-          Tutti
-        </Button>
-        <Button
-          variant={filtroAttivo === 'attivi' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFiltroAttivo('attivi')}
-        >
-          Attivi
-        </Button>
-        <Button
-          variant={filtroAttivo === 'non-attivi' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFiltroAttivo('non-attivi')}
-        >
-          Non Attivi
-        </Button>
-      </div>
+      {/* Filtri stato - Collapsible */}
+      <Collapsible open={filtriOpen} onOpenChange={setFiltriOpen}>
+        <div className="flex items-center gap-2">
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <FunnelIcon className="h-4 w-4" />
+              <span className="text-sm">Filtri: {getFiltroLabel()}</span>
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${filtriOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        <CollapsibleContent className="pt-3">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant={filtroAttivo === 'tutti' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFiltroAttivo('tutti')}
+            >
+              Tutti
+            </Button>
+            <Button
+              variant={filtroAttivo === 'attivi' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFiltroAttivo('attivi')}
+            >
+              Attivi
+            </Button>
+            <Button
+              variant={filtroAttivo === 'non-attivi' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFiltroAttivo('non-attivi')}
+            >
+              Non Attivi
+            </Button>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Tabella */}
       {loading ? (
