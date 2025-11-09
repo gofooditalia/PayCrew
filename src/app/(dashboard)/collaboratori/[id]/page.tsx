@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline'
 import PrestazioniList from '@/components/collaboratori/prestazioni-list'
+import CollaboratoreForm from '@/components/collaboratori/collaboratore-form'
 import { formatCurrency } from '@/lib/utils/currency'
 
 interface CollaboratoreDettaglio {
@@ -34,6 +35,7 @@ export default function CollaboratoreDettaglioPage({ params }: { params: Promise
   const router = useRouter()
   const [collaboratore, setCollaboratore] = useState<CollaboratoreDettaglio | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showEditForm, setShowEditForm] = useState(false)
 
   const fetchCollaboratore = async () => {
     try {
@@ -98,6 +100,20 @@ export default function CollaboratoreDettaglioPage({ params }: { params: Promise
     )
   }
 
+  // Mostra il form di modifica se richiesto
+  if (showEditForm) {
+    return (
+      <CollaboratoreForm
+        collaboratore={collaboratore}
+        onSuccess={() => {
+          setShowEditForm(false)
+          fetchCollaboratore()
+        }}
+        onCancel={() => setShowEditForm(false)}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -117,7 +133,7 @@ export default function CollaboratoreDettaglioPage({ params }: { params: Promise
           <Badge variant={collaboratore.attivo ? 'default' : 'secondary'}>
             {collaboratore.attivo ? 'Attivo' : 'Non Attivo'}
           </Badge>
-          <Button variant="outline" size="sm" onClick={() => router.push('/collaboratori')}>
+          <Button variant="outline" size="sm" onClick={() => setShowEditForm(true)}>
             <PencilIcon className="h-4 w-4 mr-2" />
             Modifica
           </Button>
