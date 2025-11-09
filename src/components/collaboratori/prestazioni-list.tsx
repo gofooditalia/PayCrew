@@ -61,20 +61,35 @@ export default function PrestazioniList({ collaboratoreId, prestazioni, onRefres
       const prestazione = prestazioni.find(p => p.id === id)
       if (!prestazione) return
 
+      const updateData: any = {
+        collaboratoreId: prestazione.collaboratoreId,
+        tipo: prestazione.tipo,
+        descrizione: prestazione.descrizione,
+        dataInizio: prestazione.dataInizio.split('T')[0],
+        importoTotale: prestazione.importoTotale,
+        statoPagamento: 'PAGATO',
+        dataPagamento: new Date().toISOString().split('T')[0],
+      }
+
+      // Aggiungi campi opzionali se presenti
+      if (prestazione.dataFine) updateData.dataFine = prestazione.dataFine.split('T')[0]
+      if (prestazione.oreLavorate) updateData.oreLavorate = prestazione.oreLavorate
+      if (prestazione.tariffaOraria) updateData.tariffaOraria = prestazione.tariffaOraria
+      if (prestazione.nomeProgetto) updateData.nomeProgetto = prestazione.nomeProgetto
+      if (prestazione.compensoFisso) updateData.compensoFisso = prestazione.compensoFisso
+      if (prestazione.note) updateData.note = prestazione.note
+
       const response = await fetch(`/api/prestazioni/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...prestazione,
-          statoPagamento: 'PAGATO',
-          dataPagamento: new Date().toISOString(),
-        }),
+        body: JSON.stringify(updateData),
       })
 
       if (response.ok) {
         onRefresh()
       } else {
-        alert('Errore durante l\'aggiornamento')
+        const data = await response.json()
+        alert(data.error || 'Errore durante l\'aggiornamento')
       }
     } catch (error) {
       console.error('Errore aggiornamento:', error)
