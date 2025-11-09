@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PlusIcon, MagnifyingGlassIcon, EyeIcon, PencilIcon, TrashIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, EyeIcon, PencilIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import CollaboratoreForm from './collaboratore-form'
 import ReportCollaboratori from './report-collaboratori'
@@ -63,26 +63,6 @@ export default function CollaboratoriList() {
   useEffect(() => {
     fetchCollaboratori()
   }, [search, filtroAttivo])
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Sei sicuro di voler eliminare questo collaboratore?')) return
-
-    try {
-      const response = await fetch(`/api/collaboratori/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        fetchCollaboratori()
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Errore durante l\'eliminazione')
-      }
-    } catch (error) {
-      console.error('Errore eliminazione:', error)
-      alert('Errore durante l\'eliminazione')
-    }
-  }
 
   const handleFormSuccess = () => {
     setShowForm(false)
@@ -257,13 +237,6 @@ export default function CollaboratoriList() {
                           }}
                         >
                           <PencilIcon className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(collaboratore.id)}
-                        >
-                          <TrashIcon className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </TableCell>
