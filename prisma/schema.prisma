@@ -31,21 +31,23 @@ model attivita {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model aziende {
-  id            String       @id @default(uuid()) @db.Uuid
-  nome          String
-  partitaIva    String       @unique
-  codiceFiscale String?
-  indirizzo     String?
-  citta         String?
-  cap           String?
-  telefono      String?
-  email         String?
-  createdAt     DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime     @updatedAt @db.Timestamptz(6)
-  attivita      attivita[]
-  dipendenti    dipendenti[]
-  sedi          sedi[]
-  users         users[]
+  id             String          @id @default(uuid()) @db.Uuid
+  nome           String
+  partitaIva     String          @unique
+  codiceFiscale  String?
+  indirizzo      String?
+  citta          String?
+  cap            String?
+  telefono       String?
+  email          String?
+  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
+  attivita       attivita[]
+  dipendenti     dipendenti[]
+  sedi           sedi[]
+  users          users[]
+  collaboratori  collaboratori[]
+  prestazioni    prestazioni[]
 }
 
 model buste_paga {
@@ -225,6 +227,61 @@ model users {
   aziende   aziende?   @relation(fields: [aziendaId], references: [id])
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model collaboratori {
+  id            String                @id @default(uuid()) @db.Uuid
+  nome          String
+  cognome       String
+  codiceFiscale String
+  partitaIva    String?
+  email         String?
+  telefono      String?
+  indirizzo     String?
+  tipo          tipo_collaboratore
+  tariffaOraria Decimal?              @db.Decimal(10, 2)
+  note          String?
+  aziendaId     String                @db.Uuid
+  attivo        Boolean               @default(true)
+  createdAt     DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime              @updatedAt @db.Timestamptz(6)
+  aziende       aziende               @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  prestazioni   prestazioni[]
+
+  @@unique([codiceFiscale, aziendaId])
+  @@index([aziendaId])
+  @@index([attivo])
+  @@index([tipo])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model prestazioni {
+  id              String            @id @default(uuid()) @db.Uuid
+  tipo            tipo_prestazione
+  descrizione     String
+  dataInizio      DateTime          @db.Date
+  dataFine        DateTime?         @db.Date
+  oreLavorate     Decimal?          @db.Decimal(5, 2)
+  tariffaOraria   Decimal?          @db.Decimal(10, 2)
+  nomeProgetto    String?
+  compensoFisso   Decimal?          @db.Decimal(10, 2)
+  importoTotale   Decimal           @db.Decimal(10, 2)
+  statoPagamento  stato_pagamento   @default(DA_PAGARE)
+  dataPagamento   DateTime?         @db.Date
+  note            String?
+  collaboratoreId String            @db.Uuid
+  aziendaId       String            @db.Uuid
+  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime          @updatedAt @db.Timestamptz(6)
+  collaboratori   collaboratori     @relation(fields: [collaboratoreId], references: [id], onDelete: Cascade)
+  aziende         aziende           @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+
+  @@index([collaboratoreId])
+  @@index([aziendaId])
+  @@index([statoPagamento])
+  @@index([dataInizio])
+  @@index([tipo])
+}
+
 enum ccnl {
   TURISMO
   COMMERCIO
@@ -308,4 +365,21 @@ enum user_role {
   ADMIN
   MANAGER
   USER
+}
+
+enum tipo_collaboratore {
+  PRESTAZIONE_OCCASIONALE
+  PARTITA_IVA
+  CONSULENTE
+}
+
+enum tipo_prestazione {
+  ORARIA
+  PROGETTO
+}
+
+enum stato_pagamento {
+  DA_PAGARE
+  PAGATO
+  ANNULLATO
 }

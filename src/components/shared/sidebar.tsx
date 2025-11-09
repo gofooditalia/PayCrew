@@ -12,12 +12,14 @@ import {
   DocumentTextIcon,
   ChartBarIcon,
   CogIcon,
-  Bars3Icon
+  Bars3Icon,
+  UsersIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true, isNew: false },
   { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true, isNew: false },
+  { name: 'Collaboratori', href: '/collaboratori', icon: UsersIcon, enabled: true, isNew: true },
   { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: true, isNew: false },
   { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: false },
   { name: 'Cedolini', href: '/cedolini', icon: DocumentTextIcon, enabled: true, isNew: false },
