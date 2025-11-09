@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 interface PrestazioneFormProps {
   collaboratoreId: string
@@ -225,6 +226,53 @@ export default function PrestazioneForm({ collaboratoreId, prestazione, onSucces
           </div>
         </CardContent>
       </Card>
+
+      {/* Danger Zone - Solo in modalità editing */}
+      {isEditing && prestazione && (
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-destructive flex items-center gap-2">
+              <ExclamationTriangleIcon className="h-5 w-5" />
+              Zona Pericolosa
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                L'eliminazione di una prestazione è permanente e non può essere annullata.
+                Questa azione rimuoverà definitivamente la prestazione dal sistema.
+              </p>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={async () => {
+                  if (!confirm('Sei sicuro di voler eliminare questa prestazione? Questa azione non può essere annullata.')) return
+
+                  try {
+                    const response = await fetch(`/api/prestazioni/${prestazione.id}`, {
+                      method: 'DELETE',
+                    })
+
+                    if (response.ok) {
+                      alert('Prestazione eliminata con successo')
+                      onSuccess()
+                    } else {
+                      const data = await response.json()
+                      alert(data.error || 'Errore durante l\'eliminazione')
+                    }
+                  } catch (error) {
+                    console.error('Errore eliminazione:', error)
+                    alert('Errore durante l\'eliminazione')
+                  }
+                }}
+                disabled={loading}
+              >
+                Elimina Prestazione
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Azioni */}
       <div className="flex justify-end gap-3">

@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon } from '@heroicons/react/24/outline'
+import { Switch } from '@/components/ui/switch'
+import { PlusIcon, PencilIcon } from '@heroicons/react/24/outline'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -37,30 +38,10 @@ export default function PrestazioniList({ collaboratoreId, prestazioni, onRefres
   const [showForm, setShowForm] = useState(false)
   const [editingPrestazione, setEditingPrestazione] = useState<Prestazione | null>(null)
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Sei sicuro di voler eliminare questa prestazione?')) return
-
+  const handleToggleStatoPagamento = async (prestazione: Prestazione) => {
     try {
-      const response = await fetch(`/api/prestazioni/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        onRefresh()
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Errore durante l\'eliminazione')
-      }
-    } catch (error) {
-      console.error('Errore eliminazione:', error)
-      alert('Errore durante l\'eliminazione')
-    }
-  }
-
-  const handleSegnaPagato = async (id: string) => {
-    try {
-      const prestazione = prestazioni.find(p => p.id === id)
-      if (!prestazione) return
+      // Toggle tra DA_PAGARE e PAGATO
+      const nuovoStato = prestazione.statoPagamento === 'PAGATO' ? 'DA_PAGARE' : 'PAGATO'
 
       const updateData: any = {
         collaboratoreId: prestazione.collaboratoreId,
@@ -68,8 +49,8 @@ export default function PrestazioniList({ collaboratoreId, prestazioni, onRefres
         descrizione: prestazione.descrizione,
         dataInizio: prestazione.dataInizio.split('T')[0],
         importoTotale: prestazione.importoTotale,
-        statoPagamento: 'PAGATO',
-        dataPagamento: new Date().toISOString().split('T')[0],
+        statoPagamento: nuovoStato,
+        dataPagamento: nuovoStato === 'PAGATO' ? new Date().toISOString().split('T')[0] : null,
       }
 
       // Aggiungi campi opzionali se presenti
@@ -80,7 +61,7 @@ export default function PrestazioniList({ collaboratoreId, prestazioni, onRefres
       if (prestazione.compensoFisso) updateData.compensoFisso = prestazione.compensoFisso
       if (prestazione.note) updateData.note = prestazione.note
 
-      const response = await fetch(`/api/prestazioni/${id}`, {
+      const response = await fetch(`/api/prestazioni/${prestazione.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData),
@@ -104,18 +85,6 @@ export default function PrestazioniList({ collaboratoreId, prestazioni, onRefres
     onRefresh()
   }
 
-  const getStatoPagamentoBadge = (stato: string) => {
-    switch (stato) {
-      case 'DA_PAGARE':
-        return <Badge variant="destructive">Da Pagare</Badge>
-      case 'PAGATO':
-        return <Badge variant="default" className="bg-green-600">Pagato</Badge>
-      case 'ANNULLATO':
-        return <Badge variant="secondary">Annullato</Badge>
-      default:
-        return <Badge>{stato}</Badge>
-    }
-  }
 
   if (showForm) {
     return (
@@ -199,38 +168,28 @@ export default function PrestazioniList({ collaboratoreId, prestazioni, onRefres
                     {formatCurrency(prestazione.importoTotale)}
                   </TableCell>
                   <TableCell className="text-center">
-                    {getStatoPagamentoBadge(prestazione.statoPagamento)}
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {prestazione.statoPagamento === 'PAGATO' ? 'Pagato' : 'Da Pagare'}
+                      </span>
+                      <Switch
+                        checked={prestazione.statoPagamento === 'PAGATO'}
+                        onCheckedChange={() => handleToggleStatoPagamento(prestazione)}
+                        disabled={prestazione.statoPagamento === 'ANNULLATO'}
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      {prestazione.statoPagamento === 'DA_PAGARE' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleSegnaPagato(prestazione.id)}
-                          title="Segna come pagato"
-                        >
-                          <CheckIcon className="h-4 w-4 text-green-600" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingPrestazione(prestazione)
-                          setShowForm(true)
-                        }}
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(prestazione.id)}
-                      >
-                        <TrashIcon className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingPrestazione(prestazione)
+                        setShowForm(true)
+                      }}
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
