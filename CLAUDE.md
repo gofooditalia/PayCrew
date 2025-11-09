@@ -44,6 +44,8 @@ npm run verify:deployment # Verify Prisma deployment setup
 - `presenze` - Attendance records with calculated hours
 - `turni` - Shift schedules
 - `buste_paga` - Payroll records with PDF generation
+- `collaboratori` - External collaborators (occasional workers, VAT holders, consultants)
+- `prestazioni` - Work services/projects for collaborators (hourly or fixed-fee)
 - `documenti` - Employee documents stored in Supabase Storage
 - `attivita` - Activity log for audit trail
 
@@ -96,15 +98,20 @@ src/
 │   │   ├── turni/           # Shift management
 │   │   ├── cedolini/        # Payroll management (frontend)
 │   │   ├── buste-paga/      # Redirects to /cedolini
+│   │   ├── collaboratori/   # External collaborators management
 │   │   ├── azienda/         # Company settings
 │   │   └── report/          # Reports
 │   └── api/                 # API route handlers
-│       └── buste-paga/      # Payroll API (backend naming)
+│       ├── buste-paga/      # Payroll API (backend naming)
+│       ├── collaboratori/   # Collaborators API
+│       ├── prestazioni/     # Work services API
+│       └── report/collaboratori/  # Collaborators report API
 ├── components/
 │   ├── ui/                  # shadcn/ui components
 │   ├── shared/              # Sidebar, Header, Layout
 │   ├── dipendenti/          # Employee-specific components
 │   ├── presenze/            # Attendance components
+│   ├── collaboratori/       # Collaborators-specific components
 │   └── attivita/            # Activity log components
 ├── lib/
 │   ├── supabase/            # Supabase client utilities
@@ -138,6 +145,7 @@ export async function POST(request: Request) {
 **Zod schemas** in `src/lib/validation/`:
 - `attivita-validator.ts` - Activity log validation
 - `presenze-validator.ts` - Attendance validation
+- `collaboratori-validator.ts` - Collaborators and work services validation (includes `calcolaImportoPrestazione()` helper)
 
 **React Hook Form** with Zod resolvers for all forms.
 
@@ -255,6 +263,28 @@ The Prisma client uses connection pooling with:
 - Skeleton loading components on all pages (100% coverage)
 - Unified loading states (PageLoader for pages, Skeleton for lists)
 - Professional loading experience across the application
+
+### ✅ Sprint 5 - Complete
+**External Collaborators Management (Collaboratori)** ✅
+- Complete CRUD for external collaborators (prestatori occasionali, partite IVA, consulenti)
+- Three collaborator types: PRESTAZIONE_OCCASIONALE, PARTITA_IVA, CONSULENTE
+- Work services (prestazioni) with dual payment modes:
+  - ORARIA: Hourly rate with automatic calculation (hours × rate)
+  - PROGETTO: Fixed-fee project-based compensation
+- Automatic amount calculation with `calcolaImportoPrestazione()` helper
+- Payment status tracking: DA_PAGARE, PAGATO, ANNULLATO
+- Payment date and history tracking
+- Collaborator detail page with statistics and work services list
+- Report with collapsible filters (following turni pattern for consistent UX)
+- CSV export for accountant (commercialista) with complete data
+- Full Zod validation with `collaboratori-validator.ts`
+- Multi-tenancy isolation via aziendaId
+- API endpoints:
+  - `/api/collaboratori` (GET, POST)
+  - `/api/collaboratori/[id]` (GET, PUT, DELETE)
+  - `/api/prestazioni` (GET, POST)
+  - `/api/prestazioni/[id]` (GET, PUT, DELETE)
+  - `/api/report/collaboratori` (GET with filters and statistics)
 
 ## Common Pitfalls
 
