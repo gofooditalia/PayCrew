@@ -51,6 +51,7 @@ export const bustaPagaQuickSchema = z.object({
   // Campi essenziali
   retribuzioneLorda: z.number().nonnegative(),
   oreLavorate: z.number().nonnegative(),
+  oreStraordinario: z.number().nonnegative().optional().default(0),
 
   // Acconti settimanali
   acconto1: z.number().nonnegative().optional().default(0),

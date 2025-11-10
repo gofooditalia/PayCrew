@@ -216,12 +216,14 @@ export class PresenzeFromTurniService {
     const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
 
     // Calcola straordinari
-    const oreLavorate = Math.min(oreLavorateNette, oreGiornaliere || 8)
-    const oreStraordinario = Math.max(0, oreLavorateNette - (oreGiornaliere || 8))
+    // oreLavorate contiene TUTTE le ore lavorate (normali + straordinari)
+    // oreStraordinario contiene solo le ore oltre il limite giornaliero
+    const oreGiornaliereStandard = oreGiornaliere || 8
+    const oreStraordinario = Math.max(0, oreLavorateNette - oreGiornaliereStandard)
 
     return {
-      oreLavorate,
-      oreStraordinario
+      oreLavorate: oreLavorateNette, // Tutte le ore lavorate (8h normali + 1h straordinario = 9h)
+      oreStraordinario // Solo le ore straordinarie (1h)
     }
   }
 
@@ -271,14 +273,15 @@ export class PresenzeFromTurniService {
         const oreGiornaliere = Math.round((presenza.dipendenti.oreSettimanali / 5) * 100) / 100
         const pausaPranzoOre = oreTotali >= 6 ? 0.5 : 0
         const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
+        const oreGiornaliereStandard = oreGiornaliere || 8
 
         updateData = {
           ...updateData,
           stato: 'MODIFICATA', // Se modifica orari, stato diventa MODIFICATA
           entrata: nuovaEntrata,
           uscita: nuovaUscita,
-          oreLavorate: Math.min(oreLavorateNette, oreGiornaliere || 8),
-          oreStraordinario: Math.max(0, oreLavorateNette - (oreGiornaliere || 8))
+          oreLavorate: oreLavorateNette, // Tutte le ore lavorate
+          oreStraordinario: Math.max(0, oreLavorateNette - oreGiornaliereStandard)
         }
       }
     }

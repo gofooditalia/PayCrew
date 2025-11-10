@@ -109,7 +109,7 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Data</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Entrata</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore Totali</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
@@ -193,7 +193,7 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Data</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Entrata</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore Totali</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>

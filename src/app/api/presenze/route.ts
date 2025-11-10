@@ -210,8 +210,11 @@ export async function POST(request: NextRequest) {
       const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
 
       // Calcola straordinari
-      oreLavorate = Math.min(oreLavorateNette, oreGiornaliere || 8)
-      oreStraordinario = Math.max(0, oreLavorateNette - (oreGiornaliere || 8))
+      // oreLavorate contiene TUTTE le ore lavorate (normali + straordinari)
+      // oreStraordinario contiene solo le ore oltre il limite giornaliero
+      const oreGiornaliereStandard = oreGiornaliere || 8
+      oreLavorate = oreLavorateNette // Tutte le ore lavorate
+      oreStraordinario = Math.max(0, oreLavorateNette - oreGiornaliereStandard)
     }
 
     // Crea la presenza

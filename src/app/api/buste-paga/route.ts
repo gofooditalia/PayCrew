@@ -188,18 +188,27 @@ export async function POST(request: Request) {
       );
     }
 
+    // Calcola importo straordinari se presenti ore straordinarie
+    // Formula: (retribuzione / ore mensili standard) * ore straordinarie * maggiorazione (25%)
+    const oreMensiliStandard = (dipendente.oreSettimanali / 5) * 4.33 // media settimane/mese
+    const tariffaOraria = validatedData.retribuzioneLorda / oreMensiliStandard
+    const oreStraordinario = validatedData.oreStraordinario || 0
+    const importoStraordinari = oreStraordinario > 0
+      ? Math.round(tariffaOraria * oreStraordinario * 1.25 * 100) / 100 // 25% maggiorazione
+      : 0
+
     // Calcola i totali automaticamente
     const datiCompleti = calcolaTotali({
       ...validatedData,
       retribuzioneLorda: validatedData.retribuzioneLorda,
-      straordinari: 0,
+      straordinari: importoStraordinari,
       altreCompetenze: 0,
       contributiINPS: validatedData.retribuzioneLorda * 0.0919, // 9.19% esempio
       irpef: validatedData.retribuzioneLorda * 0.23, // 23% esempio (da personalizzare)
       altreRitenute: 0,
       tfr: validatedData.retribuzioneLorda * 0.0691, // 6.91% TFR
       oreLavorate: validatedData.oreLavorate,
-      oreStraordinario: 0,
+      oreStraordinario: oreStraordinario,
     });
 
     // Crea busta paga

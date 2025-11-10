@@ -41,10 +41,14 @@ export function CedoliniList({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Periodo</TableHead>
               <TableHead>Dipendente</TableHead>
-              <TableHead>Mese</TableHead>
-              <TableHead>Retribuzione</TableHead>
-              <TableHead>Stato</TableHead>
+              <TableHead className="text-right">Straord.</TableHead>
+              <TableHead className="text-right">Retribuzione</TableHead>
+              <TableHead className="text-right">Acconti</TableHead>
+              <TableHead className="text-right">Bonus</TableHead>
+              <TableHead className="text-right">Netto</TableHead>
+              <TableHead className="text-right">Differenza</TableHead>
               <TableHead className="text-right">Azioni</TableHead>
             </TableRow>
           </TableHeader>
@@ -52,16 +56,34 @@ export function CedoliniList({
             {[...Array(8)].map((_, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-5 w-24" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-right">
+                  <div className="space-y-2 flex flex-col items-end">
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
                   <Skeleton className="h-5 w-20" />
                 </TableCell>
-                <TableCell>
-                  <Skeleton className="h-6 w-20 rounded-full" />
+                <TableCell className="text-right">
+                  <Skeleton className="h-5 w-16" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-5 w-16" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-5 w-20" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-5 w-20" />
                 </TableCell>
                 <TableCell className="text-right">
                   <Skeleton className="h-8 w-8 rounded ml-auto" />
@@ -103,7 +125,7 @@ export function CedoliniList({
           <TableRow>
             <TableHead>Periodo</TableHead>
             <TableHead>Dipendente</TableHead>
-            <TableHead>Sede</TableHead>
+            <TableHead className="text-right">Straord.</TableHead>
             <TableHead className="text-right">Retribuzione</TableHead>
             <TableHead className="text-right">Acconti</TableHead>
             <TableHead className="text-right">Bonus</TableHead>
@@ -134,15 +156,24 @@ export function CedoliniList({
                       {busta.dipendenti.nome} {busta.dipendenti.cognome}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {busta.oreLavorate}h lavorate
+                      {busta.oreLavorate}h totali
                     </div>
                   </div>
                 </TableCell>
 
-                {/* Sede */}
-                <TableCell>
-                  {busta.dipendenti.sedi?.nome || (
-                    <span className="text-gray-400 text-sm">Non assegnata</span>
+                {/* Straordinari */}
+                <TableCell className="text-right">
+                  {busta.oreStraordinario > 0 ? (
+                    <div>
+                      <div className="font-medium text-orange-600">
+                        {busta.oreStraordinario.toFixed(2)}h
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formatCurrency(busta.straordinari)}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400 text-sm">-</span>
                   )}
                 </TableCell>
 

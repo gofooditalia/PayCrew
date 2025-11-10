@@ -55,6 +55,7 @@ export function CedolinoForm({
           anno: initialData.anno,
           retribuzioneLorda: initialData.retribuzioneLorda,
           oreLavorate: initialData.oreLavorate,
+          oreStraordinario: initialData.oreStraordinario || 0,
           acconto1: initialData.acconto1 || undefined,
           acconto2: initialData.acconto2 || undefined,
           acconto3: initialData.acconto3 || undefined,
@@ -68,6 +69,7 @@ export function CedolinoForm({
           anno: currentYear,
           retribuzioneLorda: undefined,
           oreLavorate: undefined,
+          oreStraordinario: 0,
           acconto1: undefined,
           acconto2: undefined,
           acconto3: undefined,
@@ -79,6 +81,7 @@ export function CedolinoForm({
 
   const [calcoli, setCalcoli] = useState({
     retribuzioneLorda: 0,
+    straordinari: 0,
     contributiINPS: 0,
     irpef: 0,
     totaleLordo: 0,
@@ -138,15 +141,20 @@ export function CedolinoForm({
         return
       }
 
-      // Imposta le ore lavorate nel form e aggiorna lo stato
+      // Imposta le ore lavorate e straordinari nel form
       form.setValue('oreLavorate', dipendente.oreLavorate)
+      form.setValue('oreStraordinario', dipendente.oreStraordinario || 0)
       setOreStatus({
         isCalculated: true,
         calculatedValue: dipendente.oreLavorate,
       })
 
+      const messaggioStraordinari = dipendente.oreStraordinario > 0
+        ? ` (${dipendente.oreStraordinario.toFixed(2)}h straordinari)`
+        : ''
+
       toast.success(
-        `Ore calcolate: ${dipendente.oreLavorate.toFixed(2)}h (${dipendente.giorniLavorati} giorni)`
+        `Ore calcolate: ${dipendente.oreLavorate.toFixed(2)}h${messaggioStraordinari} - ${dipendente.giorniLavorati} giorni lavorati`
       )
     } catch (error) {
       console.error('Errore calcolo ore:', error)
@@ -167,6 +175,7 @@ export function CedolinoForm({
   const mese = form.watch('mese')
   const anno = form.watch('anno')
   const oreLavorate = form.watch('oreLavorate')
+  const oreStraordinario = form.watch('oreStraordinario')
 
   // Funzione per ripristinare il valore calcolato
   const ripristinaValoreCalcolato = () => {
@@ -226,11 +235,21 @@ export function CedolinoForm({
     const acc2 = Number(acconto2) || 0
     const acc3 = Number(acconto3) || 0
     const acc4 = Number(acconto4) || 0
+    const oreStraord = Number(oreStraordinario) || 0
+
+    // Trova il dipendente selezionato per calcolare tariffa oraria straordinari
+    const dipendenteSelezionato = dipendenti.find((d) => d.id === dipendenteId)
+    let importoStraordinari = 0
+    if (dipendenteSelezionato && oreStraord > 0) {
+      const oreMensiliStandard = (dipendenteSelezionato.oreSettimanali / 5) * 4.33
+      const tariffaOraria = retriLorda / oreMensiliStandard
+      importoStraordinari = Math.round(tariffaOraria * oreStraord * 1.25 * 100) / 100 // 25% maggiorazione
+    }
 
     // Calcola contributi e ritenute (valori esempio, da personalizzare)
     const contributiINPS = retriLorda * 0.0919 // 9.19%
     const irpef = retriLorda * 0.23 // 23% (esempio)
-    const totaleLordo = retriLorda + bonusVal
+    const totaleLordo = retriLorda + importoStraordinari + bonusVal
     const totaleRitenute = contributiINPS + irpef
     const netto = totaleLordo - totaleRitenute
     const totaleAcconti = acc1 + acc2 + acc3 + acc4
@@ -238,6 +257,7 @@ export function CedolinoForm({
 
     setCalcoli({
       retribuzioneLorda: retriLorda,
+      straordinari: importoStraordinari,
       contributiINPS,
       irpef,
       totaleLordo,
@@ -246,7 +266,7 @@ export function CedolinoForm({
       totaleAcconti,
       differenza,
     })
-  }, [retribuzioneLorda, bonus, acconto1, acconto2, acconto3, acconto4])
+  }, [retribuzioneLorda, bonus, acconto1, acconto2, acconto3, acconto4, oreStraordinario, dipendenteId, dipendenti])
 
   // Auto-fill retribuzione quando si seleziona un dipendente
   const handleDipendenteChange = (dipendenteId: string) => {
@@ -656,6 +676,19 @@ export function CedolinoForm({
                   {formatCurrency(calcoli.retribuzioneLorda)}
                 </span>
               </div>
+
+              {/* Straordinari */}
+              {calcoli.straordinari > 0 && (
+                <div className="flex justify-between items-center py-1 pl-4">
+                  <span className="text-green-600 dark:text-green-400 flex items-center gap-2">
+                    <span className="font-bold">+</span>
+                    <span>Straordinari ({oreStraordinario?.toFixed(2)}h × 125%)</span>
+                  </span>
+                  <span className="font-semibold text-green-600 dark:text-green-400 tabular-nums">
+                    {formatCurrency(calcoli.straordinari)}
+                  </span>
+                </div>
+              )}
 
               {/* Contributi INPS */}
               {calcoli.contributiINPS > 0 && (

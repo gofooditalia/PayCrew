@@ -63,6 +63,10 @@ export async function GET(request: Request) {
               gte: primoGiorno,
               lte: ultimoGiorno,
             },
+            // Solo presenze confermate o modificate (non DA_CONFERMARE o ASSENTE)
+            stato: {
+              in: ["CONFERMATA", "MODIFICATA"],
+            },
           },
         },
       },
