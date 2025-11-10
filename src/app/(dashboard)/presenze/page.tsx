@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { PresenzeList } from '@/components/presenze/presenze-list'
 import { PresenzeFilters, FilterValues } from '@/components/presenze/presenze-filters'
 import { toast } from 'sonner'
+import { Download } from 'lucide-react'
 
 export default function PresenzePage() {
   const [presenze, setPresenze] = useState([])
@@ -148,6 +150,72 @@ export default function PresenzePage() {
     }
   }
 
+  const handleExportCSV = () => {
+    if (presenze.length === 0) {
+      toast.error('Nessuna presenza da esportare')
+      return
+    }
+
+    try {
+      // Intestazioni CSV
+      const headers = [
+        'Data',
+        'Dipendente',
+        'Sede',
+        'Entrata',
+        'Uscita',
+        'Ore Lavorate',
+        'Ore Straordinario',
+        'Stato',
+        'Note'
+      ]
+
+      // Converti presenze in righe CSV
+      const rows = presenze.map((presenza: any) => {
+        const data = new Date(presenza.data).toLocaleDateString('it-IT')
+        const dipendente = `${presenza.dipendenti.nome} ${presenza.dipendenti.cognome}`
+        const sede = presenza.dipendenti.sedi?.nome || 'Non assegnata'
+        const entrata = presenza.entrata
+          ? new Date(presenza.entrata).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+          : '-'
+        const uscita = presenza.uscita
+          ? new Date(presenza.uscita).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+          : '-'
+        const oreLavorate = presenza.oreLavorate ? Number(presenza.oreLavorate).toFixed(2) : '0.00'
+        const oreStraordinario = presenza.oreStraordinario ? Number(presenza.oreStraordinario).toFixed(2) : '0.00'
+        const stato = presenza.stato || 'N/A'
+        const note = presenza.nota ? `"${presenza.nota.replace(/"/g, '""')}"` : ''
+
+        return [data, dipendente, sede, entrata, uscita, oreLavorate, oreStraordinario, stato, note]
+      })
+
+      // Crea contenuto CSV
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n')
+
+      // Crea Blob e scarica
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      const timestamp = new Date().toISOString().split('T')[0]
+      link.setAttribute('href', url)
+      link.setAttribute('download', `presenze_${timestamp}.csv`)
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      toast.success(`Esportate ${presenze.length} presenze`)
+    } catch (error) {
+      console.error('Errore export CSV:', error)
+      toast.error('Errore durante l\'esportazione')
+    }
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -164,8 +232,17 @@ export default function PresenzePage() {
       />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Registro Presenze</CardTitle>
+          <Button
+            onClick={handleExportCSV}
+            disabled={presenze.length === 0 || isLoading}
+            variant="outline"
+            size="sm"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Esporta CSV
+          </Button>
         </CardHeader>
         <CardContent>
           <PresenzeList
