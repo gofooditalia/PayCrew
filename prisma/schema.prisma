@@ -201,17 +201,19 @@ model sedi {
 }
 
 model turni {
-  id           String     @id @default(uuid()) @db.Uuid
-  data         DateTime   @db.Date
-  oraInizio    String
-  oraFine      String
-  tipoTurno    tipo_turno
-  dipendenteId String     @db.Uuid
-  sedeId       String?    @db.Uuid
-  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
-  dipendenti   dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
-  sedi         sedi?      @relation(fields: [sedeId], references: [id])
-  presenze     presenze[]
+  id                String     @id @default(uuid()) @db.Uuid
+  data              DateTime   @db.Date
+  oraInizio         String
+  oraFine           String
+  pausaPranzoInizio String?    // formato HH:mm - pausa pranzo opzionale per turni spezzati
+  pausaPranzoFine   String?    // formato HH:mm - pausa pranzo opzionale per turni spezzati
+  tipoTurno         tipo_turno
+  dipendenteId      String     @db.Uuid
+  sedeId            String?    @db.Uuid
+  createdAt         DateTime   @default(now()) @db.Timestamptz(6)
+  dipendenti        dipendenti @relation(fields: [dipendenteId], references: [id], onDelete: Cascade)
+  sedi              sedi?      @relation(fields: [sedeId], references: [id])
+  presenze          presenze[]
 
   @@index([data])
   @@index([dipendenteId])
@@ -410,17 +412,19 @@ model orari_lavoro {
 /// Fasce orarie predefinite per turni
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model fasce_orarie {
-  id              String   @id @default(uuid()) @db.Uuid
-  nome            String   // es. "Mattina", "Pomeriggio", "Sera"
-  tipoTurno       tipo_turno
-  oraInizio       String   // formato HH:mm
-  oraFine         String   // formato HH:mm
-  maggiorazione   Decimal  @default(0) @db.Decimal(5, 2) // percentuale maggiorazione (es. 20 per +20%)
-  aziendaId       String   @db.Uuid
-  attivo          Boolean  @default(true)
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
-  aziende         aziende  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  id                String     @id @default(uuid()) @db.Uuid
+  nome              String     // es. "Mattina", "Pomeriggio", "Sera"
+  tipoTurno         tipo_turno
+  oraInizio         String     // formato HH:mm
+  oraFine           String     // formato HH:mm
+  pausaPranzoInizio String?    // formato HH:mm - solo per turni SPEZZATO
+  pausaPranzoFine   String?    // formato HH:mm - solo per turni SPEZZATO
+  maggiorazione     Decimal    @default(0) @db.Decimal(5, 2) // percentuale maggiorazione (es. 20 per +20%)
+  aziendaId         String     @db.Uuid
+  attivo            Boolean    @default(true)
+  createdAt         DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime   @updatedAt @db.Timestamptz(6)
+  aziende           aziende    @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
 
   @@index([aziendaId])
   @@index([tipoTurno])

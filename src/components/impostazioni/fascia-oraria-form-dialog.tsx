@@ -63,10 +63,15 @@ export function FasciaOrariaFormDialog({
       tipoTurno: 'MATTINA',
       oraInizio: '08:00',
       oraFine: '13:00',
+      pausaPranzoInizio: null,
+      pausaPranzoFine: null,
       maggiorazione: 0,
       attivo: true,
     },
   })
+
+  const tipoTurnoValue = form.watch('tipoTurno')
+  const isSpezzato = tipoTurnoValue === 'SPEZZATO'
 
   useEffect(() => {
     if (fasciaOraria) {
@@ -75,6 +80,8 @@ export function FasciaOrariaFormDialog({
         tipoTurno: fasciaOraria.tipoTurno,
         oraInizio: fasciaOraria.oraInizio,
         oraFine: fasciaOraria.oraFine,
+        pausaPranzoInizio: fasciaOraria.pausaPranzoInizio,
+        pausaPranzoFine: fasciaOraria.pausaPranzoFine,
         maggiorazione: fasciaOraria.maggiorazione,
         attivo: fasciaOraria.attivo,
       })
@@ -84,6 +91,8 @@ export function FasciaOrariaFormDialog({
         tipoTurno: 'MATTINA',
         oraInizio: '08:00',
         oraFine: '13:00',
+        pausaPranzoInizio: null,
+        pausaPranzoFine: null,
         maggiorazione: 0,
         attivo: true,
       })
@@ -185,6 +194,53 @@ export function FasciaOrariaFormDialog({
                 )}
               />
             </div>
+
+            {isSpezzato && (
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-medium mb-4">
+                  Pausa Pranzo (opzionale per turni spezzati)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="pausaPranzoInizio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Inizio Pausa</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pausaPranzoFine"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fine Pausa</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
 
             <FormField
               control={form.control}

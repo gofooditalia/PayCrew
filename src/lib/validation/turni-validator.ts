@@ -21,6 +21,12 @@ export const turnoCreateSchema = z.object({
   oraFine: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
     message: 'Ora di fine non valida. Formato richiesto: HH:mm'
   }),
+  pausaPranzoInizio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Ora pausa pranzo non valida. Formato richiesto: HH:mm'
+  }).optional().nullable(),
+  pausaPranzoFine: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Ora pausa pranzo non valida. Formato richiesto: HH:mm'
+  }).optional().nullable(),
   tipoTurno: z.nativeEnum(tipo_turno, {
     message: 'Tipo turno non valido'
   }),
@@ -59,6 +65,12 @@ export const turnoUpdateSchema = z.object({
   oraFine: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
     message: 'Ora di fine non valida. Formato richiesto: HH:mm'
   }).optional(),
+  pausaPranzoInizio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Ora pausa pranzo non valida. Formato richiesto: HH:mm'
+  }).optional().nullable(),
+  pausaPranzoFine: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Ora pausa pranzo non valida. Formato richiesto: HH:mm'
+  }).optional().nullable(),
   tipoTurno: z.nativeEnum(tipo_turno, {
     message: 'Tipo turno non valido'
   }).optional(),
@@ -126,6 +138,8 @@ export const turniMultipliCreateSchema = z.object({
   giorni: z.array(z.number().int().min(0).max(6)), // 0=Domenica, 6=Sabato
   oraInizio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/),
   oraFine: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/),
+  pausaPranzoInizio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional().nullable(),
+  pausaPranzoFine: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional().nullable(),
   tipoTurno: z.nativeEnum(tipo_turno),
   sedeId: z.string().uuid().optional().or(z.literal('none')),
 }).refine(

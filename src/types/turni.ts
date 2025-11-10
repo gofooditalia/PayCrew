@@ -15,6 +15,8 @@ export interface Turno {
   data: Date | string
   oraInizio: string // HH:mm format
   oraFine: string // HH:mm format
+  pausaPranzoInizio: string | null // HH:mm format - opzionale per turni spezzati
+  pausaPranzoFine: string | null // HH:mm format - opzionale per turni spezzati
   tipoTurno: tipo_turno
   dipendenteId: string
   sedeId: string | null

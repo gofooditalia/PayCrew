@@ -17,9 +17,10 @@ import { TurniFiltri } from '@/components/turni/turni-filters'
 import { PianificazioneMultiplaDialog } from '@/components/turni/pianificazione-multipla-dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Loader2, CalendarDays, CalendarRange } from 'lucide-react'
+import { Plus, Loader2, CalendarDays, CalendarRange, Sparkles, X } from 'lucide-react'
 import { z } from 'zod'
 import { turnoCreateSchema, turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
+import Link from 'next/link'
 
 type TurnoFormData = z.infer<typeof turnoCreateSchema>
 type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
@@ -37,6 +38,7 @@ export default function TurniPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [pianificazioneDialogOpen, setPianificazioneDialogOpen] = useState(false)
   const [turnoInModifica, setTurnoInModifica] = useState<Turno | null>(null)
+  const [showBanner, setShowBanner] = useState(true)
 
   const [filtri, setFiltri] = useState<{
     dipendenteId?: string
@@ -45,6 +47,20 @@ export default function TurniPage() {
     dataInizio?: string
     dataFine?: string
   }>({})
+
+  // Controlla se il banner è stato già dismisso
+  useEffect(() => {
+    const dismissed = localStorage.getItem('turni-fasce-orarie-banner-dismissed')
+    if (dismissed === 'true') {
+      setShowBanner(false)
+    }
+  }, [])
+
+  // Funzione per dismissare il banner
+  const dismissBanner = () => {
+    localStorage.setItem('turni-fasce-orarie-banner-dismissed', 'true')
+    setShowBanner(false)
+  }
 
   // Carica turni
   const caricaTurni = useCallback(async () => {
@@ -257,6 +273,54 @@ export default function TurniPage() {
           </Button>
         </div>
       </div>
+
+      {/* Banner Novità Fasce Orarie */}
+      {showBanner && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800 p-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                    Novità: Gestione Fasce Orarie e Pause Pranzo
+                  </h3>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
+                    Configura fasce orarie personalizzate e pause pranzo per velocizzare la creazione dei turni.
+                    Gli orari si compileranno automaticamente in base al tipo turno selezionato!
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900"
+                  onClick={dismissBanner}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/impostazioni">
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Vai alle Impostazioni
+                  </Button>
+                </Link>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900"
+                  onClick={dismissBanner}
+                >
+                  Ho capito
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filtri */}
       <TurniFiltri

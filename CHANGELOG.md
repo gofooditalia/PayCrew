@@ -7,6 +7,74 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### ⏰ [0.6.0] - 2025-11-10 - Gestione Fasce Orarie e Pause Pranzo
+
+#### 🎯 Highlights
+Implementazione completa del sistema di gestione fasce orarie con pause pranzo configurabili per turni spezzati (ristoranti, officine, ecc.)
+
+#### Added
+- **Fasce Orarie Configurabili**: Nuova sezione in Impostazioni per definire fasce orarie standard
+  - Configurazione per tipo turno (MATTINA, POMERIGGIO, SERA, NOTTE, SPEZZATO)
+  - Orari di inizio e fine personalizzabili
+  - Maggiorazione percentuale opzionale
+- **Pause Pranzo**: Gestione pause pranzo per turni SPEZZATO
+  - Campo `pausaPranzoInizio` e `pausaPranzoFine` in `fasce_orarie` table
+  - Campo `pausaPranzoInizio` e `pausaPranzoFine` in `turni` table
+  - Validazione condizionale: pausa pranzo richiesta solo per turni SPEZZATO
+- **Auto-compilazione Turni**: Gli orari e pause pranzo si compilano automaticamente
+  - Selezione tipo turno → auto-compilazione da fascia oraria corrispondente
+  - Funziona sia per turno singolo che pianificazione multipla
+  - Modifica manuale sempre possibile (override)
+- **Calcolo Ore Avanzato**: Sottrazione automatica pause pranzo dal calcolo ore lavorate
+  - Usa pausa pranzo del turno associato (se presente)
+  - Fallback a 30 minuti per turni > 6 ore senza pausa configurata
+  - Integrato in tutte le API presenze e servizio auto-generazione
+- **UX Onboarding**: Sistema di notifica nuova funzionalità
+  - Banner informativo dismissibile nella pagina Turni
+  - Badge "Nuovo" sulla voce Impostazioni in sidebar
+  - Link diretto alle Impostazioni dal banner
+  - Persistenza dismissione via localStorage
+
+#### Changed
+- **Database Schema**:
+  - Aggiunto `pausaPranzoInizio String?` e `pausaPranzoFine String?` a `fasce_orarie`
+  - Aggiunto `pausaPranzoInizio String?` e `pausaPranzoFine String?` a `turni`
+- **Validation**:
+  - `fasciaOrariaSchema`: validazione condizionale pause pranzo per SPEZZATO
+  - `turnoCreateSchema` e `turniMultipliCreateSchema`: aggiunti campi pausa pranzo
+- **UI Components**:
+  - `turno-form-dialog.tsx`: dialog scrollabile con footer sticky (max-h-90vh)
+  - `fascia-oraria-form-dialog.tsx`: campi pausa pranzo condizionali
+  - `pianificazione-multipla-dialog.tsx`: auto-compilazione come turno singolo
+- **API Routes**:
+  - `POST /api/turni`: include pause pranzo nella creazione
+  - `POST /api/turni/multipli`: include pause pranzo nel batch
+  - `POST /api/presenze`: usa pause pranzo da turno associato
+  - `PUT /api/presenze/[id]`: usa pause pranzo da turno associato
+- **Services**:
+  - `PresenzeFromTurniService.calcolaOreDaTurno()`: accetta parametri pausa pranzo
+  - Auto-generazione presenze considera pause pranzo configurate
+
+#### Fixed
+- **Modal Overflow**: Dialog "Nuovo Turno" troppo alto, pulsanti fuori vista
+  - Implementato layout flex con area scrollabile e footer sticky
+  - Altezza massima 90vh per garantire visibilità pulsanti
+- **Typo Filter**: Filtro `f.attiva` corretto in `f.attivo` in pianificazione multipla
+
+#### Technical Details
+- **Pattern Auto-compilazione**: `useEffect` watch su `tipoTurno` + `form.setValue()`
+- **Conditional Rendering**: `hasPausaPranzo = watch('pausaPranzoInizio') || watch('pausaPranzoFine')`
+- **Prisma Client Regeneration**: `npm run db:generate` dopo schema changes
+- **Backward Compatibility**: Fallback pausa pranzo garantisce compatibilità con turni esistenti
+- **UI Consistency**: Stessa UX tra turno singolo e pianificazione multipla
+
+#### Use Cases Supportati
+- ✅ Ristoranti: turni spezzati 11:00-15:00, 18:00-22:00 con pausa 15:00-18:00
+- ✅ Officine meccaniche: 8:00-13:00, 15:00-18:00 con pausa pranzo 13:00-15:00
+- ✅ Qualsiasi settore con pause pranzo variabili per turno
+
+---
+
 ### 🎨 [0.5.2] - 2025-11-07 - UI Improvements Filtri Turni
 
 #### Changed

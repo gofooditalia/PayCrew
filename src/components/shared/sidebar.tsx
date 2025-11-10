@@ -24,7 +24,7 @@ const navigation = [
   { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: false },
   { name: 'Cedolini', href: '/cedolini', icon: DocumentTextIcon, enabled: true, isNew: false },
   { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: true, isNew: false },
-  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: true, isNew: false },
+  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: true, isNew: true },
 ]
 
 export default function Sidebar() {

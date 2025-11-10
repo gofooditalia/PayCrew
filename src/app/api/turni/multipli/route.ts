@@ -83,6 +83,8 @@ export async function POST(request: Request) {
       data: Date
       oraInizio: string
       oraFine: string
+      pausaPranzoInizio: string | null
+      pausaPranzoFine: string | null
       tipoTurno: any
       dipendenteId: string
       sedeId: string | null
@@ -98,6 +100,8 @@ export async function POST(request: Request) {
           data: new Date(data),
           oraInizio: validatedData.oraInizio,
           oraFine: validatedData.oraFine,
+          pausaPranzoInizio: validatedData.pausaPranzoInizio || null,
+          pausaPranzoFine: validatedData.pausaPranzoFine || null,
           tipoTurno: validatedData.tipoTurno,
           dipendenteId: validatedData.dipendenteId,
           sedeId: (validatedData.sedeId && validatedData.sedeId !== 'none') ? validatedData.sedeId : null

@@ -204,6 +204,8 @@ export async function PATCH(
     if (validatedData.data) updateData.data = new Date(validatedData.data)
     if (validatedData.oraInizio) updateData.oraInizio = validatedData.oraInizio
     if (validatedData.oraFine) updateData.oraFine = validatedData.oraFine
+    if (validatedData.pausaPranzoInizio !== undefined) updateData.pausaPranzoInizio = validatedData.pausaPranzoInizio
+    if (validatedData.pausaPranzoFine !== undefined) updateData.pausaPranzoFine = validatedData.pausaPranzoFine
     if (validatedData.tipoTurno) updateData.tipoTurno = validatedData.tipoTurno
     if (validatedData.sedeId !== undefined) updateData.sedeId = validatedData.sedeId
 

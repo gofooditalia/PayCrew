@@ -6,12 +6,13 @@
  * Dialog per creazione e modifica turni con validazione
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { turnoCreateSchema } from '@/lib/validation/turni-validator'
 import { Turno, TIPI_TURNO_CONFIG } from '@/types/turni'
 import { tipo_turno } from '@prisma/client'
+import { FasciaOraria } from '@/types/impostazioni'
 import {
   Dialog,
   DialogContent,
@@ -63,6 +64,8 @@ export function TurnoFormDialog({
   isSubmitting = false
 }: TurnoFormDialogProps) {
   const isEditing = !!turno
+  const [fasceOrarie, setFasceOrarie] = useState<FasciaOraria[]>([])
+  const [loadingFasce, setLoadingFasce] = useState(false)
 
   const form = useForm<TurnoFormData>({
     resolver: zodResolver(turnoCreateSchema),
@@ -71,10 +74,50 @@ export function TurnoFormDialog({
       data: '',
       oraInizio: '',
       oraFine: '',
+      pausaPranzoInizio: null,
+      pausaPranzoFine: null,
       tipoTurno: 'MATTINA' as tipo_turno,
       sedeId: 'none'
     }
   })
+
+  const tipoTurnoValue = form.watch('tipoTurno')
+  const hasPausaPranzo = form.watch('pausaPranzoInizio') || form.watch('pausaPranzoFine')
+
+  // Carica fasce orarie quando si apre il dialog
+  useEffect(() => {
+    if (open) {
+      const fetchFasceOrarie = async () => {
+        try {
+          setLoadingFasce(true)
+          const response = await fetch('/api/impostazioni/fasce-orarie')
+          if (response.ok) {
+            const data = await response.json()
+            // Filtra solo fasce attive
+            setFasceOrarie(data.filter((f: FasciaOraria) => f.attivo))
+          }
+        } catch (error) {
+          console.error('Errore caricamento fasce orarie:', error)
+        } finally {
+          setLoadingFasce(false)
+        }
+      }
+      fetchFasceOrarie()
+    }
+  }, [open])
+
+  // Auto-compila orari e pausa pranzo quando cambia il tipo turno
+  useEffect(() => {
+    if (!tipoTurnoValue || isEditing) return // Non auto-compilare in modifica
+
+    const fasciaCorrispondente = fasceOrarie.find(f => f.tipoTurno === tipoTurnoValue)
+    if (fasciaCorrispondente) {
+      form.setValue('oraInizio', fasciaCorrispondente.oraInizio)
+      form.setValue('oraFine', fasciaCorrispondente.oraFine)
+      form.setValue('pausaPranzoInizio', fasciaCorrispondente.pausaPranzoInizio)
+      form.setValue('pausaPranzoFine', fasciaCorrispondente.pausaPranzoFine)
+    }
+  }, [tipoTurnoValue, fasceOrarie, isEditing, form])
 
   // Reset form quando il dialog si apre/chiude o quando cambia il turno
   useEffect(() => {
@@ -89,6 +132,8 @@ export function TurnoFormDialog({
         data: dataStr,
         oraInizio: turno.oraInizio,
         oraFine: turno.oraFine,
+        pausaPranzoInizio: turno.pausaPranzoInizio || null,
+        pausaPranzoFine: turno.pausaPranzoFine || null,
         tipoTurno: turno.tipoTurno,
         sedeId: turno.sedeId || 'none'
       })
@@ -100,6 +145,8 @@ export function TurnoFormDialog({
         data: oggi,
         oraInizio: '',
         oraFine: '',
+        pausaPranzoInizio: null,
+        pausaPranzoFine: null,
         tipoTurno: 'MATTINA' as tipo_turno,
         sedeId: 'none'
       })
@@ -117,7 +164,7 @@ export function TurnoFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? 'Modifica Turno' : 'Nuovo Turno'}
@@ -130,7 +177,8 @@ export function TurnoFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto px-1 space-y-4">
             {/* Dipendente */}
             <FormField
               control={form.control}
@@ -207,6 +255,15 @@ export function TurnoFormDialog({
               )}
             />
 
+            {/* Info auto-compilazione */}
+            {fasceOrarie.length > 0 && !isEditing && (
+              <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-3">
+                <p className="text-xs text-blue-900 dark:text-blue-100">
+                  💡 Gli orari si compilano automaticamente in base al tipo turno selezionato dalle fasce orarie configurate
+                </p>
+              </div>
+            )}
+
             {/* Orari */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -237,6 +294,55 @@ export function TurnoFormDialog({
                 )}
               />
             </div>
+
+            {/* Pausa Pranzo - mostrata solo se presente */}
+            {hasPausaPranzo && (
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-medium mb-3">Pausa Pranzo</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="pausaPranzoInizio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Inizio Pausa</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pausaPranzoFine"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fine Pausa</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Pausa pranzo impostata dalla fascia oraria (modificabile)
+                </p>
+              </div>
+            )}
 
             {/* Sede */}
             <FormField
@@ -270,8 +376,10 @@ export function TurnoFormDialog({
                 </FormItem>
               )}
             />
+            </div>
 
-            <DialogFooter>
+            {/* Footer Sticky */}
+            <DialogFooter className="mt-4 pt-4 border-t">
               <Button
                 type="button"
                 variant="outline"

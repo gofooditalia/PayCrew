@@ -5,7 +5,8 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 ## 🚀 Caratteristiche Principali
 
 - **Gestione Dipendenti**: Anagrafica completa con documenti e dati contrattuali
-- **Turni**: Pianificazione turni singoli e multipli (settimanale/mensile)
+- **Fasce Orarie**: Configurazione fasce orarie con pause pranzo per turni spezzati ⏰ NEW!
+- **Turni**: Pianificazione turni singoli e multipli con auto-compilazione orari
 - **Presenze**: Auto-generazione da turni con stati e conferma
 - **Workflow Integrato**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
 - **Buste Paga**: Calcolo automatico con generazione PDF cedolini
@@ -80,9 +81,24 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] **Test automatizzati** (11/12 passati - 91.7%)
 - [x] **Workflow completo**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
 
-## 🚀 Release v0.5.0 - Integrazione Turni-Presenze
+## 🚀 Release v0.6.0 - Gestione Fasce Orarie e Pause Pranzo ⏰
 
-PayCrew v0.5.0 introduce il workflow completo di gestione turni con auto-generazione presenze:
+PayCrew v0.6.0 introduce il sistema completo di gestione fasce orarie con pause pranzo configurabili, perfetto per turni spezzati tipici di ristoranti e officine!
+
+### 🎯 Novità v0.6.0
+
+#### Fasce Orarie Configurabili
+- **Impostazioni Centralizzate**: Configura fasce orarie standard per ogni tipo turno
+- **Pause Pranzo**: Gestione pause pranzo per turni SPEZZATO (es. ristoranti: 11:00-15:00, pausa 15:00-18:00, 18:00-22:00)
+- **Auto-compilazione**: Gli orari si compilano automaticamente selezionando il tipo turno
+- **Flessibilità**: Modifica manuale sempre possibile per casi eccezionali
+- **Calcolo Avanzato**: Sottrazione automatica pause pranzo dal calcolo ore lavorate
+
+#### UX Improvements
+- **Banner Informativo**: Guida l'utente verso la nuova funzionalità
+- **Badge "Nuovo"**: Evidenzia Impostazioni nella sidebar
+- **Dialog Scrollabile**: Risolto overflow modal turni su schermi piccoli
+- **UI Consistency**: Stessa esperienza tra turno singolo e pianificazione multipla
 
 ### ✅ Funzionalità Disponibili
 
@@ -92,12 +108,14 @@ PayCrew v0.5.0 introduce il workflow completo di gestione turni con auto-generaz
 - **Autenticazione**: Sistema multi-livello con ruoli (SUPER_ADMIN, ADMIN, MANAGER, USER)
 - **Activity Logger**: Sistema audit trail per tutte le operazioni critiche
 
-#### Workflow Turni → Presenze
-- **Pianificazione Turni**: CRUD completo con filtri avanzati per dipendente, sede, tipo, date
-- **Pianificazione Multipla**: Creazione batch turni per settimanale/mensile
-- **Auto-generazione Presenze**: Le presenze vengono create automaticamente dai turni pianificati
+#### Gestione Turni Avanzata
+- **Fasce Orarie**: Configurazione fasce orarie standard in Impostazioni
+- **Pause Pranzo**: Gestione pause pranzo per turni spezzati
+- **Pianificazione Turni**: CRUD completo con filtri avanzati e auto-compilazione
+- **Pianificazione Multipla**: Creazione batch turni con pause pranzo incluse
+- **Auto-generazione Presenze**: Le presenze vengono create automaticamente dai turni
 - **Stati Presenza**: DA_CONFERMARE → CONFERMATA / MODIFICATA / ASSENTE
-- **Azioni Rapide**: Conferma/Assente presenze con un click direttamente dalla lista
+- **Azioni Rapide**: Conferma/Assente presenze con un click
 - **Reset/Undo**: Annulla conferme o assenze per ripristinare stato DA_CONFERMARE
 - **Badge Visivi**: Indicatori colorati per stato presenza (giallo, verde, blu, rosso)
 - **UX Guidata**: Messaggio informativo con link diretto alla sezione Turni quando non ci sono presenze

@@ -20,6 +20,8 @@ export interface FasciaOraria {
   tipoTurno: tipo_turno
   oraInizio: string
   oraFine: string
+  pausaPranzoInizio: string | null
+  pausaPranzoFine: string | null
   maggiorazione: number
   aziendaId: string
   attivo: boolean

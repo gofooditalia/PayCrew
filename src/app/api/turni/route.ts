@@ -246,6 +246,8 @@ export async function POST(request: Request) {
         data: new Date(validatedData.data),
         oraInizio: validatedData.oraInizio,
         oraFine: validatedData.oraFine,
+        pausaPranzoInizio: validatedData.pausaPranzoInizio || null,
+        pausaPranzoFine: validatedData.pausaPranzoFine || null,
         tipoTurno: validatedData.tipoTurno,
         dipendenteId: validatedData.dipendenteId,
         sedeId: (validatedData.sedeId && validatedData.sedeId !== 'none') ? validatedData.sedeId : null

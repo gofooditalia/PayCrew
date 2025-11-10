@@ -98,6 +98,8 @@ export async function PUT(
         tipoTurno: validatedData.tipoTurno,
         oraInizio: validatedData.oraInizio,
         oraFine: validatedData.oraFine,
+        pausaPranzoInizio: validatedData.pausaPranzoInizio || null,
+        pausaPranzoFine: validatedData.pausaPranzoFine || null,
         maggiorazione: validatedData.maggiorazione,
         attivo: validatedData.attivo,
       },

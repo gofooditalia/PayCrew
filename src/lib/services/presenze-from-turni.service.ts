@@ -135,6 +135,8 @@ export class PresenzeFromTurniService {
     const { oreLavorate, oreStraordinario } = this.calcolaOreDaTurno(
       turno.oraInizio,
       turno.oraFine,
+      turno.pausaPranzoInizio,
+      turno.pausaPranzoFine,
       turno.dipendenti.oreSettimanali
     )
 
@@ -190,6 +192,8 @@ export class PresenzeFromTurniService {
   private static calcolaOreDaTurno(
     oraInizio: string,
     oraFine: string,
+    pausaPranzoInizio: string | null,
+    pausaPranzoFine: string | null,
     oreSettimanali: number
   ): { oreLavorate: number; oreStraordinario: number } {
 
@@ -199,8 +203,16 @@ export class PresenzeFromTurniService {
     // Calcola ore totali tra inizio e fine
     const oreTotali = calcolaOreTraOrari(oraInizio, oraFine)
 
-    // Applica pausa pranzo automatica se lavora più di 6 ore
-    const pausaPranzoOre = oreTotali >= 6 ? 0.5 : 0 // 30 minuti
+    // Calcola pausa pranzo: usa quella del turno se presente, altrimenti fallback hardcoded
+    let pausaPranzoOre = 0
+    if (pausaPranzoInizio && pausaPranzoFine) {
+      // Usa pausa pranzo dal turno
+      pausaPranzoOre = calcolaOreTraOrari(pausaPranzoInizio, pausaPranzoFine)
+    } else if (oreTotali >= 6) {
+      // Fallback: pausa automatica di 30 minuti se lavora più di 6 ore
+      pausaPranzoOre = 0.5
+    }
+
     const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
 
     // Calcola straordinari

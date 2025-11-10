@@ -3,11 +3,20 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { XMarkIcon, SparklesIcon, CalendarIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, SparklesIcon, CalendarIcon, UsersIcon, CogIcon } from '@heroicons/react/24/outline'
 import { BuildingOfficeIcon, ClockIcon } from '@heroicons/react/24/solid'
 import Link from 'next/link'
 
 const FEATURES = [
+  {
+    icon: CogIcon,
+    title: 'Fasce Orarie & Pause Pranzo',
+    description: 'Configura fasce orarie con pause pranzo per turni spezzati. Auto-compilazione automatica degli orari!',
+    link: '/impostazioni',
+    linkText: 'Configura Fasce',
+    color: 'from-indigo-500 to-purple-500',
+    isNew: true
+  },
   {
     icon: UsersIcon,
     title: 'Collaboratori',
@@ -31,19 +40,11 @@ const FEATURES = [
     link: '/presenze',
     linkText: 'Vai a Presenze',
     color: 'from-green-500 to-emerald-500'
-  },
-  {
-    icon: BuildingOfficeIcon,
-    title: 'Gestione Sedi',
-    description: 'Organizza le tue filiali e assegna i dipendenti alle diverse sedi operative',
-    link: '/azienda/modifica',
-    linkText: 'Configura Sedi',
-    color: 'from-blue-500 to-cyan-500'
   }
 ]
 
 const STORAGE_KEY = 'paycrew_features_announcement_dismissed'
-const CURRENT_VERSION = 'v1.2' // Incrementa questa versione quando ci sono nuove feature
+const CURRENT_VERSION = 'v1.3' // Incrementa questa versione quando ci sono nuove feature
 
 export default function FeatureAnnouncement() {
   const [isDismissed, setIsDismissed] = useState(true)
@@ -99,8 +100,13 @@ export default function FeatureAnnouncement() {
             return (
               <div
                 key={index}
-                className="group p-4 bg-background/80 backdrop-blur-sm border border-border rounded-lg hover:shadow-md transition-all duration-200 hover:border-primary/30"
+                className="group p-4 bg-background/80 backdrop-blur-sm border border-border rounded-lg hover:shadow-md transition-all duration-200 hover:border-primary/30 relative"
               >
+                {feature.isNew && (
+                  <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold rounded-full shadow-lg animate-pulse">
+                    NUOVO
+                  </span>
+                )}
                 <div className="flex items-start gap-3">
                   <div className={`p-2.5 bg-gradient-to-br ${feature.color} rounded-lg shadow-sm group-hover:scale-110 transition-transform duration-200`}>
                     <Icon className="h-5 w-5 text-white" />

@@ -189,8 +189,24 @@ export async function POST(request: NextRequest) {
       // Calcola ore totali tra entrata e uscita
       const oreTotali = calcolaOreTraOrari(validatedData.entrata, validatedData.uscita)
 
-      // Applica pausa pranzo automatica se lavora più di 6 ore
-      const pausaPranzoOre = oreTotali >= 6 ? 0.5 : 0 // 30 minuti = 0.5 ore
+      // Cerca turno associato per recuperare pausa pranzo
+      const turnoAssociato = await prisma.turni.findFirst({
+        where: {
+          dipendenteId: validatedData.dipendenteId,
+          data: new Date(validatedData.data)
+        }
+      })
+
+      // Calcola pausa pranzo: usa quella del turno se presente, altrimenti fallback hardcoded
+      let pausaPranzoOre = 0
+      if (turnoAssociato && turnoAssociato.pausaPranzoInizio && turnoAssociato.pausaPranzoFine) {
+        // Usa pausa pranzo dal turno
+        pausaPranzoOre = calcolaOreTraOrari(turnoAssociato.pausaPranzoInizio, turnoAssociato.pausaPranzoFine)
+      } else if (oreTotali >= 6) {
+        // Fallback: pausa automatica di 30 minuti se lavora più di 6 ore
+        pausaPranzoOre = 0.5
+      }
+
       const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
 
       // Calcola straordinari

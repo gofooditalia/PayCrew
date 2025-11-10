@@ -75,6 +75,8 @@ export async function POST(request: Request) {
         tipoTurno: validatedData.tipoTurno,
         oraInizio: validatedData.oraInizio,
         oraFine: validatedData.oraFine,
+        pausaPranzoInizio: validatedData.pausaPranzoInizio || null,
+        pausaPranzoFine: validatedData.pausaPranzoFine || null,
         maggiorazione: validatedData.maggiorazione,
         aziendaId: dbUser.aziendaId,
         attivo: validatedData.attivo,

@@ -93,6 +93,8 @@ export const fasciaOrariaSchema = z.object({
   tipoTurno: z.enum(['MATTINA', 'PRANZO', 'SERA', 'NOTTE', 'SPEZZATO']),
   oraInizio: z.string().regex(timeFormatRegex, 'Formato orario non valido (HH:mm)'),
   oraFine: z.string().regex(timeFormatRegex, 'Formato orario non valido (HH:mm)'),
+  pausaPranzoInizio: z.string().regex(timeFormatRegex, 'Formato orario non valido (HH:mm)').optional().nullable(),
+  pausaPranzoFine: z.string().regex(timeFormatRegex, 'Formato orario non valido (HH:mm)').optional().nullable(),
   maggiorazione: z.number().min(0, 'La maggiorazione non può essere negativa').max(100, 'La maggiorazione massima è 100%'),
   attivo: z.boolean(),
 }).refine(
@@ -107,6 +109,41 @@ export const fasciaOrariaSchema = z.object({
   {
     message: "L'orario di fine deve essere successivo all'orario di inizio",
     path: ['oraFine'],
+  }
+).refine(
+  (data) => {
+    // Se turno SPEZZATO con pausa pranzo, verifica che siano entrambi i campi
+    if (data.tipoTurno === 'SPEZZATO') {
+      if (data.pausaPranzoInizio || data.pausaPranzoFine) {
+        return data.pausaPranzoInizio && data.pausaPranzoFine
+      }
+    }
+    return true
+  },
+  {
+    message: 'Per turni SPEZZATO specificare sia inizio che fine della pausa pranzo',
+    path: ['pausaPranzoFine'],
+  }
+).refine(
+  (data) => {
+    // Se c'è pausa pranzo per SPEZZATO, verifica che sia nell'intervallo di lavoro
+    if (data.tipoTurno === 'SPEZZATO' && data.pausaPranzoInizio && data.pausaPranzoFine) {
+      const pausaInizioMin = timeToMinutes(data.pausaPranzoInizio)
+      const pausaFineMin = timeToMinutes(data.pausaPranzoFine)
+      const inizioMin = timeToMinutes(data.oraInizio)
+      const fineMin = timeToMinutes(data.oraFine)
+
+      return (
+        pausaFineMin > pausaInizioMin &&
+        pausaInizioMin >= inizioMin &&
+        pausaFineMin <= fineMin
+      )
+    }
+    return true
+  },
+  {
+    message: 'La pausa pranzo deve essere compresa nell\'orario di lavoro',
+    path: ['pausaPranzoFine'],
   }
 )
 

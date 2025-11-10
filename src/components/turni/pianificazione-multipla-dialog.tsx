@@ -12,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
 import { TIPI_TURNO_CONFIG } from '@/types/turni'
 import { tipo_turno } from '@prisma/client'
+import { FasciaOraria } from '@/types/impostazioni'
 import {
   Dialog,
   DialogContent,
@@ -73,6 +74,8 @@ export function PianificazioneMultiplaDialog({
   isSubmitting = false
 }: PianificazioneMultiplaDialogProps) {
   const [giorniSelezionati, setGiorniSelezionati] = useState<number[]>([1, 2, 3, 4, 5]) // Lun-Ven di default
+  const [fasceOrarie, setFasceOrarie] = useState<FasciaOraria[]>([])
+  const [loadingOrari, setLoadingOrari] = useState(false)
 
   const form = useForm<TurniMultipliFormData>({
     resolver: zodResolver(turniMultipliCreateSchema),
@@ -83,10 +86,33 @@ export function PianificazioneMultiplaDialog({
       giorni: [1, 2, 3, 4, 5],
       oraInizio: '',
       oraFine: '',
+      pausaPranzoInizio: null,
+      pausaPranzoFine: null,
       tipoTurno: 'MATTINA' as tipo_turno,
       sedeId: 'none'
     }
   })
+
+  // Carica fasce orarie quando si apre il dialog
+  useEffect(() => {
+    if (open) {
+      const fetchFasceOrarie = async () => {
+        try {
+          setLoadingOrari(true)
+          const response = await fetch('/api/impostazioni/fasce-orarie')
+          if (response.ok) {
+            const data = await response.json()
+            setFasceOrarie(data.filter((f: FasciaOraria) => f.attivo))
+          }
+        } catch (error) {
+          console.error('Errore caricamento fasce orarie:', error)
+        } finally {
+          setLoadingOrari(false)
+        }
+      }
+      fetchFasceOrarie()
+    }
+  }, [open])
 
   // Reset form quando il dialog si apre
   useEffect(() => {
@@ -104,12 +130,29 @@ export function PianificazioneMultiplaDialog({
         giorni: [1, 2, 3, 4, 5],
         oraInizio: '',
         oraFine: '',
+        pausaPranzoInizio: null,
+        pausaPranzoFine: null,
         tipoTurno: 'MATTINA' as tipo_turno,
         sedeId: 'none'
       })
       setGiorniSelezionati([1, 2, 3, 4, 5])
     }
   }, [open, form])
+
+  // Watch tipoTurno per auto-compilazione da fasce orarie
+  const tipoTurnoValue = form.watch('tipoTurno')
+
+  useEffect(() => {
+    if (!tipoTurnoValue || !open) return
+
+    const fasciaCorrispondente = fasceOrarie.find(f => f.tipoTurno === tipoTurnoValue)
+    if (fasciaCorrispondente) {
+      form.setValue('oraInizio', fasciaCorrispondente.oraInizio)
+      form.setValue('oraFine', fasciaCorrispondente.oraFine)
+      form.setValue('pausaPranzoInizio', fasciaCorrispondente.pausaPranzoInizio || null)
+      form.setValue('pausaPranzoFine', fasciaCorrispondente.pausaPranzoFine || null)
+    }
+  }, [tipoTurnoValue, fasceOrarie, open, form])
 
   const handleGiornoToggle = (giorno: number) => {
     const nuoviGiorni = giorniSelezionati.includes(giorno)
@@ -129,6 +172,8 @@ export function PianificazioneMultiplaDialog({
       console.error('Errore submit form pianificazione:', error)
     }
   }
+
+  const hasPausaPranzo = form.watch('pausaPranzoInizio') || form.watch('pausaPranzoFine')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -263,6 +308,15 @@ export function PianificazioneMultiplaDialog({
               )}
             />
 
+            {/* Info auto-compilazione */}
+            {fasceOrarie.length > 0 && (
+              <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-3">
+                <p className="text-xs text-blue-900 dark:text-blue-100">
+                  💡 Gli orari si compilano automaticamente in base al tipo turno selezionato dalle fasce orarie configurate
+                </p>
+              </div>
+            )}
+
             {/* Orari */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -293,6 +347,52 @@ export function PianificazioneMultiplaDialog({
                 )}
               />
             </div>
+
+            {/* Pausa Pranzo - mostrata solo se presente */}
+            {hasPausaPranzo && (
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-medium mb-3">Pausa Pranzo</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="pausaPranzoInizio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Inizio Pausa</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pausaPranzoFine"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fine Pausa</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Sede */}
             <FormField
