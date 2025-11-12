@@ -26,6 +26,7 @@ export interface ReportDipendente {
   irpef: number
   totaleRitenute: number
   netto: number
+  tfr: number
   acconto1: number
   acconto2: number
   acconto3: number
@@ -47,6 +48,7 @@ export interface TotaliReport {
   totaleIrpef: number
   totaleRitenute: number
   totaleNetto: number
+  totaleTfr: number
   totaleAcconti: number
   totaleImportoBonifico: number
   totaleDifferenza: number

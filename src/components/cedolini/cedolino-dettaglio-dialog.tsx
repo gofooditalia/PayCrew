@@ -294,6 +294,17 @@ export function CedolinoDettaglioDialog({
                 </span>
               </div>
 
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">
+                  TFR Accantonato (6.91%)
+                </span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  {formatCurrency(busta.tfr)}
+                </span>
+              </div>
+
+              <Separator className="my-2" />
+
               <div className="flex justify-between items-center">
                 <span className="font-medium">
                   {differenzaPositiva
