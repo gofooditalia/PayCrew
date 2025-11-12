@@ -20,13 +20,13 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true, isNew: false, inProgress: false },
   { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true, isNew: false, inProgress: false },
-  { name: 'Collaboratori', href: '/collaboratori', icon: UsersIcon, enabled: true, isNew: true, inProgress: false },
-  { name: 'Pagamenti', href: '/pagamenti', icon: BanknotesIcon, enabled: true, isNew: true, inProgress: false },
+  { name: 'Collaboratori', href: '/collaboratori', icon: UsersIcon, enabled: true, isNew: false, inProgress: false },
+  { name: 'Pagamenti', href: '/pagamenti', icon: BanknotesIcon, enabled: true, isNew: false, inProgress: false },
   { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: true, isNew: false, inProgress: false },
   { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: false, inProgress: false },
   { name: 'Cedolini', href: '/cedolini', icon: DocumentTextIcon, enabled: false, isNew: false, inProgress: true },
   { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: true, isNew: false, inProgress: false },
-  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: true, isNew: true, inProgress: false },
+  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: true, isNew: false, inProgress: false },
 ]
 
 export default function Sidebar() {
