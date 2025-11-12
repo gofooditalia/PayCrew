@@ -275,8 +275,8 @@ export default function PagamentiPage() {
                           <p className="text-xs text-muted-foreground">Bonifico Totale</p>
                           <p className="font-medium text-primary">
                             {formatCurrency(
-                              (dipendente.limiteBonifico || 0) +
-                              ((dipendente.limiteBonifico || 0) * (dipendente.coefficienteMaggiorazione || 0) / 100)
+                              Number(dipendente.limiteBonifico || 0) +
+                              (Number(dipendente.limiteBonifico || 0) * Number(dipendente.coefficienteMaggiorazione || 0) / 100)
                             )}
                           </p>
                         </div>
