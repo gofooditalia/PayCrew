@@ -85,7 +85,8 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     }))
   }
 
-  const handleCheckboxChange = (checked: boolean) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked
     setFormData(prev => ({
       ...prev,
       attivo: checked,
@@ -510,7 +511,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
               <Checkbox
                 id="attivo"
                 checked={formData.attivo}
-                onCheckedChange={handleCheckboxChange}
+                onChange={handleCheckboxChange}
               />
               <Label
                 htmlFor="attivo"
