@@ -182,6 +182,7 @@ export async function POST(request: NextRequest) {
         email: dipendenteData.email || null,
         iban: dipendenteData.iban || null,
         dataAssunzione: new Date(dipendenteData.dataAssunzione),
+        dataScadenzaContratto: dipendenteData.dataScadenzaContratto ? new Date(dipendenteData.dataScadenzaContratto) : null,
         tipoContratto: dipendenteData.tipoContratto,
         ccnl: dipendenteData.ccnl,
         livello: dipendenteData.livello,

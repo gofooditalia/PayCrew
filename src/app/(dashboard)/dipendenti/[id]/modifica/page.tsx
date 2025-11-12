@@ -35,6 +35,7 @@ interface Dipendente {
   email?: string
   iban?: string
   dataAssunzione: Date
+  dataScadenzaContratto?: Date
   tipoContratto: string
   ccnl: string
   livello: string
@@ -81,6 +82,7 @@ export default function ModificaDipendentePage() {
     email: '',
     iban: '',
     dataAssunzione: '',
+    dataScadenzaContratto: '',
     tipoContratto: '',
     ccnl: '',
     livello: '',
@@ -136,6 +138,7 @@ export default function ModificaDipendentePage() {
           email: d.email || '',
           iban: d.iban || '',
           dataAssunzione: d.dataAssunzione ? new Date(d.dataAssunzione).toISOString().split('T')[0] : '',
+          dataScadenzaContratto: d.dataScadenzaContratto ? new Date(d.dataScadenzaContratto).toISOString().split('T')[0] : '',
           tipoContratto: d.tipoContratto || '',
           ccnl: d.ccnl || '',
           livello: d.livello || '',
@@ -217,7 +220,8 @@ export default function ModificaDipendentePage() {
           ...formData,
           retribuzione: parseFloat(formData.retribuzione),
           oreSettimanali: parseInt(formData.oreSettimanali),
-          dataCessazione: formData.dataCessazione ? new Date(formData.dataCessazione) : null
+          dataCessazione: formData.dataCessazione ? new Date(formData.dataCessazione) : null,
+          dataScadenzaContratto: formData.dataScadenzaContratto ? new Date(formData.dataScadenzaContratto) : null
         }),
       })
 
@@ -496,7 +500,24 @@ export default function ModificaDipendentePage() {
                     <option value="PARTTIME">Part-time</option>
                   </select>
                 </div>
-                
+
+                {(formData.tipoContratto === 'TEMPO_DETERMINATO' || formData.tipoContratto === 'STAGIONALE') && (
+                  <div>
+                    <label htmlFor="dataScadenzaContratto" className="block text-sm font-medium text-gray-700 mb-1">
+                      Scadenza Contratto *
+                    </label>
+                    <input
+                      type="date"
+                      id="dataScadenzaContratto"
+                      name="dataScadenzaContratto"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      value={formData.dataScadenzaContratto}
+                      onChange={handleChange}
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label htmlFor="ccnl" className="block text-sm font-medium text-gray-700 mb-1">
                     CCNL *
