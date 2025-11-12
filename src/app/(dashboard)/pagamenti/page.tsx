@@ -61,11 +61,12 @@ export default function PagamentiPage() {
       const response = await fetch('/api/dipendenti')
       if (response.ok) {
         const data = await response.json()
+        const dipendentiList = data.dipendenti || []
         const dipendentiWithPagamenti = await Promise.all(
-          data.dipendenti.map(async (dip: any) => {
+          dipendentiList.map(async (dip: any) => {
             const pagamentiRes = await fetch(`/api/pagamenti?dipendenteId=${dip.id}`)
             const pagamenti = pagamentiRes.ok ? await pagamentiRes.json() : []
-            return { ...dip, pagamenti }
+            return { ...dip, pagamenti: Array.isArray(pagamenti) ? pagamenti : [] }
           })
         )
         setDipendenti(dipendentiWithPagamenti)
@@ -75,7 +76,8 @@ export default function PagamentiPage() {
       const sediRes = await fetch('/api/sedi')
       if (sediRes.ok) {
         const sediData = await sediRes.json()
-        setSedi(sediData)
+        // API might return { sedi: [...] } or just [...]
+        setSedi(Array.isArray(sediData) ? sediData : (sediData.sedi || []))
       }
     } catch (error) {
       console.error('Error loading data:', error)
