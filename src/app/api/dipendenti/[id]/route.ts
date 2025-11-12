@@ -146,6 +146,7 @@ export async function PUT(
         tipoContratto: updateData.tipoContratto,
         ccnl: updateData.ccnl,
         livello: updateData.livello,
+        qualifica: updateData.qualifica || null,
         retribuzione: parseFloat(updateData.retribuzione),
         oreSettimanali: parseInt(updateData.oreSettimanali) || 40,
         sedeId: updateData.sedeId || null,
