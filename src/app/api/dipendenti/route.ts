@@ -186,6 +186,7 @@ export async function POST(request: NextRequest) {
         tipoContratto: dipendenteData.tipoContratto,
         ccnl: dipendenteData.ccnl,
         livello: dipendenteData.livello,
+        qualifica: dipendenteData.qualifica || null,
         retribuzione: parseFloat(dipendenteData.retribuzione),
         oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,
         sedeId: dipendenteData.sedeId || null,

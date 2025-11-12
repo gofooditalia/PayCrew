@@ -36,6 +36,7 @@ interface DipendenteFormProps {
     tipoContratto: string
     ccnl: string
     livello: string
+    qualifica: string
     retribuzione: number
     oreSettimanali: number
     sedeId: string
@@ -68,6 +69,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     tipoContratto: dipendente?.tipoContratto || 'TEMPO_INDETERMINATO',
     ccnl: dipendente?.ccnl || 'TURISMO',
     livello: dipendente?.livello || '',
+    qualifica: dipendente?.qualifica || '',
     retribuzione: dipendente?.retribuzione?.toString() || '',
     oreSettimanali: dipendente?.oreSettimanali?.toString() || '40',
     sedeId: dipendente?.sedeId || '',
@@ -437,7 +439,21 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 onChange={handleChange}
               />
             </div>
-            
+
+            <div>
+              <Label htmlFor="qualifica" className="mb-1">
+                Qualifica
+              </Label>
+              <Input
+                type="text"
+                id="qualifica"
+                name="qualifica"
+                placeholder="es. Cameriere, Cuoco, Receptionist..."
+                value={formData.qualifica}
+                onChange={handleChange}
+              />
+            </div>
+
             <div>
               <Label htmlFor="retribuzione" className="mb-1">
                 Retribuzione Mensile (€) *

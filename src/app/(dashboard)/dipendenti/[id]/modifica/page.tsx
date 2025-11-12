@@ -39,6 +39,7 @@ interface Dipendente {
   tipoContratto: string
   ccnl: string
   livello: string
+  qualifica?: string
   retribuzione: number
   oreSettimanali: number
   sedeId?: string
@@ -86,6 +87,7 @@ export default function ModificaDipendentePage() {
     tipoContratto: '',
     ccnl: '',
     livello: '',
+    qualifica: '',
     retribuzione: '',
     oreSettimanali: '40',
     sedeId: '',
@@ -142,6 +144,7 @@ export default function ModificaDipendentePage() {
           tipoContratto: d.tipoContratto || '',
           ccnl: d.ccnl || '',
           livello: d.livello || '',
+          qualifica: d.qualifica || '',
           retribuzione: d.retribuzione ? d.retribuzione.toString() : '',
           oreSettimanali: d.oreSettimanali ? d.oreSettimanali.toString() : '40',
           sedeId: d.sedeId || '',
@@ -552,7 +555,22 @@ export default function ModificaDipendentePage() {
                     onChange={handleChange}
                   />
                 </div>
-                
+
+                <div>
+                  <label htmlFor="qualifica" className="block text-sm font-medium text-gray-700 mb-1">
+                    Qualifica
+                  </label>
+                  <input
+                    type="text"
+                    id="qualifica"
+                    name="qualifica"
+                    placeholder="es. Cameriere, Cuoco, Receptionist..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.qualifica}
+                    onChange={handleChange}
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="retribuzione" className="block text-sm font-medium text-gray-700 mb-1">
                     Retribuzione Mensile (€) *

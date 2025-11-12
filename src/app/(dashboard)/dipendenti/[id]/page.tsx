@@ -29,6 +29,7 @@ interface Dipendente {
   tipoContratto: string
   ccnl: string
   livello: string
+  qualifica?: string
   retribuzione: number
   oreSettimanali: number
   sedeId?: string
@@ -262,6 +263,12 @@ export default function DipendenteDetailPage() {
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Livello</h3>
                 <p className="text-base font-medium mt-1">{dipendente.livello}</p>
               </div>
+              {dipendente.qualifica && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Qualifica</h3>
+                  <p className="text-base font-medium mt-1">{dipendente.qualifica}</p>
+                </div>
+              )}
               <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
                 <h3 className="text-xs font-semibold text-primary uppercase tracking-wider">Retribuzione Mensile</h3>
                 <p className="text-2xl font-bold text-primary mt-1">{formatCurrency(dipendente.retribuzione)}</p>

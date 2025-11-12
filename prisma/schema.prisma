@@ -109,6 +109,7 @@ model dipendenti {
   tipoContratto       tipo_contratto
   ccnl                ccnl
   livello        String
+  qualifica      String?
   retribuzione   Decimal          @db.Decimal(10, 2)
   oreSettimanali Int              @default(40)
   aziendaId      String           @db.Uuid
