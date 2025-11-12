@@ -32,6 +32,7 @@ interface DipendenteFormProps {
     email: string
     iban: string
     dataAssunzione: string
+    dataScadenzaContratto: string | null
     tipoContratto: string
     ccnl: string
     livello: string
@@ -63,6 +64,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     email: dipendente?.email || '',
     iban: dipendente?.iban || '',
     dataAssunzione: dipendente?.dataAssunzione || '',
+    dataScadenzaContratto: dipendente?.dataScadenzaContratto || '',
     tipoContratto: dipendente?.tipoContratto || 'TEMPO_INDETERMINATO',
     ccnl: dipendente?.ccnl || 'TURISMO',
     livello: dipendente?.livello || '',
@@ -386,7 +388,23 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 <option value="PARTTIME">Part-time</option>
               </select>
             </div>
-            
+
+            {(formData.tipoContratto === 'TEMPO_DETERMINATO' || formData.tipoContratto === 'STAGIONALE') && (
+              <div>
+                <Label htmlFor="dataScadenzaContratto" className="mb-1">
+                  Scadenza Contratto *
+                </Label>
+                <Input
+                  type="date"
+                  id="dataScadenzaContratto"
+                  name="dataScadenzaContratto"
+                  required
+                  value={formData.dataScadenzaContratto}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
+
             <div>
               <Label htmlFor="ccnl" className="mb-1">
                 CCNL *

@@ -142,6 +142,7 @@ export async function PUT(
         email: updateData.email || null,
         iban: updateData.iban || null,
         dataAssunzione: new Date(updateData.dataAssunzione),
+        dataScadenzaContratto: updateData.dataScadenzaContratto ? new Date(updateData.dataScadenzaContratto) : null,
         tipoContratto: updateData.tipoContratto,
         ccnl: updateData.ccnl,
         livello: updateData.livello,

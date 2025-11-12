@@ -25,6 +25,7 @@ interface Dipendente {
   email?: string
   iban?: string
   dataAssunzione: Date
+  dataScadenzaContratto?: Date
   tipoContratto: string
   ccnl: string
   livello: string
@@ -247,6 +248,12 @@ export default function DipendenteDetailPage() {
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tipo Contratto</h3>
                 <p className="text-base font-medium mt-1">{dipendente.tipoContratto}</p>
               </div>
+              {dipendente.dataScadenzaContratto && (dipendente.tipoContratto === 'TEMPO_DETERMINATO' || dipendente.tipoContratto === 'STAGIONALE') && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Scadenza Contratto</h3>
+                  <p className="text-base font-medium mt-1">{formatDate(dipendente.dataScadenzaContratto)}</p>
+                </div>
+              )}
               <div>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">CCNL</h3>
                 <p className="text-base font-medium mt-1">{dipendente.ccnl}</p>

@@ -103,10 +103,11 @@ model dipendenti {
   cap            String?
   telefono       String?
   email          String?
-  iban           String?
-  dataAssunzione DateTime         @db.Date
-  tipoContratto  tipo_contratto
-  ccnl           ccnl
+  iban                String?
+  dataAssunzione      DateTime         @db.Date
+  dataScadenzaContratto DateTime?      @db.Date
+  tipoContratto       tipo_contratto
+  ccnl                ccnl
   livello        String
   retribuzione   Decimal          @db.Decimal(10, 2)
   oreSettimanali Int              @default(40)
