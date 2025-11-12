@@ -17,14 +17,14 @@ import {
 } from '@heroicons/react/24/outline'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true, isNew: false },
-  { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true, isNew: false },
-  { name: 'Collaboratori', href: '/collaboratori', icon: UsersIcon, enabled: true, isNew: true },
-  { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: true, isNew: false },
-  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: false },
-  { name: 'Cedolini', href: '/cedolini', icon: DocumentTextIcon, enabled: true, isNew: false },
-  { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: true, isNew: false },
-  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: true, isNew: true },
+  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, enabled: true, isNew: false, inProgress: false },
+  { name: 'Dipendenti', href: '/dipendenti', icon: UserGroupIcon, enabled: true, isNew: false, inProgress: false },
+  { name: 'Collaboratori', href: '/collaboratori', icon: UsersIcon, enabled: true, isNew: true, inProgress: false },
+  { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: true, isNew: false, inProgress: false },
+  { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: false, inProgress: false },
+  { name: 'Cedolini', href: '/cedolini', icon: DocumentTextIcon, enabled: false, isNew: false, inProgress: true },
+  { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: true, isNew: false, inProgress: false },
+  { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: true, isNew: true, inProgress: false },
 ]
 
 export default function Sidebar() {
@@ -135,8 +135,12 @@ export default function Sidebar() {
                   {sidebarState === 'open' && (
                     <span className="flex items-center">
                       {item.name}
-                      <span className="ml-2 text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                        Presto
+                      <span className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                        item.inProgress
+                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {item.inProgress ? 'In lavorazione' : 'Presto'}
                       </span>
                     </span>
                   )}
@@ -144,7 +148,9 @@ export default function Sidebar() {
                     <div className="absolute left-full ml-2 px-2 py-1 bg-gradient-to-r from-popover to-background text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-border/50 backdrop-blur-sm">
                       <div className="flex flex-col">
                         <span>{item.name}</span>
-                        <span className="text-xs text-muted-foreground mt-1">Presto disponibile</span>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {item.inProgress ? 'In lavorazione' : 'Presto disponibile'}
+                        </span>
                       </div>
                     </div>
                   )}
