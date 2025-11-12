@@ -42,6 +42,9 @@ interface Dipendente {
   qualifica?: string
   retribuzione: number
   retribuzioneNetta?: number | null
+  limiteContanti?: number | null
+  limiteBonifico?: number | null
+  coefficienteMaggiorazione?: number | null
   oreSettimanali: number
   sedeId?: string
   sede?: {
@@ -91,6 +94,9 @@ export default function ModificaDipendentePage() {
     qualifica: '',
     retribuzione: '',
     retribuzioneNetta: '',
+    limiteContanti: '',
+    limiteBonifico: '',
+    coefficienteMaggiorazione: '',
     oreSettimanali: '40',
     sedeId: '',
     attivo: true,
@@ -149,6 +155,9 @@ export default function ModificaDipendentePage() {
           qualifica: d.qualifica || '',
           retribuzione: d.retribuzione ? d.retribuzione.toString() : '',
           retribuzioneNetta: d.retribuzioneNetta ? d.retribuzioneNetta.toString() : '',
+          limiteContanti: d.limiteContanti ? d.limiteContanti.toString() : '',
+          limiteBonifico: d.limiteBonifico ? d.limiteBonifico.toString() : '',
+          coefficienteMaggiorazione: (d.coefficienteMaggiorazione && d.coefficienteMaggiorazione > 0) ? d.coefficienteMaggiorazione.toString() : '',
           oreSettimanali: d.oreSettimanali ? d.oreSettimanali.toString() : '40',
           sedeId: d.sedeId || '',
           attivo: d.attivo !== undefined ? d.attivo : true,
@@ -168,10 +177,29 @@ export default function ModificaDipendentePage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }))
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      }
+
+      // Calcola automaticamente retribuzioneNetta quando cambiano i limiti o il coefficiente
+      if (name === 'limiteContanti' || name === 'limiteBonifico' || name === 'coefficienteMaggiorazione') {
+        const contanti = parseFloat(updated.limiteContanti) || 0
+        const bonifico = parseFloat(updated.limiteBonifico) || 0
+        const coefficiente = parseFloat(updated.coefficienteMaggiorazione) || 0
+
+        // Calcola bonifico maggiorato
+        const bonificoMaggiorato = bonifico + (bonifico * coefficiente / 100)
+
+        // Calcola retribuzione netta totale
+        const netto = contanti + bonificoMaggiorato
+
+        updated.retribuzioneNetta = netto > 0 ? netto.toFixed(2) : ''
+      }
+
+      return updated
+    })
   }
 
   const handleDelete = async () => {
@@ -226,6 +254,9 @@ export default function ModificaDipendentePage() {
           ...formData,
           retribuzione: parseFloat(formData.retribuzione),
           retribuzioneNetta: formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta) : null,
+          limiteContanti: formData.limiteContanti ? parseFloat(formData.limiteContanti) : null,
+          limiteBonifico: formData.limiteBonifico ? parseFloat(formData.limiteBonifico) : null,
+          coefficienteMaggiorazione: formData.coefficienteMaggiorazione ? parseFloat(formData.coefficienteMaggiorazione) : 0,
           oreSettimanali: parseInt(formData.oreSettimanali),
           dataCessazione: formData.dataCessazione ? new Date(formData.dataCessazione) : null,
           dataScadenzaContratto: formData.dataScadenzaContratto ? new Date(formData.dataScadenzaContratto) : null
@@ -593,26 +624,137 @@ export default function ModificaDipendentePage() {
                     Retribuzione lorda mensile (opzionale, per riferimento)
                   </p>
                 </div>
+              </div>
+            </div>
 
+            {/* Configurazione Limiti Pagamento */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Configurazione Limiti Pagamento</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label htmlFor="retribuzioneNetta" className="block text-sm font-medium text-gray-700 mb-1">
-                    Retribuzione Netta Mensile (€) *
+                  <label htmlFor="limiteContanti" className="block text-sm font-medium text-gray-700 mb-1">
+                    Limite Contanti (€)
                   </label>
                   <input
                     type="number"
-                    id="retribuzioneNetta"
-                    name="retribuzioneNetta"
-                    required
+                    id="limiteContanti"
+                    name="limiteContanti"
                     step="0.01"
                     min="0"
+                    placeholder="es. 500.00"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    value={formData.retribuzioneNetta}
+                    value={formData.limiteContanti}
                     onChange={handleChange}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Importo netto che il dipendente riceve mensilmente
+                    Quota massima in contanti
                   </p>
                 </div>
+
+                <div>
+                  <label htmlFor="limiteBonifico" className="block text-sm font-medium text-gray-700 mb-1">
+                    Limite Bonifico (€)
+                  </label>
+                  <input
+                    type="number"
+                    id="limiteBonifico"
+                    name="limiteBonifico"
+                    step="0.01"
+                    min="0"
+                    placeholder="es. 750.00"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.limiteBonifico}
+                    onChange={handleChange}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Quota bonifico (prima della maggiorazione)
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label htmlFor="coefficienteMaggiorazione" className="block text-sm font-medium text-gray-700 mb-1">
+                  Coefficiente Maggiorazione Bonifico (%)
+                </label>
+                <input
+                  type="number"
+                  id="coefficienteMaggiorazione"
+                  name="coefficienteMaggiorazione"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  placeholder="es. 4.00"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  value={formData.coefficienteMaggiorazione}
+                  onChange={handleChange}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Percentuale di maggiorazione applicata alla quota bonifico
+                </p>
+              </div>
+
+              {/* Riepilogo calcolo */}
+              {(formData.limiteContanti || formData.limiteBonifico) && (
+                <div className="p-4 bg-gray-50 rounded-lg mb-6">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Riepilogo Calcolo:</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-gray-600">Contanti:</span>
+                    <span className="font-medium text-right">
+                      {parseFloat(formData.limiteContanti || '0').toFixed(2)} €
+                    </span>
+
+                    <span className="text-gray-600">Bonifico base:</span>
+                    <span className="font-medium text-right">
+                      {parseFloat(formData.limiteBonifico || '0').toFixed(2)} €
+                    </span>
+
+                    <span className="text-gray-600">Maggiorazione ({formData.coefficienteMaggiorazione}%):</span>
+                    <span className="font-medium text-right">
+                      {(parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100).toFixed(2)} €
+                    </span>
+
+                    <span className="text-gray-600">Bonifico totale:</span>
+                    <span className="font-medium text-right">
+                      {(parseFloat(formData.limiteBonifico || '0') + (parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100)).toFixed(2)} €
+                    </span>
+
+                    <div className="col-span-2 h-px bg-gray-300 my-1"></div>
+
+                    <span className="text-gray-700 font-semibold">Retribuzione Netta Totale:</span>
+                    <span className="font-bold text-right text-lg text-indigo-600">
+                      {formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta).toFixed(2) : '0.00'} €
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="retribuzioneNetta" className="block text-sm font-medium text-gray-700 mb-1">
+                  Retribuzione Netta Mensile (€) *
+                </label>
+                <input
+                  type="number"
+                  id="retribuzioneNetta"
+                  name="retribuzioneNetta"
+                  required
+                  step="0.01"
+                  min="0"
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                  value={formData.retribuzioneNetta}
+                  onChange={handleChange}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Calcolato automaticamente da: Contanti + Bonifico maggiorato
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Orario e Sede</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div>
                   <label htmlFor="oreSettimanali" className="block text-sm font-medium text-gray-700 mb-1">

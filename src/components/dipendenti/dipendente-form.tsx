@@ -39,6 +39,9 @@ interface DipendenteFormProps {
     qualifica: string
     retribuzione: number
     retribuzioneNetta: number | null
+    limiteContanti: number | null
+    limiteBonifico: number | null
+    coefficienteMaggiorazione: number | null
     oreSettimanali: number
     sedeId: string
     attivo: boolean
@@ -73,6 +76,9 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     qualifica: dipendente?.qualifica || '',
     retribuzione: dipendente?.retribuzione?.toString() || '',
     retribuzioneNetta: dipendente?.retribuzioneNetta?.toString() || '',
+    limiteContanti: dipendente?.limiteContanti?.toString() || '',
+    limiteBonifico: dipendente?.limiteBonifico?.toString() || '',
+    coefficienteMaggiorazione: dipendente?.coefficienteMaggiorazione?.toString() || '',
     oreSettimanali: dipendente?.oreSettimanali?.toString() || '40',
     sedeId: dipendente?.sedeId || '',
     attivo: dipendente?.attivo !== undefined ? dipendente.attivo : true,
@@ -81,10 +87,29 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: value
+      }
+
+      // Calcola automaticamente retribuzioneNetta quando cambiano i limiti o il coefficiente
+      if (name === 'limiteContanti' || name === 'limiteBonifico' || name === 'coefficienteMaggiorazione') {
+        const contanti = parseFloat(updated.limiteContanti) || 0
+        const bonifico = parseFloat(updated.limiteBonifico) || 0
+        const coefficiente = parseFloat(updated.coefficienteMaggiorazione) || 0
+
+        // Calcola bonifico maggiorato
+        const bonificoMaggiorato = bonifico + (bonifico * coefficiente / 100)
+
+        // Calcola retribuzione netta totale
+        const netto = contanti + bonificoMaggiorato
+
+        updated.retribuzioneNetta = netto > 0 ? netto.toFixed(2) : ''
+      }
+
+      return updated
+    })
   }
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,6 +156,9 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
         ...formData,
         retribuzione: formData.retribuzione ? parseFloat(formData.retribuzione) : 0,
         retribuzioneNetta: formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta) : null,
+        limiteContanti: formData.limiteContanti ? parseFloat(formData.limiteContanti) : null,
+        limiteBonifico: formData.limiteBonifico ? parseFloat(formData.limiteBonifico) : null,
+        coefficienteMaggiorazione: formData.coefficienteMaggiorazione ? parseFloat(formData.coefficienteMaggiorazione) : 0,
         oreSettimanali: parseInt(formData.oreSettimanali),
         aziendaId: userData.aziendaId,
         createdAt: new Date().toISOString(),
@@ -475,6 +503,109 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 Retribuzione lorda mensile (opzionale, per riferimento)
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Configurazione Limiti Pagamento */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Configurazione Limiti Pagamento</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="limiteContanti" className="mb-1">
+                  Limite Contanti (€)
+                </Label>
+                <Input
+                  type="number"
+                  id="limiteContanti"
+                  name="limiteContanti"
+                  step="0.01"
+                  min="0"
+                  value={formData.limiteContanti}
+                  onChange={handleChange}
+                  placeholder="es. 500.00"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Quota massima in contanti
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="limiteBonifico" className="mb-1">
+                  Limite Bonifico (€)
+                </Label>
+                <Input
+                  type="number"
+                  id="limiteBonifico"
+                  name="limiteBonifico"
+                  step="0.01"
+                  min="0"
+                  value={formData.limiteBonifico}
+                  onChange={handleChange}
+                  placeholder="es. 750.00"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Quota bonifico (prima della maggiorazione)
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="coefficienteMaggiorazione" className="mb-1">
+                Coefficiente Maggiorazione Bonifico (%)
+              </Label>
+              <Input
+                type="number"
+                id="coefficienteMaggiorazione"
+                name="coefficienteMaggiorazione"
+                step="0.01"
+                min="0"
+                max="100"
+                value={formData.coefficienteMaggiorazione}
+                onChange={handleChange}
+                placeholder="es. 4.00"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Percentuale di maggiorazione applicata alla quota bonifico
+              </p>
+            </div>
+
+            {/* Riepilogo calcolo */}
+            {(formData.limiteContanti || formData.limiteBonifico) && (
+              <div className="p-4 bg-muted rounded-lg space-y-2">
+                <p className="text-sm font-medium">Riepilogo Calcolo:</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-muted-foreground">Contanti:</span>
+                  <span className="font-medium text-right">
+                    {parseFloat(formData.limiteContanti || '0').toFixed(2)} €
+                  </span>
+
+                  <span className="text-muted-foreground">Bonifico base:</span>
+                  <span className="font-medium text-right">
+                    {parseFloat(formData.limiteBonifico || '0').toFixed(2)} €
+                  </span>
+
+                  <span className="text-muted-foreground">Maggiorazione ({formData.coefficienteMaggiorazione}%):</span>
+                  <span className="font-medium text-right">
+                    {(parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100).toFixed(2)} €
+                  </span>
+
+                  <span className="text-muted-foreground">Bonifico totale:</span>
+                  <span className="font-medium text-right">
+                    {(parseFloat(formData.limiteBonifico || '0') + (parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100)).toFixed(2)} €
+                  </span>
+
+                  <div className="col-span-2 h-px bg-border my-1"></div>
+
+                  <span className="text-muted-foreground font-semibold">Retribuzione Netta Totale:</span>
+                  <span className="font-bold text-right text-lg text-primary">
+                    {formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta).toFixed(2) : '0.00'} €
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="retribuzioneNetta" className="mb-1">
@@ -489,12 +620,22 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 min="0"
                 value={formData.retribuzioneNetta}
                 onChange={handleChange}
+                disabled
+                className="bg-muted"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Importo netto che il dipendente riceve mensilmente
+                Calcolato automaticamente da: Contanti + Bonifico maggiorato
               </p>
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Dettagli Contrattuali - Continuazione */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Orario e Sede</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
               <Label htmlFor="oreSettimanali" className="mb-1">
                 Ore Settimanali *

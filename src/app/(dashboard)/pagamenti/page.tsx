@@ -23,6 +23,9 @@ interface Dipendente {
   nome: string
   cognome: string
   retribuzioneNetta: number | null
+  limiteContanti: number | null
+  limiteBonifico: number | null
+  coefficienteMaggiorazione: number | null
   attivo: boolean
   sede?: {
     id: string
@@ -250,6 +253,36 @@ export default function PagamentiPage() {
                       <p className="text-sm font-medium">{formatCurrency(bonifici)}</p>
                     </div>
                   </div>
+
+                  {/* Configurazione Limiti Pagamento */}
+                  {(dipendente.limiteContanti || dipendente.limiteBonifico) && (
+                    <div className="my-4 p-3 bg-muted/50 rounded-lg border border-border">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Configurazione Limiti:</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Limite Contanti</p>
+                          <p className="font-medium">{formatCurrency(dipendente.limiteContanti || 0)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Limite Bonifico</p>
+                          <p className="font-medium">{formatCurrency(dipendente.limiteBonifico || 0)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Maggiorazione</p>
+                          <p className="font-medium">{dipendente.coefficienteMaggiorazione || 0}%</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Bonifico Totale</p>
+                          <p className="font-medium text-primary">
+                            {formatCurrency(
+                              (dipendente.limiteBonifico || 0) +
+                              ((dipendente.limiteBonifico || 0) * (dipendente.coefficienteMaggiorazione || 0) / 100)
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Progress bar */}
                   <div className="space-y-2">

@@ -114,6 +114,10 @@ model dipendenti {
   qualifica      String?
   retribuzione   Decimal          @db.Decimal(10, 2)
   retribuzioneNetta Decimal?      @db.Decimal(10, 2)
+  // Nuovi campi per gestione limiti pagamento
+  limiteContanti    Decimal?       @db.Decimal(10, 2)
+  limiteBonifico    Decimal?       @db.Decimal(10, 2)
+  coefficienteMaggiorazione Decimal? @default(0) @db.Decimal(5, 2) // Percentuale (es. 4.00 per 4%)
   oreSettimanali Int              @default(40)
   aziendaId      String           @db.Uuid
   sedeId         String?          @db.Uuid
