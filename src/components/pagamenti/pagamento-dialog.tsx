@@ -18,6 +18,14 @@ interface PagamentoDialogProps {
   onOpenChange: (open: boolean) => void
   dipendenteId: string
   onSuccess: () => void
+  retribuzioneNetta: number | null
+  limiteContanti: number | null
+  limiteBonifico: number | null
+  coefficienteMaggiorazione: number | null
+  pagamentiEsistenti: {
+    tipoPagamento: 'CONTANTI' | 'BONIFICO'
+    importo: number
+  }[]
   pagamento?: {
     id: string
     importo: number
@@ -32,10 +40,16 @@ export default function PagamentoDialog({
   onOpenChange,
   dipendenteId,
   onSuccess,
+  retribuzioneNetta,
+  limiteContanti,
+  limiteBonifico,
+  coefficienteMaggiorazione,
+  pagamentiEsistenti,
   pagamento
 }: PagamentoDialogProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     importo: pagamento?.importo?.toString() || '',
@@ -46,6 +60,41 @@ export default function PagamentoDialog({
     note: pagamento?.note || ''
   })
 
+  // Calcola limiti disponibili
+  const calcolaLimiti = () => {
+    const netto = Number(retribuzioneNetta) || 0
+    const contantiLimit = Number(limiteContanti) || 0
+    const bonificoLimit = Number(limiteBonifico) || 0
+    const coefficiente = Number(coefficienteMaggiorazione) || 0
+    const bonificoMaggiorato = bonificoLimit + (bonificoLimit * coefficiente / 100)
+
+    // Calcola totali già pagati (escludendo il pagamento in modifica)
+    const pagatoContanti = pagamentiEsistenti
+      .filter(p => p.tipoPagamento === 'CONTANTI' && (!pagamento || pagamento.tipoPagamento !== 'CONTANTI'))
+      .reduce((sum, p) => sum + p.importo, 0)
+
+    const pagatoBonifico = pagamentiEsistenti
+      .filter(p => p.tipoPagamento === 'BONIFICO' && (!pagamento || pagamento.tipoPagamento !== 'BONIFICO'))
+      .reduce((sum, p) => sum + p.importo, 0)
+
+    const totalePagato = pagatoContanti + pagatoBonifico
+
+    return {
+      retribuzioneNetta: netto,
+      limiteContanti: contantiLimit,
+      limiteBonifico: bonificoMaggiorato,
+      pagatoContanti,
+      pagatoBonifico,
+      totalePagato,
+      disponibileContanti: Math.max(0, contantiLimit - pagatoContanti),
+      disponibileBonifico: Math.max(0, bonificoMaggiorato - pagatoBonifico),
+      disponibileTotale: Math.max(0, netto - totalePagato),
+      saldoMancante: Math.max(0, netto - totalePagato)
+    }
+  }
+
+  const limiti = calcolaLimiti()
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -54,10 +103,59 @@ export default function PagamentoDialog({
       ...prev,
       [name]: value
     }))
+
+    // Validazione in tempo reale
+    if (name === 'importo' || name === 'tipoPagamento') {
+      const importo = parseFloat(name === 'importo' ? value : formData.importo) || 0
+      const tipo = name === 'tipoPagamento' ? value : formData.tipoPagamento
+
+      setError(null)
+      setWarning(null)
+
+      if (importo > 0) {
+        // Verifica limite tipo pagamento
+        if (tipo === 'CONTANTI' && importo > limiti.disponibileContanti) {
+          setError(`L'importo supera il limite contanti disponibile di €${limiti.disponibileContanti.toFixed(2)}`)
+        } else if (tipo === 'BONIFICO' && importo > limiti.disponibileBonifico) {
+          setError(`L'importo supera il limite bonifico disponibile di €${limiti.disponibileBonifico.toFixed(2)}`)
+        }
+
+        // Verifica retribuzione netta totale
+        if (importo > limiti.disponibileTotale) {
+          setError(`L'importo supera il saldo disponibile di €${limiti.disponibileTotale.toFixed(2)}`)
+        }
+
+        // Warning se si avvicina al limite
+        const percentualeUtilizzo = (importo / (tipo === 'CONTANTI' ? limiti.disponibileContanti : limiti.disponibileBonifico)) * 100
+        if (percentualeUtilizzo > 90 && percentualeUtilizzo <= 100 && !error) {
+          setWarning(`Attenzione: stai utilizzando il ${percentualeUtilizzo.toFixed(0)}% del limite ${tipo === 'CONTANTI' ? 'contanti' : 'bonifico'}`)
+        }
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validazione finale prima del submit
+    const importo = parseFloat(formData.importo) || 0
+    const tipo = formData.tipoPagamento
+
+    if (tipo === 'CONTANTI' && importo > limiti.disponibileContanti) {
+      setError(`L'importo supera il limite contanti disponibile di €${limiti.disponibileContanti.toFixed(2)}`)
+      return
+    }
+
+    if (tipo === 'BONIFICO' && importo > limiti.disponibileBonifico) {
+      setError(`L'importo supera il limite bonifico disponibile di €${limiti.disponibileBonifico.toFixed(2)}`)
+      return
+    }
+
+    if (importo > limiti.disponibileTotale) {
+      setError(`L'importo supera il saldo disponibile di €${limiti.disponibileTotale.toFixed(2)}`)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -103,22 +201,55 @@ export default function PagamentoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {pagamento ? 'Modifica Pagamento' : 'Nuovo Pagamento'}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Riepilogo Limiti - Compatto */}
+          <div className="p-3 bg-muted/50 rounded-lg border border-border">
+            <p className="text-xs font-medium mb-2">Riepilogo Limiti:</p>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+              <span className="text-muted-foreground">Retribuzione Netta:</span>
+              <span className="font-medium text-right">€{limiti.retribuzioneNetta.toFixed(2)}</span>
+
+              <span className="text-muted-foreground">Totale Pagato:</span>
+              <span className="font-medium text-right">€{limiti.totalePagato.toFixed(2)}</span>
+
+              <div className="col-span-2 h-px bg-border my-0.5"></div>
+
+              <span className="text-muted-foreground">Disponibile Contanti:</span>
+              <span className="font-semibold text-right text-primary">€{limiti.disponibileContanti.toFixed(2)}</span>
+
+              <span className="text-muted-foreground">Disponibile Bonifico:</span>
+              <span className="font-semibold text-right text-primary">€{limiti.disponibileBonifico.toFixed(2)}</span>
+
+              <div className="col-span-2 h-px bg-border my-0.5"></div>
+
+              <span className="font-semibold">Saldo Mancante:</span>
+              <span className={`font-bold text-right ${limiti.saldoMancante > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                €{limiti.saldoMancante.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded text-sm">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-3 py-2 rounded text-xs">
               {error}
             </div>
           )}
 
+          {warning && !error && (
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-400 px-3 py-2 rounded text-xs">
+              {warning}
+            </div>
+          )}
+
           <div>
-            <Label htmlFor="importo">Importo (€) *</Label>
+            <Label htmlFor="importo" className="text-sm">Importo (€) *</Label>
             <Input
               type="number"
               id="importo"
@@ -128,18 +259,19 @@ export default function PagamentoDialog({
               min="0"
               value={formData.importo}
               onChange={handleChange}
+              className="h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="tipoPagamento">Tipo Pagamento *</Label>
+            <Label htmlFor="tipoPagamento" className="text-sm">Tipo Pagamento *</Label>
             <select
               id="tipoPagamento"
               name="tipoPagamento"
               required
               value={formData.tipoPagamento}
               onChange={handleChange}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="CONTANTI">Contanti</option>
               <option value="BONIFICO">Bonifico</option>
@@ -147,7 +279,7 @@ export default function PagamentoDialog({
           </div>
 
           <div>
-            <Label htmlFor="dataPagamento">Data Pagamento *</Label>
+            <Label htmlFor="dataPagamento" className="text-sm">Data Pagamento *</Label>
             <Input
               type="date"
               id="dataPagamento"
@@ -155,18 +287,20 @@ export default function PagamentoDialog({
               required
               value={formData.dataPagamento}
               onChange={handleChange}
+              className="h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="note">Note</Label>
+            <Label htmlFor="note" className="text-sm">Note</Label>
             <Textarea
               id="note"
               name="note"
-              rows={3}
+              rows={2}
               placeholder="Note o descrizione del pagamento..."
               value={formData.note}
               onChange={handleChange}
+              className="text-sm"
             />
           </div>
 

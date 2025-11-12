@@ -10,7 +10,6 @@ import { ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { PageLoader } from '@/components/loading'
-import PagamentiList from '@/components/pagamenti/pagamenti-list'
 
 interface Dipendente {
   id: string
@@ -320,14 +319,6 @@ export default function DipendenteDetailPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Sezione Pagamenti */}
-      <div className="mt-6">
-        <PagamentiList
-          dipendenteId={dipendente.id}
-          retribuzioneNetta={dipendente.retribuzioneNetta}
-        />
       </div>
     </div>
   )

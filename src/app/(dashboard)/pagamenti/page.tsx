@@ -338,6 +338,14 @@ export default function PagamentiPage() {
           onOpenChange={handleDialogClose}
           dipendenteId={selectedDipendente.id}
           onSuccess={handleSuccess}
+          retribuzioneNetta={selectedDipendente.retribuzioneNetta}
+          limiteContanti={selectedDipendente.limiteContanti}
+          limiteBonifico={selectedDipendente.limiteBonifico}
+          coefficienteMaggiorazione={selectedDipendente.coefficienteMaggiorazione}
+          pagamentiEsistenti={selectedDipendente.pagamenti.map(p => ({
+            tipoPagamento: p.tipoPagamento,
+            importo: p.importo
+          }))}
         />
       )}
     </div>
