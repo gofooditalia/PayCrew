@@ -19,6 +19,9 @@ interface Pagamento {
 interface PagamentiListProps {
   dipendenteId: string
   retribuzioneNetta: number | null
+  limiteContanti: number | null
+  limiteBonifico: number | null
+  coefficienteMaggiorazione: number | null
   mese?: number
   anno?: number
 }
@@ -26,6 +29,9 @@ interface PagamentiListProps {
 export default function PagamentiList({
   dipendenteId,
   retribuzioneNetta,
+  limiteContanti,
+  limiteBonifico,
+  coefficienteMaggiorazione,
   mese,
   anno
 }: PagamentiListProps) {
@@ -227,6 +233,14 @@ export default function PagamentiList({
         onOpenChange={handleDialogClose}
         dipendenteId={dipendenteId}
         onSuccess={handleSuccess}
+        retribuzioneNetta={retribuzioneNetta}
+        limiteContanti={limiteContanti}
+        limiteBonifico={limiteBonifico}
+        coefficienteMaggiorazione={coefficienteMaggiorazione}
+        pagamentiEsistenti={pagamenti.map(p => ({
+          tipoPagamento: p.tipoPagamento,
+          importo: p.importo
+        }))}
         pagamento={editingPagamento}
       />
     </>
