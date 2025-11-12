@@ -108,7 +108,7 @@ model dipendenti {
   dataScadenzaContratto DateTime?      @db.Date
   tipoContratto       tipo_contratto
   ccnl                ccnl
-  livello        String
+  note           String?
   qualifica      String?
   retribuzione   Decimal          @db.Decimal(10, 2)
   oreSettimanali Int              @default(40)

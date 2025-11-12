@@ -35,7 +35,7 @@ interface DipendenteFormProps {
     dataScadenzaContratto: string | null
     tipoContratto: string
     ccnl: string
-    livello: string
+    note: string
     qualifica: string
     retribuzione: number
     oreSettimanali: number
@@ -68,7 +68,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     dataScadenzaContratto: dipendente?.dataScadenzaContratto || '',
     tipoContratto: dipendente?.tipoContratto || 'TEMPO_INDETERMINATO',
     ccnl: dipendente?.ccnl || 'TURISMO',
-    livello: dipendente?.livello || '',
+    note: dipendente?.note || '',
     qualifica: dipendente?.qualifica || '',
     retribuzione: dipendente?.retribuzione?.toString() || '',
     oreSettimanali: dipendente?.oreSettimanali?.toString() || '40',
@@ -427,15 +427,15 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
             </div>
             
             <div>
-              <Label htmlFor="livello" className="mb-1">
-                Livello *
+              <Label htmlFor="note" className="mb-1">
+                Note
               </Label>
               <Input
                 type="text"
-                id="livello"
-                name="livello"
-                required
-                value={formData.livello}
+                id="note"
+                name="note"
+                placeholder="Note aggiuntive sul contratto..."
+                value={formData.note}
                 onChange={handleChange}
               />
             </div>
