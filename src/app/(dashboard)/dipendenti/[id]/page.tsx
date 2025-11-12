@@ -10,6 +10,7 @@ import { ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { PageLoader } from '@/components/loading'
+import PagamentiList from '@/components/pagamenti/pagamenti-list'
 
 interface Dipendente {
   id: string
@@ -31,6 +32,7 @@ interface Dipendente {
   note?: string
   qualifica?: string
   retribuzione: number
+  retribuzioneNetta: number | null
   oreSettimanali: number
   sedeId?: string
   sede?: {
@@ -271,9 +273,15 @@ export default function DipendenteDetailPage() {
                   <p className="text-base font-medium mt-1">{dipendente.note}</p>
                 </div>
               )}
-              <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
-                <h3 className="text-xs font-semibold text-primary uppercase tracking-wider">Retribuzione Mensile</h3>
-                <p className="text-2xl font-bold text-primary mt-1">{formatCurrency(dipendente.retribuzione)}</p>
+              {dipendente.retribuzioneNetta && (
+                <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
+                  <h3 className="text-xs font-semibold text-primary uppercase tracking-wider">Retribuzione Netta Mensile</h3>
+                  <p className="text-2xl font-bold text-primary mt-1">{formatCurrency(dipendente.retribuzioneNetta)}</p>
+                </div>
+              )}
+              <div className="bg-muted/30 p-3 rounded-lg border border-muted">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Retribuzione Lorda Mensile</h3>
+                <p className="text-lg font-semibold text-muted-foreground mt-1">{formatCurrency(dipendente.retribuzione)}</p>
               </div>
               <div>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ore Settimanali</h3>
@@ -312,6 +320,14 @@ export default function DipendenteDetailPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Sezione Pagamenti */}
+      <div className="mt-6">
+        <PagamentiList
+          dipendenteId={dipendente.id}
+          retribuzioneNetta={dipendente.retribuzioneNetta}
+        />
       </div>
     </div>
   )
