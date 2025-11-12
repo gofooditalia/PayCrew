@@ -189,6 +189,7 @@ export async function POST(request: NextRequest) {
         oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,
         sedeId: dipendenteData.sedeId || null,
         attivo: dipendenteData.attivo !== undefined ? dipendenteData.attivo : true,
+        dataCessazione: dipendenteData.dataCessazione ? new Date(dipendenteData.dataCessazione) : null,
         aziendaId: userData.aziendaId
       },
       include: {

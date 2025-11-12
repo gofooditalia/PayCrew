@@ -38,6 +38,8 @@ interface DipendenteFormProps {
     retribuzione: number
     oreSettimanali: number
     sedeId: string
+    attivo: boolean
+    dataCessazione: string | null
   }
 }
 
@@ -66,7 +68,9 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     livello: dipendente?.livello || '',
     retribuzione: dipendente?.retribuzione?.toString() || '',
     oreSettimanali: dipendente?.oreSettimanali?.toString() || '40',
-    sedeId: dipendente?.sedeId || ''
+    sedeId: dipendente?.sedeId || '',
+    attivo: dipendente?.attivo !== undefined ? dipendente.attivo : true,
+    dataCessazione: dipendente?.dataCessazione || ''
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -74,6 +78,15 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }))
+  }
+
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      attivo: checked,
+      // Se il dipendente diventa attivo, rimuovi la data di cessazione
+      dataCessazione: checked ? '' : prev.dataCessazione
     }))
   }
 
@@ -458,6 +471,36 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 ))}
               </select>
             </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="attivo"
+                checked={formData.attivo}
+                onCheckedChange={handleCheckboxChange}
+              />
+              <Label
+                htmlFor="attivo"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Dipendente attivo
+              </Label>
+            </div>
+
+            {!formData.attivo && (
+              <div>
+                <Label htmlFor="dataCessazione" className="mb-1">
+                  Data Cessazione {!formData.attivo && '*'}
+                </Label>
+                <Input
+                  type="date"
+                  id="dataCessazione"
+                  name="dataCessazione"
+                  required={!formData.attivo}
+                  value={formData.dataCessazione}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
