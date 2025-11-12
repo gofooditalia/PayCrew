@@ -38,6 +38,7 @@ interface DipendenteFormProps {
     note: string
     qualifica: string
     retribuzione: number
+    retribuzioneNetta: number | null
     oreSettimanali: number
     sedeId: string
     attivo: boolean
@@ -71,6 +72,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     note: dipendente?.note || '',
     qualifica: dipendente?.qualifica || '',
     retribuzione: dipendente?.retribuzione?.toString() || '',
+    retribuzioneNetta: dipendente?.retribuzioneNetta?.toString() || '',
     oreSettimanali: dipendente?.oreSettimanali?.toString() || '40',
     sedeId: dipendente?.sedeId || '',
     attivo: dipendente?.attivo !== undefined ? dipendente.attivo : true,
@@ -127,7 +129,8 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
       const preparedData = {
         id: dipendente?.id || crypto.randomUUID(),
         ...formData,
-        retribuzione: parseFloat(formData.retribuzione),
+        retribuzione: formData.retribuzione ? parseFloat(formData.retribuzione) : 0,
+        retribuzioneNetta: formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta) : null,
         oreSettimanali: parseInt(formData.oreSettimanali),
         aziendaId: userData.aziendaId,
         createdAt: new Date().toISOString(),
@@ -457,20 +460,41 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
 
             <div>
               <Label htmlFor="retribuzione" className="mb-1">
-                Retribuzione Mensile (€) *
+                Retribuzione Lorda Mensile (€)
               </Label>
               <Input
                 type="number"
                 id="retribuzione"
                 name="retribuzione"
-                required
                 step="0.01"
                 min="0"
                 value={formData.retribuzione}
                 onChange={handleChange}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Retribuzione lorda mensile (opzionale, per riferimento)
+              </p>
             </div>
-            
+
+            <div>
+              <Label htmlFor="retribuzioneNetta" className="mb-1">
+                Retribuzione Netta Mensile (€) *
+              </Label>
+              <Input
+                type="number"
+                id="retribuzioneNetta"
+                name="retribuzioneNetta"
+                required
+                step="0.01"
+                min="0"
+                value={formData.retribuzioneNetta}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Importo netto che il dipendente riceve mensilmente
+              </p>
+            </div>
+
             <div>
               <Label htmlFor="oreSettimanali" className="mb-1">
                 Ore Settimanali *
