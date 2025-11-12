@@ -41,6 +41,7 @@ interface Dipendente {
   note?: string
   qualifica?: string
   retribuzione: number
+  retribuzioneNetta?: number | null
   oreSettimanali: number
   sedeId?: string
   sede?: {
@@ -89,6 +90,7 @@ export default function ModificaDipendentePage() {
     note: '',
     qualifica: '',
     retribuzione: '',
+    retribuzioneNetta: '',
     oreSettimanali: '40',
     sedeId: '',
     attivo: true,
@@ -146,6 +148,7 @@ export default function ModificaDipendentePage() {
           note: d.note || '',
           qualifica: d.qualifica || '',
           retribuzione: d.retribuzione ? d.retribuzione.toString() : '',
+          retribuzioneNetta: d.retribuzioneNetta ? d.retribuzioneNetta.toString() : '',
           oreSettimanali: d.oreSettimanali ? d.oreSettimanali.toString() : '40',
           sedeId: d.sedeId || '',
           attivo: d.attivo !== undefined ? d.attivo : true,
@@ -222,6 +225,7 @@ export default function ModificaDipendentePage() {
         body: JSON.stringify({
           ...formData,
           retribuzione: parseFloat(formData.retribuzione),
+          retribuzioneNetta: formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta) : null,
           oreSettimanali: parseInt(formData.oreSettimanali),
           dataCessazione: formData.dataCessazione ? new Date(formData.dataCessazione) : null,
           dataScadenzaContratto: formData.dataScadenzaContratto ? new Date(formData.dataScadenzaContratto) : null
@@ -573,21 +577,43 @@ export default function ModificaDipendentePage() {
 
                 <div>
                   <label htmlFor="retribuzione" className="block text-sm font-medium text-gray-700 mb-1">
-                    Retribuzione Mensile (€) *
+                    Retribuzione Lorda Mensile (€)
                   </label>
                   <input
                     type="number"
                     id="retribuzione"
                     name="retribuzione"
-                    required
                     step="0.01"
                     min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formData.retribuzione}
                     onChange={handleChange}
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Retribuzione lorda mensile (opzionale, per riferimento)
+                  </p>
                 </div>
-                
+
+                <div>
+                  <label htmlFor="retribuzioneNetta" className="block text-sm font-medium text-gray-700 mb-1">
+                    Retribuzione Netta Mensile (€) *
+                  </label>
+                  <input
+                    type="number"
+                    id="retribuzioneNetta"
+                    name="retribuzioneNetta"
+                    required
+                    step="0.01"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.retribuzioneNetta}
+                    onChange={handleChange}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Importo netto che il dipendente riceve mensilmente
+                  </p>
+                </div>
+
                 <div>
                   <label htmlFor="oreSettimanali" className="block text-sm font-medium text-gray-700 mb-1">
                     Ore Settimanali

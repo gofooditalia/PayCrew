@@ -30,7 +30,6 @@ interface Dipendente {
   telefono?: string
   dataAssunzione: Date
   tipoContratto: string
-  livello: string
   retribuzione: number
   oreSettimanali: number
   attivo: boolean

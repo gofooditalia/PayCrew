@@ -188,6 +188,7 @@ export async function POST(request: NextRequest) {
         note: dipendenteData.note || null,
         qualifica: dipendenteData.qualifica || null,
         retribuzione: parseFloat(dipendenteData.retribuzione),
+        retribuzioneNetta: dipendenteData.retribuzioneNetta ? parseFloat(dipendenteData.retribuzioneNetta) : null,
         oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,
         sedeId: dipendenteData.sedeId || null,
         attivo: dipendenteData.attivo !== undefined ? dipendenteData.attivo : true,

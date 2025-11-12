@@ -54,6 +54,7 @@ async function getDipendenti(statoFiltro?: string) {
     iban: dipendente.iban || '',
     dataCessazione: dipendente.dataCessazione || undefined,
     retribuzione: parseFloat(dipendente.retribuzione.toString()),
+    retribuzioneNetta: dipendente.retribuzioneNetta ? parseFloat(dipendente.retribuzioneNetta.toString()) : null,
     sede: dipendente.sedi || undefined
   }))
 }

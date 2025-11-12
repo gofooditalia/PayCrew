@@ -148,6 +148,7 @@ export async function PUT(
         note: updateData.note || null,
         qualifica: updateData.qualifica || null,
         retribuzione: parseFloat(updateData.retribuzione),
+        retribuzioneNetta: updateData.retribuzioneNetta ? parseFloat(updateData.retribuzioneNetta) : null,
         oreSettimanali: parseInt(updateData.oreSettimanali) || 40,
         sedeId: updateData.sedeId || null,
         attivo: updateData.attivo !== undefined ? updateData.attivo : true,
