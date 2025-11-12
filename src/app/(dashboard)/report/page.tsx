@@ -14,18 +14,18 @@ export default function ReportPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="cedolini" className="space-y-4">
+      <Tabs defaultValue="presenze" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="cedolini">Report Cedolini</TabsTrigger>
           <TabsTrigger value="presenze">Report Presenze</TabsTrigger>
+          <TabsTrigger value="cedolini">Report Cedolini</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="cedolini" className="space-y-4">
-          <ReportCedolini />
-        </TabsContent>
 
         <TabsContent value="presenze" className="space-y-4">
           <ReportPresenze />
+        </TabsContent>
+
+        <TabsContent value="cedolini" className="space-y-4">
+          <ReportCedolini />
         </TabsContent>
       </Tabs>
     </div>
