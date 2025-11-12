@@ -36,6 +36,7 @@ interface Dipendente {
     importo: number
     tipoPagamento: 'CONTANTI' | 'BONIFICO'
     dataPagamento: string
+    note: string | null
   }[]
 }
 
@@ -307,18 +308,25 @@ export default function PagamentiPage() {
                       <p className="text-xs text-muted-foreground mb-2">
                         Ultimi pagamenti ({dipendente.pagamenti.length})
                       </p>
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         {dipendente.pagamenti.slice(0, 3).map(pagamento => (
-                          <div key={pagamento.id} className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">
-                              {new Date(pagamento.dataPagamento).toLocaleDateString('it-IT')}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={pagamento.tipoPagamento === 'BONIFICO' ? 'default' : 'secondary'} className="text-xs">
-                                {pagamento.tipoPagamento === 'BONIFICO' ? 'Bonifico' : 'Contanti'}
-                              </Badge>
-                              <span className="font-medium">{formatCurrency(pagamento.importo)}</span>
+                          <div key={pagamento.id} className="text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">
+                                {new Date(pagamento.dataPagamento).toLocaleDateString('it-IT')}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={pagamento.tipoPagamento === 'BONIFICO' ? 'default' : 'secondary'} className="text-xs">
+                                  {pagamento.tipoPagamento === 'BONIFICO' ? 'Bonifico' : 'Contanti'}
+                                </Badge>
+                                <span className="font-medium">{formatCurrency(pagamento.importo)}</span>
+                              </div>
                             </div>
+                            {pagamento.note && (
+                              <div className="text-xs text-muted-foreground mt-1 italic">
+                                {pagamento.note}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
