@@ -79,6 +79,7 @@ export async function GET(request: Request) {
       totaleIrpef: 0,
       totaleRitenute: 0,
       totaleNetto: 0,
+      totaleTfr: 0,
       totaleAcconti: 0,
       totaleImportoBonifico: 0,
       totaleDifferenza: 0,
@@ -95,6 +96,7 @@ export async function GET(request: Request) {
       const irpef = Number(bp.irpef);
       const totaleRitenute = Number(bp.totaleRitenute);
       const netto = Number(bp.netto);
+      const tfr = Number(bp.tfr);
       const acconto1 = bp.acconto1 ? Number(bp.acconto1) : 0;
       const acconto2 = bp.acconto2 ? Number(bp.acconto2) : 0;
       const acconto3 = bp.acconto3 ? Number(bp.acconto3) : 0;
@@ -116,6 +118,7 @@ export async function GET(request: Request) {
       totali.totaleIrpef += irpef;
       totali.totaleRitenute += totaleRitenute;
       totali.totaleNetto += netto;
+      totali.totaleTfr += tfr;
       totali.totaleAcconti += totaleAcconti;
       totali.totaleImportoBonifico += importoBonifico;
       totali.totaleDifferenza += differenza;
@@ -140,6 +143,7 @@ export async function GET(request: Request) {
         irpef,
         totaleRitenute,
         netto,
+        tfr,
         acconto1,
         acconto2,
         acconto3,

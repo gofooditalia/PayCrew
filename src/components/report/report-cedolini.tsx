@@ -67,6 +67,7 @@ export function ReportCedolini() {
       'IRPEF',
       'Totale Ritenute',
       'Netto',
+      'TFR',
       'Acconto 1',
       'Acconto 2',
       'Acconto 3',
@@ -90,6 +91,7 @@ export function ReportCedolini() {
       d.irpef.toFixed(2),
       d.totaleRitenute.toFixed(2),
       d.netto.toFixed(2),
+      d.tfr.toFixed(2),
       d.acconto1.toFixed(2),
       d.acconto2.toFixed(2),
       d.acconto3.toFixed(2),
@@ -116,6 +118,7 @@ export function ReportCedolini() {
       report.totali.totaleIrpef.toFixed(2),
       report.totali.totaleRitenute.toFixed(2),
       report.totali.totaleNetto.toFixed(2),
+      report.totali.totaleTfr.toFixed(2),
       '',
       '',
       '',
@@ -162,7 +165,7 @@ export function ReportCedolini() {
       ) : report ? (
         <>
           {/* Statistiche Principali */}
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-5">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -198,6 +201,19 @@ export function ReportCedolini() {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {formatCurrency(report.totali.totaleNetto)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Totale TFR
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(report.totali.totaleTfr)}
                 </div>
               </CardContent>
             </Card>
@@ -245,6 +261,7 @@ export function ReportCedolini() {
                       <TableHead className="text-right">Tot. Lordo</TableHead>
                       <TableHead className="text-right">Ritenute</TableHead>
                       <TableHead className="text-right">Netto</TableHead>
+                      <TableHead className="text-right">TFR</TableHead>
                       <TableHead className="text-right">Acconti</TableHead>
                       <TableHead className="text-right">Bonifico</TableHead>
                       <TableHead className="text-right">Differenza</TableHead>
@@ -274,6 +291,9 @@ export function ReportCedolini() {
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {formatCurrency(dip.netto)}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {formatCurrency(dip.tfr)}
                         </TableCell>
                         <TableCell className="text-right">
                           {formatCurrency(dip.totaleAcconti)}
@@ -315,6 +335,9 @@ export function ReportCedolini() {
                       </TableCell>
                       <TableCell className="text-right font-bold">
                         {formatCurrency(report.totali.totaleNetto)}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-muted-foreground">
+                        {formatCurrency(report.totali.totaleTfr)}
                       </TableCell>
                       <TableCell className="text-right font-bold">
                         {formatCurrency(report.totali.totaleAcconti)}
