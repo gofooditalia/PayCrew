@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     const dipendenteData = await request.json()
 
     // Validate required fields
-    const requiredFields = ['nome', 'cognome', 'codiceFiscale', 'dataNascita', 'dataAssunzione', 'tipoContratto', 'ccnl', 'livello', 'retribuzione']
+    const requiredFields = ['nome', 'cognome', 'codiceFiscale', 'dataNascita', 'dataAssunzione', 'tipoContratto', 'ccnl', 'retribuzione']
     const missingFields = requiredFields.filter(field => !dipendenteData[field])
     
     if (missingFields.length > 0) {
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
         dataScadenzaContratto: dipendenteData.dataScadenzaContratto ? new Date(dipendenteData.dataScadenzaContratto) : null,
         tipoContratto: dipendenteData.tipoContratto,
         ccnl: dipendenteData.ccnl,
-        livello: dipendenteData.livello,
+        note: dipendenteData.note || null,
         qualifica: dipendenteData.qualifica || null,
         retribuzione: parseFloat(dipendenteData.retribuzione),
         oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,

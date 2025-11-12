@@ -145,7 +145,7 @@ export async function PUT(
         dataScadenzaContratto: updateData.dataScadenzaContratto ? new Date(updateData.dataScadenzaContratto) : null,
         tipoContratto: updateData.tipoContratto,
         ccnl: updateData.ccnl,
-        livello: updateData.livello,
+        note: updateData.note || null,
         qualifica: updateData.qualifica || null,
         retribuzione: parseFloat(updateData.retribuzione),
         oreSettimanali: parseInt(updateData.oreSettimanali) || 40,

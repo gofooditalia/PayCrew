@@ -28,7 +28,7 @@ interface Dipendente {
   dataScadenzaContratto?: Date
   tipoContratto: string
   ccnl: string
-  livello: string
+  note?: string
   qualifica?: string
   retribuzione: number
   oreSettimanali: number
@@ -259,14 +259,16 @@ export default function DipendenteDetailPage() {
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">CCNL</h3>
                 <p className="text-base font-medium mt-1">{dipendente.ccnl}</p>
               </div>
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Livello</h3>
-                <p className="text-base font-medium mt-1">{dipendente.livello}</p>
-              </div>
               {dipendente.qualifica && (
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Qualifica</h3>
                   <p className="text-base font-medium mt-1">{dipendente.qualifica}</p>
+                </div>
+              )}
+              {dipendente.note && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Note</h3>
+                  <p className="text-base font-medium mt-1">{dipendente.note}</p>
                 </div>
               )}
               <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">

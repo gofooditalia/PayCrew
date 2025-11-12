@@ -38,7 +38,7 @@ interface Dipendente {
   dataScadenzaContratto?: Date
   tipoContratto: string
   ccnl: string
-  livello: string
+  note?: string
   qualifica?: string
   retribuzione: number
   oreSettimanali: number
@@ -86,7 +86,7 @@ export default function ModificaDipendentePage() {
     dataScadenzaContratto: '',
     tipoContratto: '',
     ccnl: '',
-    livello: '',
+    note: '',
     qualifica: '',
     retribuzione: '',
     oreSettimanali: '40',
@@ -143,7 +143,7 @@ export default function ModificaDipendentePage() {
           dataScadenzaContratto: d.dataScadenzaContratto ? new Date(d.dataScadenzaContratto).toISOString().split('T')[0] : '',
           tipoContratto: d.tipoContratto || '',
           ccnl: d.ccnl || '',
-          livello: d.livello || '',
+          note: d.note || '',
           qualifica: d.qualifica || '',
           retribuzione: d.retribuzione ? d.retribuzione.toString() : '',
           oreSettimanali: d.oreSettimanali ? d.oreSettimanali.toString() : '40',
@@ -542,16 +542,16 @@ export default function ModificaDipendentePage() {
                 </div>
                 
                 <div>
-                  <label htmlFor="livello" className="block text-sm font-medium text-gray-700 mb-1">
-                    Livello *
+                  <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
+                    Note
                   </label>
                   <input
                     type="text"
-                    id="livello"
-                    name="livello"
-                    required
+                    id="note"
+                    name="note"
+                    placeholder="Note aggiuntive sul contratto..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    value={formData.livello}
+                    value={formData.note}
                     onChange={handleChange}
                   />
                 </div>
