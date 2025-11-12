@@ -17,7 +17,12 @@ export default function ReportPage() {
       <Tabs defaultValue="presenze" className="space-y-4">
         <TabsList>
           <TabsTrigger value="presenze">Report Presenze</TabsTrigger>
-          <TabsTrigger value="cedolini">Report Cedolini</TabsTrigger>
+          <TabsTrigger value="cedolini" disabled className="relative">
+            <span>Report Cedolini</span>
+            <span className="ml-2 text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
+              In lavorazione
+            </span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="presenze" className="space-y-4">
