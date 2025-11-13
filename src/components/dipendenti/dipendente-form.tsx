@@ -93,19 +93,26 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
         [name]: value
       }
 
-      // Calcola automaticamente retribuzioneNetta quando cambiano i limiti o il coefficiente
-      if (name === 'limiteContanti' || name === 'limiteBonifico' || name === 'coefficienteMaggiorazione') {
-        const contanti = parseFloat(updated.limiteContanti) || 0
+      // Calcola automaticamente quando cambiano retribuzioneNetta, limiteBonifico o coefficiente
+      if (name === 'retribuzioneNetta' || name === 'limiteBonifico' || name === 'coefficienteMaggiorazione') {
+        const retribuzioneBase = parseFloat(updated.retribuzioneNetta) || 0
         const bonifico = parseFloat(updated.limiteBonifico) || 0
         const coefficiente = parseFloat(updated.coefficienteMaggiorazione) || 0
 
-        // Calcola bonifico maggiorato
-        const bonificoMaggiorato = bonifico + (bonifico * coefficiente / 100)
+        // 1. Calcola bonus (coefficiente% sul bonifico)
+        const bonus = bonifico * (coefficiente / 100)
 
-        // Calcola retribuzione netta totale
-        const netto = contanti + bonificoMaggiorato
+        // 2. Calcola bonifico totale con maggiorazione
+        const bonificoTotale = bonifico + bonus
 
-        updated.retribuzioneNetta = netto > 0 ? netto.toFixed(2) : ''
+        // 3. Calcola retribuzione totale (base + bonus)
+        const retribuzioneTotale = retribuzioneBase + bonus
+
+        // 4. Calcola cash (retribuzione totale - bonifico totale)
+        const cash = retribuzioneTotale - bonificoTotale
+
+        // Aggiorna limiteContanti con il cash calcolato
+        updated.limiteContanti = cash > 0 ? cash.toFixed(2) : ''
       }
 
       return updated
@@ -154,7 +161,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
       const preparedData = {
         id: dipendente?.id || crypto.randomUUID(),
         ...formData,
-        retribuzione: formData.retribuzione ? parseFloat(formData.retribuzione) : 0,
+        retribuzione: formData.retribuzione ? parseFloat(formData.retribuzione) : null,
         retribuzioneNetta: formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta) : null,
         limiteContanti: formData.limiteContanti ? parseFloat(formData.limiteContanti) : null,
         limiteBonifico: formData.limiteBonifico ? parseFloat(formData.limiteBonifico) : null,
@@ -252,13 +259,12 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
             
             <div>
               <Label htmlFor="codiceFiscale" className="mb-1">
-                Codice Fiscale *
+                Codice Fiscale
               </Label>
               <Input
                 type="text"
                 id="codiceFiscale"
                 name="codiceFiscale"
-                required
                 value={formData.codiceFiscale}
                 onChange={handleChange}
                 className="uppercase"
@@ -267,13 +273,12 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
             
             <div>
               <Label htmlFor="dataNascita" className="mb-1">
-                Data di Nascita *
+                Data di Nascita
               </Label>
               <Input
                 type="date"
                 id="dataNascita"
                 name="dataNascita"
-                required
                 value={formData.dataNascita}
                 onChange={handleChange}
               />
@@ -405,12 +410,11 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
             
             <div>
               <Label htmlFor="tipoContratto" className="mb-1">
-                Tipo Contratto *
+                Tipo Contratto
               </Label>
               <select
                 id="tipoContratto"
                 name="tipoContratto"
-                required
                 value={formData.tipoContratto}
                 onChange={handleChange}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -441,12 +445,11 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
 
             <div>
               <Label htmlFor="ccnl" className="mb-1">
-                CCNL *
+                CCNL
               </Label>
               <select
                 id="ccnl"
                 name="ccnl"
-                required
                 value={formData.ccnl}
                 onChange={handleChange}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -514,21 +517,21 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="limiteContanti" className="mb-1">
-                  Limite Contanti (€)
+                <Label htmlFor="retribuzioneNetta" className="mb-1">
+                  Retribuzione Netta Mensile (€) *
                 </Label>
                 <Input
                   type="number"
-                  id="limiteContanti"
-                  name="limiteContanti"
+                  id="retribuzioneNetta"
+                  name="retribuzioneNetta"
                   step="0.01"
                   min="0"
-                  value={formData.limiteContanti}
+                  value={formData.retribuzioneNetta}
                   onChange={handleChange}
-                  placeholder="es. 500.00"
+                  placeholder="es. 1250.00"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Quota massima in contanti
+                  Retribuzione mensile al netto (senza bonus)
                 </p>
               </div>
 
@@ -573,13 +576,19 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
             </div>
 
             {/* Riepilogo calcolo */}
-            {(formData.limiteContanti || formData.limiteBonifico) && (
+            {(formData.retribuzioneNetta || formData.limiteBonifico) && (
               <div className="p-4 bg-muted rounded-lg space-y-2">
                 <p className="text-sm font-medium">Riepilogo Calcolo:</p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <span className="text-muted-foreground">Contanti:</span>
-                  <span className="font-medium text-right">
-                    {parseFloat(formData.limiteContanti || '0').toFixed(2)} €
+                  <span className="text-muted-foreground font-semibold">Retribuzione Netta Totale:</span>
+                  <span className="font-bold text-right text-lg">
+                    {(() => {
+                      const base = parseFloat(formData.retribuzioneNetta || '0')
+                      const bonifico = parseFloat(formData.limiteBonifico || '0')
+                      const coefficiente = parseFloat(formData.coefficienteMaggiorazione || '0')
+                      const bonus = bonifico * (coefficiente / 100)
+                      return (base + bonus).toFixed(2)
+                    })()} €
                   </span>
 
                   <span className="text-muted-foreground">Bonifico base:</span>
@@ -587,7 +596,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                     {parseFloat(formData.limiteBonifico || '0').toFixed(2)} €
                   </span>
 
-                  <span className="text-muted-foreground">Maggiorazione ({formData.coefficienteMaggiorazione}%):</span>
+                  <span className="text-muted-foreground">Maggiorazione ({formData.coefficienteMaggiorazione || 0}%):</span>
                   <span className="font-medium text-right">
                     {(parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100).toFixed(2)} €
                   </span>
@@ -597,36 +606,15 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                     {(parseFloat(formData.limiteBonifico || '0') + (parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100)).toFixed(2)} €
                   </span>
 
-                  <div className="col-span-2 h-px bg-border my-1"></div>
+                  <div className="col-span-2 h-px bg-border my-2"></div>
 
-                  <span className="text-muted-foreground font-semibold">Retribuzione Netta Totale:</span>
-                  <span className="font-bold text-right text-lg text-primary">
-                    {formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta).toFixed(2) : '0.00'} €
+                  <span className="text-lg font-bold text-foreground">CONTANTI:</span>
+                  <span className="font-bold text-right text-2xl text-primary">
+                    {parseFloat(formData.limiteContanti || '0').toFixed(2)} €
                   </span>
                 </div>
               </div>
             )}
-
-            <div>
-              <Label htmlFor="retribuzioneNetta" className="mb-1">
-                Retribuzione Netta Mensile (€) *
-              </Label>
-              <Input
-                type="number"
-                id="retribuzioneNetta"
-                name="retribuzioneNetta"
-                required
-                step="0.01"
-                min="0"
-                value={formData.retribuzioneNetta}
-                onChange={handleChange}
-                disabled
-                className="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Calcolato automaticamente da: Contanti + Bonifico maggiorato
-              </p>
-            </div>
           </CardContent>
         </Card>
 

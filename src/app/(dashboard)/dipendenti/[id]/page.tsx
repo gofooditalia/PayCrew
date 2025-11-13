@@ -10,13 +10,19 @@ import { ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { PageLoader } from '@/components/loading'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 interface Dipendente {
   id: string
   nome: string
   cognome: string
-  codiceFiscale: string
-  dataNascita: Date
+  codiceFiscale?: string | null
+  dataNascita?: Date | null
   luogoNascita?: string
   indirizzo?: string
   citta?: string
@@ -26,12 +32,15 @@ interface Dipendente {
   iban?: string
   dataAssunzione: Date
   dataScadenzaContratto?: Date
-  tipoContratto: string
-  ccnl: string
+  tipoContratto?: string | null
+  ccnl?: string | null
   note?: string
   qualifica?: string
-  retribuzione: number
-  retribuzioneNetta: number | null
+  retribuzione?: number | null
+  retribuzioneNetta?: number | null
+  limiteContanti?: number | null
+  limiteBonifico?: number | null
+  coefficienteMaggiorazione?: number | null
   oreSettimanali: number
   sedeId?: string
   sede?: {
@@ -122,204 +131,216 @@ export default function DipendenteDetailPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      {/* Header con nome dipendente */}
+    <div className="p-4 sm:p-8 max-w-5xl mx-auto animate-fade-in">
+      {/* Header compatto */}
       <div className="mb-6">
-        <div className="flex items-center mb-2">
-          <Link href="/dipendenti">
-            <Button variant="ghost" size="sm" className="mr-4 hover:bg-primary/10">
-              <ArrowLeftIcon className="h-5 w-5" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Link href="/dipendenti">
+              <Button variant="ghost" size="sm" className="hover:bg-primary/10">
+                <ArrowLeftIcon className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                  {dipendente.nome} {dipendente.cognome}
+                </h1>
+                <Badge variant={dipendente.attivo ? "default" : "destructive"} className="text-xs">
+                  {dipendente.attivo ? 'Attivo' : 'Non attivo'}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {dipendente.tipoContratto || 'Contratto non specificato'} • {dipendente.sede?.nome || 'Nessuna sede'}
+              </p>
+            </div>
+          </div>
+          <Link href={`/dipendenti/${dipendente.id}/modifica`}>
+            <Button className="flex items-center gap-2 shadow-sm">
+              <PencilIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Modifica</span>
             </Button>
           </Link>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                {dipendente.nome} {dipendente.cognome}
-              </h1>
-              <Badge
-                variant={dipendente.attivo ? "default" : "destructive"}
-                className="text-xs"
-              >
-                {dipendente.attivo ? 'Attivo' : 'Non attivo'}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {dipendente.tipoContratto} • {dipendente.sede?.nome || 'Nessuna sede'}
-            </p>
-          </div>
         </div>
       </div>
 
-      {/* Action Button - Compatto */}
-      <div className="mb-6 flex justify-end">
-        <Link href={`/dipendenti/${dipendente.id}/modifica`} className="w-full sm:w-auto">
-          <Button className="flex items-center justify-center w-full shadow-sm">
-            <PencilIcon className="h-4 w-4 mr-2" />
-            Modifica Dipendente
-          </Button>
-        </Link>
-      </div>
+      {/* Riepilogo Retribuzione - Sempre visibile */}
+      {dipendente.retribuzioneNetta && (
+        <Card className="mb-6 border-l-4 border-l-primary shadow-lg">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="text-center sm:text-left">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Retribuzione Netta</h3>
+                <p className="text-2xl font-bold text-primary">{formatCurrency(dipendente.retribuzioneNetta)}</p>
+              </div>
+              {dipendente.limiteBonifico && (
+                <div className="text-center sm:text-left">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Bonifico</h3>
+                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(dipendente.limiteBonifico)}</p>
+                </div>
+              )}
+              {dipendente.limiteContanti && (
+                <div className="text-center sm:text-left">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Cash</h3>
+                  <p className="text-2xl font-bold text-green-600">{formatCurrency(dipendente.limiteContanti)}</p>
+                </div>
+              )}
+            </div>
+            {dipendente.coefficienteMaggiorazione && dipendente.coefficienteMaggiorazione > 0 && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  Maggiorazione bonifico: <span className="font-semibold">{dipendente.coefficienteMaggiorazione}%</span>
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-l-4 border-l-primary/50">
-          <CardHeader>
-            <CardTitle className="text-primary">Informazioni Personali</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Codice Fiscale</h3>
-                <p className="text-base font-medium mt-1">{dipendente.codiceFiscale}</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Data di Nascita</h3>
-                <p className="text-base font-medium mt-1">{formatDate(dipendente.dataNascita)}</p>
-              </div>
+      {/* Accordion con dettagli */}
+      <Accordion type="multiple" className="space-y-4" defaultValue={["item-1"]}>
+        {/* Informazioni Personali */}
+        <AccordionItem value="item-1" className="border rounded-lg bg-card shadow-sm">
+          <AccordionTrigger className="px-6 hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-primary"></div>
+              <span className="font-semibold text-primary">Informazioni Personali</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-6 pb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {dipendente.codiceFiscale && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Codice Fiscale</h3>
+                  <p className="text-base font-medium mt-1">{dipendente.codiceFiscale}</p>
+                </div>
+              )}
+              {dipendente.dataNascita && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Data di Nascita</h3>
+                  <p className="text-base font-medium mt-1">{formatDate(dipendente.dataNascita)}</p>
+                </div>
+              )}
               {dipendente.luogoNascita && (
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Luogo di Nascita</h3>
                   <p className="text-base font-medium mt-1">{dipendente.luogoNascita}</p>
                 </div>
               )}
+              {(dipendente.indirizzo || dipendente.citta) && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Indirizzo</h3>
+                  <p className="text-base font-medium mt-1">
+                    {dipendente.indirizzo && `${dipendente.indirizzo}, `}
+                    {dipendente.cap && `${dipendente.cap} `}
+                    {dipendente.citta || 'Non specificato'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Contatti */}
+        <AccordionItem value="item-2" className="border rounded-lg bg-card shadow-sm">
+          <AccordionTrigger className="px-6 hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-blue-600"></div>
+              <span className="font-semibold text-blue-600">Contatti</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-6 pb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Indirizzo</h3>
-                <p className="text-base font-medium mt-1">
-                  {dipendente.indirizzo && `${dipendente.indirizzo}, `}
-                  {dipendente.cap && `${dipendente.cap} `}
-                  {dipendente.citta || 'Non specificato'}
-                </p>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</h3>
+                <p className="text-base font-medium mt-1 break-all">{dipendente.email || <span className="text-muted-foreground italic">Non specificata</span>}</p>
+              </div>
+              <div>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Telefono</h3>
+                <p className="text-base font-medium mt-1">{dipendente.telefono || <span className="text-muted-foreground italic">Non specificato</span>}</p>
+              </div>
+              <div className="sm:col-span-2">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">IBAN</h3>
+                <p className="text-base font-medium mt-1 font-mono">{dipendente.iban || <span className="text-muted-foreground italic">Non specificato</span>}</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </AccordionContent>
+        </AccordionItem>
 
-        <Card className="border-l-4 border-l-blue-500/50">
-          <CardHeader>
-            <CardTitle className="text-blue-600">Contatti</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {dipendente.email ? (
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</h3>
-                  <p className="text-base font-medium mt-1 break-all">{dipendente.email}</p>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</h3>
-                  <p className="text-base text-muted-foreground mt-1 italic">Non specificata</p>
-                </div>
-              )}
-              {dipendente.telefono ? (
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Telefono</h3>
-                  <p className="text-base font-medium mt-1">{dipendente.telefono}</p>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Telefono</h3>
-                  <p className="text-base text-muted-foreground mt-1 italic">Non specificato</p>
-                </div>
-              )}
-              {dipendente.iban ? (
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">IBAN</h3>
-                  <p className="text-base font-medium mt-1 font-mono">{dipendente.iban}</p>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">IBAN</h3>
-                  <p className="text-base text-muted-foreground mt-1 italic">Non specificato</p>
-                </div>
-              )}
+        {/* Informazioni Contrattuali */}
+        <AccordionItem value="item-3" className="border rounded-lg bg-card shadow-sm">
+          <AccordionTrigger className="px-6 hover:no-underline">
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-green-600"></div>
+              <span className="font-semibold text-green-600">Informazioni Contrattuali</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-green-500/50">
-          <CardHeader>
-            <CardTitle className="text-green-600">Informazioni Contrattuali</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          </AccordionTrigger>
+          <AccordionContent className="px-6 pb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Data Assunzione</h3>
                 <p className="text-base font-medium mt-1">{formatDate(dipendente.dataAssunzione)}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tipo Contratto</h3>
-                <p className="text-base font-medium mt-1">{dipendente.tipoContratto}</p>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ore Settimanali</h3>
+                <p className="text-base font-medium mt-1">{dipendente.oreSettimanali} ore</p>
               </div>
-              {dipendente.dataScadenzaContratto && (dipendente.tipoContratto === 'TEMPO_DETERMINATO' || dipendente.tipoContratto === 'STAGIONALE') && (
+              {dipendente.tipoContratto && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tipo Contratto</h3>
+                  <p className="text-base font-medium mt-1">{dipendente.tipoContratto}</p>
+                </div>
+              )}
+              {dipendente.ccnl && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">CCNL</h3>
+                  <p className="text-base font-medium mt-1">{dipendente.ccnl}</p>
+                </div>
+              )}
+              {dipendente.dataScadenzaContratto && (
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Scadenza Contratto</h3>
                   <p className="text-base font-medium mt-1">{formatDate(dipendente.dataScadenzaContratto)}</p>
                 </div>
               )}
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">CCNL</h3>
-                <p className="text-base font-medium mt-1">{dipendente.ccnl}</p>
-              </div>
               {dipendente.qualifica && (
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Qualifica</h3>
                   <p className="text-base font-medium mt-1">{dipendente.qualifica}</p>
                 </div>
               )}
-              {dipendente.note && (
+              {dipendente.sede && (
                 <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sede di Lavoro</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-base font-medium">{dipendente.sede.nome}</p>
+                    <Badge variant="outline" className="text-xs">Assegnato</Badge>
+                  </div>
+                </div>
+              )}
+              {dipendente.note && (
+                <div className="sm:col-span-2">
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Note</h3>
                   <p className="text-base font-medium mt-1">{dipendente.note}</p>
                 </div>
               )}
-              {dipendente.retribuzioneNetta && (
-                <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
-                  <h3 className="text-xs font-semibold text-primary uppercase tracking-wider">Retribuzione Netta Mensile</h3>
-                  <p className="text-2xl font-bold text-primary mt-1">{formatCurrency(dipendente.retribuzioneNetta)}</p>
-                </div>
-              )}
-              <div className="bg-muted/30 p-3 rounded-lg border border-muted">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Retribuzione Lorda Mensile</h3>
-                <p className="text-lg font-semibold text-muted-foreground mt-1">{formatCurrency(dipendente.retribuzione)}</p>
-              </div>
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ore Settimanali</h3>
-                <p className="text-base font-medium mt-1">{dipendente.oreSettimanali} ore</p>
-              </div>
               {dipendente.dataCessazione && (
-                <div>
+                <div className="sm:col-span-2">
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Data Cessazione</h3>
                   <p className="text-base font-medium mt-1">{formatDate(dipendente.dataCessazione)}</p>
                 </div>
               )}
+              {dipendente.retribuzione && (
+                <div className="sm:col-span-2 bg-muted/30 p-4 rounded-lg border border-muted">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Retribuzione Lorda Mensile</h3>
+                  <p className="text-lg font-semibold text-muted-foreground mt-1">{formatCurrency(dipendente.retribuzione)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">(Dato opzionale, solo per riferimento)</p>
+                </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-orange-500/50">
-          <CardHeader>
-            <CardTitle className="text-orange-600">Sede di Lavoro</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sede Assegnata</h3>
-                {dipendente.sede ? (
-                  <div className="mt-2 flex items-center gap-2">
-                    <p className="text-base font-medium">{dipendente.sede.nome}</p>
-                    <Badge variant="outline" className="text-xs">Assegnato</Badge>
-                  </div>
-                ) : (
-                  <div className="mt-2">
-                    <p className="text-base text-muted-foreground italic">Nessuna sede assegnata</p>
-                    <Badge variant="secondary" className="text-xs mt-2">Non Assegnato</Badge>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   )
 }

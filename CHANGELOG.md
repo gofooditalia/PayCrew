@@ -7,6 +7,110 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### 💰 [0.7.0] - 2025-11-13 - Gestione Pagamenti Mensili e UX Dipendenti
+
+#### 🎯 Highlights
+Implementazione completa del sistema di gestione pagamenti mensili organizzati per sede con focus su tracking contanti e bonifici, plus redesign sostanziale dell'UX gestione dipendenti.
+
+#### Added
+- **Sistema Pagamenti Mensili**: Nuova gestione pagamenti organizzata per mese/anno
+  - Campo `mese` (Int) e `anno` (Int) in `pagamenti_dipendenti` table
+  - Registrazione automatica al mese corrente
+  - Filtri mese/anno con default al periodo corrente
+  - Index database per ottimizzare query su mese/anno
+- **Raggruppamento per Sede**: Vista dashboard aggregata per sede
+  - Totali Cash: Totale, Pagato, Residuo per sede
+  - Totali Bonifici: Totale, Pagato, Residuo per sede
+  - Card espandibili per visualizzare dettaglio dipendenti
+  - Icona edificio per ogni sede
+- **Storico Pagamenti**: Nuova pagina `/pagamenti/storico`
+  - Comparazione mensile con statistiche aggregate
+  - Progress bar per percentuale completamento
+  - Link diretti al dettaglio mese specifico
+  - Navigazione semplificata tra dashboard e storico
+- **Dialog Pagamenti Separati**: Form specifici per tipo pagamento
+  - `PagamentoContantiDialog`: focus su limite contanti e disponibile
+    - Box verde con metriche contanti
+    - Validazione contro limite contanti
+    - Icona dollaro, pulsante verde "Registra Contanti"
+  - `PagamentoBonificoDialog`: focus su limite bonifico + maggiorazione
+    - Box blu con limite base, maggiorazione%, totale
+    - Validazione contro limite bonifico totale
+    - Icona banca, pulsante blu "Registra Bonifico"
+  - Entrambi: auto-calcolo disponibile, validazioni dedicate
+- **Campi Dipendenti Opzionali**: Maggiore flessibilità anagrafica
+  - `codiceFiscale`, `dataNascita`, `tipoContratto`, `ccnl` → nullable
+  - `retribuzione` (lorda) → nullable (campo di riferimento opzionale)
+  - Validazione API aggiornata: solo nome, cognome, dataAssunzione obbligatori
+  - Form aggiornati senza asterischi e attributi required
+- **Accordion Component**: Nuovo componente UI da shadcn
+  - File: `src/components/ui/accordion.tsx`
+  - Utilizzo: scheda dettaglio dipendente con sezioni comprimibili
+  - Animazioni smooth con Tailwind
+- **Scheda Dipendente Redesign**: Layout compatto con accordion
+  - Card riepilogo sempre visibile: Retribuzione Netta, Bonifico, Cash
+  - 3 sezioni accordion: Informazioni Personali, Contatti, Contratto
+  - Colori distintivi per sezioni (primary, blu, verde)
+  - Campo retribuzione lorda spostato come dato secondario
+
+#### Changed
+- **Database Schema**:
+  - `pagamenti_dipendenti`: aggiunti `mese Int @default(11)` e `anno Int @default(2025)`
+  - `dipendenti`: reso nullable `codiceFiscale`, `dataNascita`, `tipoContratto`, `ccnl`, `retribuzione`
+  - Aggiunto index: `@@index([mese, anno])` su pagamenti
+- **API Pagamenti**:
+  - `GET /api/pagamenti`: filtro su `mese` e `anno` invece di date range
+  - `POST /api/pagamenti`: auto-set mese/anno dal timestamp corrente
+  - Calcolo limiti separato per contanti e bonifici
+- **API Dipendenti**:
+  - `POST /api/dipendenti`: validazione ridotta, handle null per campi opzionali
+  - `PUT /api/dipendenti/[id]`: handle null per campi opzionali
+  - `GET /api/dipendenti`: conversione `retribuzione` nullable
+  - Response mapping aggiornato per gestire null values
+- **Form Dipendenti**:
+  - `dipendente-form.tsx`: rimossi required attributes da campi opzionali
+  - `[id]/modifica/page.tsx`: allineato a nuova struttura form
+  - Calcolo automatico cash: formula corretta (retribuzioneBase + bonus - bonificoTotale)
+  - Riepilogo calcolo riordinato: Netta Totale → Bonifico → Maggiorazione → Cash
+- **Lista Dipendenti**:
+  - Colonna "Retribuzione" → "Retribuzione Netta"
+  - Visualizzazione: Netta, Bonifico, Cash invece di Retribuzione Lorda
+  - Messaggio "Non configurato" per dipendenti senza retribuzione netta
+- **UI Pagamenti**:
+  - Due pulsanti separati "Registra Contanti" (verde) e "Registra Bonifico" (blu)
+  - Pulsanti compatti: h-6, px-2, text-[10px], posizionati sotto importi
+  - Icone SVG inline: dollaro cerchiato (cash), edificio banca (bonifico)
+  - Colori distintivi: green-600/700 (contanti), blue-600/700 (bonifici)
+
+#### Fixed
+- **Calcolo Cash Dipendenti**: Formula corretta per considerare bonus nella retribuzione totale
+  - Prima: `cash = retribuzioneBase - bonificoTotale` (errato)
+  - Ora: `cash = (retribuzioneBase + bonus) - (bonifico + bonus)` (corretto)
+  - Esempio: Base 1250 + Bonus 30 = 1280, poi 1280 - 780 = 500 (non 470)
+- **Conversion Null Values**: Gestione corretta di `retribuzione` nullable in lista dipendenti
+  - Check esistenza prima di `toString()` per evitare errori
+  - Fallback a null invece di 0 per campi non compilati
+- **Form Validation**: Allineamento tra schema Prisma, validazione API e attributi HTML
+  - Rimossi required da campi resi opzionali nel database
+  - Asterischi label rimossi per coerenza UI
+
+#### Technical Details
+- **Migration Database**: `npm run db:push` con default values per nuovi campi
+- **Backward Compatibility**: Default mese=11, anno=2025 per record esistenti
+- **Component Architecture**: Due dialog specializzati invece di uno generico
+- **State Management**: Stati separati `dialogContantiOpen` e `dialogBonificoOpen`
+- **Validation Strategy**: Validazione specifica per tipo pagamento nel dialog dedicato
+- **UI Patterns**: Accordion con `type="multiple"` per aprire sezioni multiple
+- **Responsive Design**: Grid adaptive, pulsanti compatti, layout mobile-friendly
+
+#### Use Cases Supportati
+- ✅ Ristoranti: tracking contanti giornaliero per sede, bonifici mensili
+- ✅ Aziende multi-sede: vista aggregata pagamenti per location
+- ✅ Gestione flessibile: dipendenti senza codice fiscale (assunzioni in progress)
+- ✅ Storico trasparente: comparazione mensile con statistiche
+
+---
+
 ### ⏰ [0.6.0] - 2025-11-10 - Gestione Fasce Orarie e Pause Pranzo
 
 #### 🎯 Highlights

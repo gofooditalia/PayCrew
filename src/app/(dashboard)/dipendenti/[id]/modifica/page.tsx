@@ -183,19 +183,26 @@ export default function ModificaDipendentePage() {
         [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
       }
 
-      // Calcola automaticamente retribuzioneNetta quando cambiano i limiti o il coefficiente
-      if (name === 'limiteContanti' || name === 'limiteBonifico' || name === 'coefficienteMaggiorazione') {
-        const contanti = parseFloat(updated.limiteContanti) || 0
+      // Calcola automaticamente quando cambiano retribuzioneNetta, limiteBonifico o coefficiente
+      if (name === 'retribuzioneNetta' || name === 'limiteBonifico' || name === 'coefficienteMaggiorazione') {
+        const retribuzioneBase = parseFloat(updated.retribuzioneNetta) || 0
         const bonifico = parseFloat(updated.limiteBonifico) || 0
         const coefficiente = parseFloat(updated.coefficienteMaggiorazione) || 0
 
-        // Calcola bonifico maggiorato
-        const bonificoMaggiorato = bonifico + (bonifico * coefficiente / 100)
+        // 1. Calcola bonus (4% sul bonifico)
+        const bonus = bonifico * (coefficiente / 100)
 
-        // Calcola retribuzione netta totale
-        const netto = contanti + bonificoMaggiorato
+        // 2. Calcola bonifico totale con maggiorazione
+        const bonificoTotale = bonifico + bonus
 
-        updated.retribuzioneNetta = netto > 0 ? netto.toFixed(2) : ''
+        // 3. Calcola retribuzione totale (base + bonus)
+        const retribuzioneTotale = retribuzioneBase + bonus
+
+        // 4. Calcola cash (retribuzione totale - bonifico totale)
+        const cash = retribuzioneTotale - bonificoTotale
+
+        // Aggiorna limiteContanti con il cash calcolato
+        updated.limiteContanti = cash > 0 ? cash.toFixed(2) : ''
       }
 
       return updated
@@ -372,28 +379,26 @@ export default function ModificaDipendentePage() {
               
               <div>
                 <label htmlFor="codiceFiscale" className="block text-sm font-medium text-gray-700 mb-1">
-                  Codice Fiscale *
+                  Codice Fiscale
                 </label>
                 <input
                   type="text"
                   id="codiceFiscale"
                   name="codiceFiscale"
-                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   value={formData.codiceFiscale}
                   onChange={handleChange}
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="dataNascita" className="block text-sm font-medium text-gray-700 mb-1">
-                  Data di Nascita *
+                  Data di Nascita
                 </label>
                 <input
                   type="date"
                   id="dataNascita"
                   name="dataNascita"
-                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   value={formData.dataNascita}
                   onChange={handleChange}
@@ -520,12 +525,11 @@ export default function ModificaDipendentePage() {
                 
                 <div>
                   <label htmlFor="tipoContratto" className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo Contratto *
+                    Tipo Contratto
                   </label>
                   <select
                     id="tipoContratto"
                     name="tipoContratto"
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formData.tipoContratto}
                     onChange={handleChange}
@@ -558,12 +562,11 @@ export default function ModificaDipendentePage() {
 
                 <div>
                   <label htmlFor="ccnl" className="block text-sm font-medium text-gray-700 mb-1">
-                    CCNL *
+                    CCNL
                   </label>
                   <select
                     id="ccnl"
                     name="ccnl"
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formData.ccnl}
                     onChange={handleChange}
@@ -633,22 +636,22 @@ export default function ModificaDipendentePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label htmlFor="limiteContanti" className="block text-sm font-medium text-gray-700 mb-1">
-                    Limite Contanti (€)
+                  <label htmlFor="retribuzioneNetta" className="block text-sm font-medium text-gray-700 mb-1">
+                    Retribuzione Netta Mensile (€) *
                   </label>
                   <input
                     type="number"
-                    id="limiteContanti"
-                    name="limiteContanti"
+                    id="retribuzioneNetta"
+                    name="retribuzioneNetta"
                     step="0.01"
                     min="0"
-                    placeholder="es. 500.00"
+                    placeholder="es. 1250.00"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    value={formData.limiteContanti}
+                    value={formData.retribuzioneNetta}
                     onChange={handleChange}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Quota massima in contanti
+                    Retribuzione mensile al netto (senza bonus)
                   </p>
                 </div>
 
@@ -695,13 +698,19 @@ export default function ModificaDipendentePage() {
               </div>
 
               {/* Riepilogo calcolo */}
-              {(formData.limiteContanti || formData.limiteBonifico) && (
+              {(formData.retribuzioneNetta || formData.limiteBonifico) && (
                 <div className="p-4 bg-gray-50 rounded-lg mb-6">
                   <p className="text-sm font-medium text-gray-700 mb-2">Riepilogo Calcolo:</p>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-gray-600">Contanti:</span>
-                    <span className="font-medium text-right">
-                      {parseFloat(formData.limiteContanti || '0').toFixed(2)} €
+                    <span className="text-gray-700 font-semibold">Retribuzione Netta Totale:</span>
+                    <span className="font-bold text-right text-lg">
+                      {(() => {
+                        const base = parseFloat(formData.retribuzioneNetta || '0')
+                        const bonifico = parseFloat(formData.limiteBonifico || '0')
+                        const coefficiente = parseFloat(formData.coefficienteMaggiorazione || '0')
+                        const bonus = bonifico * (coefficiente / 100)
+                        return (base + bonus).toFixed(2)
+                      })()} €
                     </span>
 
                     <span className="text-gray-600">Bonifico base:</span>
@@ -709,7 +718,7 @@ export default function ModificaDipendentePage() {
                       {parseFloat(formData.limiteBonifico || '0').toFixed(2)} €
                     </span>
 
-                    <span className="text-gray-600">Maggiorazione ({formData.coefficienteMaggiorazione}%):</span>
+                    <span className="text-gray-600">Maggiorazione ({formData.coefficienteMaggiorazione || 0}%):</span>
                     <span className="font-medium text-right">
                       {(parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100).toFixed(2)} €
                     </span>
@@ -719,11 +728,11 @@ export default function ModificaDipendentePage() {
                       {(parseFloat(formData.limiteBonifico || '0') + (parseFloat(formData.limiteBonifico || '0') * parseFloat(formData.coefficienteMaggiorazione || '0') / 100)).toFixed(2)} €
                     </span>
 
-                    <div className="col-span-2 h-px bg-gray-300 my-1"></div>
+                    <div className="col-span-2 h-px bg-gray-300 my-2"></div>
 
-                    <span className="text-gray-700 font-semibold">Retribuzione Netta Totale:</span>
-                    <span className="font-bold text-right text-lg text-indigo-600">
-                      {formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta).toFixed(2) : '0.00'} €
+                    <span className="text-lg font-bold text-gray-900">CONTANTI:</span>
+                    <span className="font-bold text-right text-2xl text-indigo-600">
+                      {parseFloat(formData.limiteContanti || '0').toFixed(2)} €
                     </span>
                   </div>
                 </div>

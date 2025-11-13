@@ -81,23 +81,34 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] **Test automatizzati** (11/12 passati - 91.7%)
 - [x] **Workflow completo**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
 
-## 🚀 Release v0.6.0 - Gestione Fasce Orarie e Pause Pranzo ⏰
+## 🚀 Release v0.7.0 - Gestione Pagamenti Mensili e UX Dipendenti 💰
 
-PayCrew v0.6.0 introduce il sistema completo di gestione fasce orarie con pause pranzo configurabili, perfetto per turni spezzati tipici di ristoranti e officine!
+PayCrew v0.7.0 introduce il sistema completo di gestione pagamenti mensili organizzati per sede, con focus su tracking contanti e bonifici, plus miglioramenti sostanziali all'UX dipendenti!
 
-### 🎯 Novità v0.6.0
+### 🎯 Novità v0.7.0
 
-#### Fasce Orarie Configurabili
-- **Impostazioni Centralizzate**: Configura fasce orarie standard per ogni tipo turno
-- **Pause Pranzo**: Gestione pause pranzo per turni SPEZZATO (es. ristoranti: 11:00-15:00, pausa 15:00-18:00, 18:00-22:00)
-- **Auto-compilazione**: Gli orari si compilano automaticamente selezionando il tipo turno
-- **Flessibilità**: Modifica manuale sempre possibile per casi eccezionali
-- **Calcolo Avanzato**: Sottrazione automatica pause pranzo dal calcolo ore lavorate
+#### 💰 Sistema Pagamenti Mensili
+- **Organizzazione Mensile**: Gestione pagamenti per mese/anno (come cedolini)
+- **Raggruppamento per Sede**: Vista aggregata con totali Cash/Bonifici per sede
+- **Dashboard Dedicata**: Metriche chiave sempre visibili (Cash Totale, Pagato, Residuo)
+- **Storico Pagamenti**: Sezione separata con comparazione mensile e statistiche
+- **Dialog Separati**: Form specifici per contanti e bonifici con validazioni dedicate
+  - Dialog Contanti: limite contanti, disponibile, pulsante verde
+  - Dialog Bonifici: limite base + maggiorazione, disponibile, pulsante blu
 
-#### UX Improvements
-- **Banner Informativo**: Guida l'utente verso la nuova funzionalità
-- **Badge "Nuovo"**: Evidenzia Impostazioni nella sidebar
-- **Dialog Scrollabile**: Risolto overflow modal turni su schermi piccoli
+#### 👥 UX Dipendenti Migliorata
+- **Campi Opzionali**: Codice Fiscale, Data Nascita, Tipo Contratto, CCNL ora opzionali
+- **Nuovi Dati Retributivi**: Focus su Retribuzione Netta, Bonifico e Cash
+- **Lista Dipendenti Aggiornata**: Mostra Netta/Bonifico/Cash invece di Retribuzione Lorda
+- **Scheda Dettaglio Compatta**: Design con accordion per informazioni organizzate
+- **Calcolo Automatico Cash**: Sistema intelligente: Netta Base → Bonifico → Maggiorazione → Cash
+- **Riepilogo Visivo**: Card sempre visibile con i 3 valori chiave (Netta, Bonifico, Cash)
+
+#### 🎨 UI Components
+- **Accordion Component**: Nuovo componente shadcn per layout compatti
+- **Pulsanti Dedicati**: "Registra Contanti" (verde) e "Registra Bonifico" (blu)
+- **Icone Specifiche**: Dollaro per cash, Banca per bonifici
+- **Design Responsive**: Layout ottimizzato per desktop e mobile
 - **UI Consistency**: Stessa esperienza tra turno singolo e pianificazione multipla
 
 ### ✅ Funzionalità Disponibili
@@ -105,6 +116,10 @@ PayCrew v0.6.0 introduce il sistema completo di gestione fasce orarie con pause 
 #### Core Features
 - **Gestione Aziende e Sedi**: CRUD completo con supporto multi-sede
 - **Gestione Dipendenti**: Anagrafica completa con documenti, contratti, scadenze
+  - **Campi Flessibili**: CF, Data Nascita, Tipo Contratto, CCNL opzionali
+  - **Dati Retributivi**: Focus su Retribuzione Netta, Bonifico, Cash
+  - **Calcolo Automatico Cash**: Sistema intelligente con maggiorazione
+  - **Scheda Compatta**: Layout con accordion per informazioni organizzate
 - **Autenticazione**: Sistema multi-livello con ruoli (SUPER_ADMIN, ADMIN, MANAGER, USER)
 - **Activity Logger**: Sistema audit trail per tutte le operazioni critiche
 
@@ -119,6 +134,17 @@ PayCrew v0.6.0 introduce il sistema completo di gestione fasce orarie con pause 
 - **Reset/Undo**: Annulla conferme o assenze per ripristinare stato DA_CONFERMARE
 - **Badge Visivi**: Indicatori colorati per stato presenza (giallo, verde, blu, rosso)
 - **UX Guidata**: Messaggio informativo con link diretto alla sezione Turni quando non ci sono presenze
+
+#### Gestione Pagamenti Mensili 💰 NEW!
+- **Organizzazione Mensile**: Pagamenti organizzati per mese/anno come cedolini
+- **Raggruppamento per Sede**: Vista aggregata con totali Cash e Bonifici per sede
+- **Dashboard Pagamenti**: Metriche chiave sempre visibili (Cash Totale, Pagato, Residuo)
+- **Storico Comparativo**: Sezione dedicata con comparazione mensile e statistiche
+- **Dialog Specializzati**: Form separati per contanti e bonifici
+  - **Dialog Contanti**: Box verde, limite contanti, validazione dedicata
+  - **Dialog Bonifici**: Box blu, limite + maggiorazione, validazione dedicata
+- **Pulsanti Dedicati**: "Registra Contanti" (verde) e "Registra Bonifico" (blu)
+- **Tracking Preciso**: Monitoraggio separato per tipo di pagamento
 
 #### Elaborazione Cedolini
 - **Calcolo Automatico**: Generazione cedolini con calcolo ore lavorate e straordinari

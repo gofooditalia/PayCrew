@@ -138,13 +138,13 @@ export async function POST(request: NextRequest) {
     // Get employee data from request
     const dipendenteData = await request.json()
 
-    // Validate required fields
-    const requiredFields = ['nome', 'cognome', 'codiceFiscale', 'dataNascita', 'dataAssunzione', 'tipoContratto', 'ccnl', 'retribuzione']
+    // Validate required fields (solo nome, cognome e dataAssunzione sono obbligatori)
+    const requiredFields = ['nome', 'cognome', 'dataAssunzione']
     const missingFields = requiredFields.filter(field => !dipendenteData[field])
-    
+
     if (missingFields.length > 0) {
       return NextResponse.json(
-        { 
+        {
           error: 'Campi obbligatori mancanti',
           missingFields
         },
@@ -152,19 +152,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if codiceFiscale already exists for this company
-    const existingDipendente = await prisma.dipendenti.findFirst({
-      where: {
-        codiceFiscale: dipendenteData.codiceFiscale,
-        aziendaId: userData.aziendaId
-      }
-    })
+    // Check if codiceFiscale already exists for this company (solo se fornito)
+    if (dipendenteData.codiceFiscale) {
+      const existingDipendente = await prisma.dipendenti.findFirst({
+        where: {
+          codiceFiscale: dipendenteData.codiceFiscale,
+          aziendaId: userData.aziendaId
+        }
+      })
 
-    if (existingDipendente) {
-      return NextResponse.json(
-        { error: 'Codice fiscale già in uso per questa azienda' },
-        { status: 409 }
-      )
+      if (existingDipendente) {
+        return NextResponse.json(
+          { error: 'Codice fiscale già in uso per questa azienda' },
+          { status: 409 }
+        )
+      }
     }
 
     // Create new employee using Prisma with proper type conversion
@@ -172,8 +174,8 @@ export async function POST(request: NextRequest) {
       data: {
         nome: dipendenteData.nome,
         cognome: dipendenteData.cognome,
-        codiceFiscale: dipendenteData.codiceFiscale,
-        dataNascita: new Date(dipendenteData.dataNascita),
+        codiceFiscale: dipendenteData.codiceFiscale || null,
+        dataNascita: dipendenteData.dataNascita ? new Date(dipendenteData.dataNascita) : null,
         luogoNascita: dipendenteData.luogoNascita || null,
         indirizzo: dipendenteData.indirizzo || null,
         citta: dipendenteData.citta || null,
@@ -183,11 +185,11 @@ export async function POST(request: NextRequest) {
         iban: dipendenteData.iban || null,
         dataAssunzione: new Date(dipendenteData.dataAssunzione),
         dataScadenzaContratto: dipendenteData.dataScadenzaContratto ? new Date(dipendenteData.dataScadenzaContratto) : null,
-        tipoContratto: dipendenteData.tipoContratto,
-        ccnl: dipendenteData.ccnl,
+        tipoContratto: dipendenteData.tipoContratto || null,
+        ccnl: dipendenteData.ccnl || null,
         note: dipendenteData.note || null,
         qualifica: dipendenteData.qualifica || null,
-        retribuzione: parseFloat(dipendenteData.retribuzione),
+        retribuzione: dipendenteData.retribuzione ? parseFloat(dipendenteData.retribuzione) : null,
         retribuzioneNetta: dipendenteData.retribuzioneNetta ? parseFloat(dipendenteData.retribuzioneNetta) : null,
         limiteContanti: dipendenteData.limiteContanti ? parseFloat(dipendenteData.limiteContanti) : null,
         limiteBonifico: dipendenteData.limiteBonifico ? parseFloat(dipendenteData.limiteBonifico) : null,

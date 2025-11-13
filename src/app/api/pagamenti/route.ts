@@ -36,17 +36,10 @@ export async function GET(request: NextRequest) {
       where.dipendenteId = dipendenteId
     }
 
-    // If mese and anno are provided, filter by date range
+    // Filter by mese and anno (new approach)
     if (mese && anno) {
-      const meseNum = parseInt(mese)
-      const annoNum = parseInt(anno)
-      const startDate = new Date(annoNum, meseNum - 1, 1)
-      const endDate = new Date(annoNum, meseNum, 0)
-
-      where.dataPagamento = {
-        gte: startDate,
-        lte: endDate
-      }
+      where.mese = parseInt(mese)
+      where.anno = parseInt(anno)
     }
 
     const pagamenti = await prisma.pagamenti_dipendenti.findMany({
@@ -112,6 +105,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Calcola mese e anno dal mese corrente (sempre automatico)
+    const now = new Date()
+    const mese = now.getMonth() + 1 // JavaScript months are 0-indexed
+    const anno = now.getFullYear()
+
     // Verify dipendente belongs to user's company
     const dipendente = await prisma.dipendenti.findFirst({
       where: {
@@ -133,6 +131,8 @@ export async function POST(request: NextRequest) {
         importo: parseFloat(importo),
         tipoPagamento,
         dataPagamento: new Date(dataPagamento),
+        mese,
+        anno,
         note: note || null,
         dipendenteId,
         bustaPagaId: bustaPagaId || null,

@@ -53,7 +53,7 @@ async function getDipendenti(statoFiltro?: string) {
     telefono: dipendente.telefono || '',
     iban: dipendente.iban || '',
     dataCessazione: dipendente.dataCessazione || undefined,
-    retribuzione: parseFloat(dipendente.retribuzione.toString()),
+    retribuzione: dipendente.retribuzione ? parseFloat(dipendente.retribuzione.toString()) : null,
     retribuzioneNetta: dipendente.retribuzioneNetta ? parseFloat(dipendente.retribuzioneNetta.toString()) : null,
     limiteContanti: dipendente.limiteContanti ? parseFloat(dipendente.limiteContanti.toString()) : null,
     limiteBonifico: dipendente.limiteBonifico ? parseFloat(dipendente.limiteBonifico.toString()) : null,

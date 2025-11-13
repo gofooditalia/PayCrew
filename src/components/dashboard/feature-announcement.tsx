@@ -3,19 +3,36 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { XMarkIcon, SparklesIcon, CalendarIcon, UsersIcon, CogIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, SparklesIcon, CalendarIcon, UsersIcon, CogIcon, BanknotesIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { BuildingOfficeIcon, ClockIcon } from '@heroicons/react/24/solid'
 import Link from 'next/link'
 
 const FEATURES = [
+  {
+    icon: BanknotesIcon,
+    title: 'Gestione Pagamenti Mensili',
+    description: 'Sistema completo pagamenti organizzati per mese/anno con raggruppamento per sede, tracking Cash/Bonifici e validazioni dedicate',
+    link: '/pagamenti',
+    linkText: 'Vai a Pagamenti',
+    color: 'from-green-500 to-emerald-500',
+    isNew: true
+  },
+  {
+    icon: UserGroupIcon,
+    title: 'UX Dipendenti Migliorata',
+    description: 'Campi opzionali, focus su Netta/Bonifico/Cash, calcolo automatico cash con maggiorazione e scheda compatta con accordion',
+    link: '/dipendenti',
+    linkText: 'Vai a Dipendenti',
+    color: 'from-blue-500 to-cyan-500',
+    isNew: true
+  },
   {
     icon: CogIcon,
     title: 'Fasce Orarie & Pause Pranzo',
     description: 'Configura fasce orarie con pause pranzo per turni spezzati. Auto-compilazione automatica degli orari!',
     link: '/impostazioni',
     linkText: 'Configura Fasce',
-    color: 'from-indigo-500 to-purple-500',
-    isNew: true
+    color: 'from-indigo-500 to-purple-500'
   },
   {
     icon: UsersIcon,
@@ -24,27 +41,11 @@ const FEATURES = [
     link: '/collaboratori',
     linkText: 'Vai a Collaboratori',
     color: 'from-orange-500 to-amber-500'
-  },
-  {
-    icon: CalendarIcon,
-    title: 'Gestione Turni',
-    description: 'Pianifica i turni del personale con controllo automatico delle sovrapposizioni e pianificazione multipla',
-    link: '/turni',
-    linkText: 'Vai a Turni',
-    color: 'from-purple-500 to-pink-500'
-  },
-  {
-    icon: ClockIcon,
-    title: 'Presenze',
-    description: 'Monitora gli orari di lavoro con calcolo automatico delle ore lavorate e straordinari',
-    link: '/presenze',
-    linkText: 'Vai a Presenze',
-    color: 'from-green-500 to-emerald-500'
   }
 ]
 
 const STORAGE_KEY = 'paycrew_features_announcement_dismissed'
-const CURRENT_VERSION = 'v1.3' // Incrementa questa versione quando ci sono nuove feature
+const CURRENT_VERSION = 'v1.4' // Incrementa questa versione quando ci sono nuove feature
 
 export default function FeatureAnnouncement() {
   const [isDismissed, setIsDismissed] = useState(true)

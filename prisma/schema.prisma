@@ -97,8 +97,8 @@ model dipendenti {
   id             String           @id @default(uuid()) @db.Uuid
   nome           String
   cognome        String
-  codiceFiscale  String           @unique
-  dataNascita    DateTime         @db.Date
+  codiceFiscale  String?          @unique
+  dataNascita    DateTime?        @db.Date
   luogoNascita   String?
   indirizzo      String?
   citta          String?
@@ -108,11 +108,11 @@ model dipendenti {
   iban                String?
   dataAssunzione      DateTime         @db.Date
   dataScadenzaContratto DateTime?      @db.Date
-  tipoContratto       tipo_contratto
-  ccnl                ccnl
+  tipoContratto       tipo_contratto?
+  ccnl                ccnl?
   note           String?
   qualifica      String?
-  retribuzione   Decimal          @db.Decimal(10, 2)
+  retribuzione   Decimal?         @db.Decimal(10, 2)
   retribuzioneNetta Decimal?      @db.Decimal(10, 2)
   // Nuovi campi per gestione limiti pagamento
   limiteContanti    Decimal?       @db.Decimal(10, 2)
@@ -180,6 +180,8 @@ model pagamenti_dipendenti {
   importo        Decimal        @db.Decimal(10, 2)
   tipoPagamento  tipo_pagamento
   dataPagamento  DateTime       @db.Date
+  mese           Int            @default(11) // Mese di riferimento (1-12)
+  anno           Int            @default(2025) // Anno di riferimento (es. 2025)
   note           String?
   dipendenteId   String         @db.Uuid
   bustaPagaId    String?        @db.Uuid
@@ -194,6 +196,7 @@ model pagamenti_dipendenti {
   @@index([aziendaId])
   @@index([dataPagamento])
   @@index([bustaPagaId])
+  @@index([mese, anno])
 }
 
 model presenze {

@@ -30,7 +30,11 @@ interface Dipendente {
   telefono?: string
   dataAssunzione: Date
   tipoContratto: string
-  retribuzione: number
+  retribuzione?: number | null
+  retribuzioneNetta?: number | null
+  limiteContanti?: number | null
+  limiteBonifico?: number | null
+  coefficienteMaggiorazione?: number | null
   oreSettimanali: number
   attivo: boolean
   sede?: {
@@ -164,7 +168,7 @@ export default function DipendentiList({ dipendenti, statoFiltro }: DipendentiLi
                     <TableHead className="w-[40%] sm:w-auto">Dipendente</TableHead>
                     <TableHead className="hidden sm:table-cell">Contatti</TableHead>
                     <TableHead className="hidden sm:table-cell">Contratto</TableHead>
-                    <TableHead className="hidden sm:table-cell">Retribuzione</TableHead>
+                    <TableHead className="hidden sm:table-cell">Retribuzione Netta</TableHead>
                     <TableHead className="text-right w-[20%] sm:w-auto">Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -211,9 +215,25 @@ export default function DipendentiList({ dipendenti, statoFiltro }: DipendentiLi
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <div className="text-sm font-bold text-foreground bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent flex items-center">
-                          {currencyFormatter(dipendente.retribuzione)}
-                        </div>
+                        {dipendente.retribuzioneNetta ? (
+                          <div className="space-y-1">
+                            <div className="text-xs text-muted-foreground">
+                              Netta: <span className="font-semibold text-foreground">{currencyFormatter(dipendente.retribuzioneNetta)}</span>
+                            </div>
+                            {dipendente.limiteBonifico && (
+                              <div className="text-xs text-muted-foreground">
+                                Bonifico: <span className="font-medium text-foreground">{currencyFormatter(dipendente.limiteBonifico)}</span>
+                              </div>
+                            )}
+                            {dipendente.limiteContanti && (
+                              <div className="text-xs font-bold text-primary">
+                                Cash: {currencyFormatter(dipendente.limiteContanti)}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic">Non configurato</div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">

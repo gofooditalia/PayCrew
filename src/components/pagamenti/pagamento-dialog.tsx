@@ -26,6 +26,7 @@ interface PagamentoDialogProps {
     tipoPagamento: 'CONTANTI' | 'BONIFICO'
     importo: number
   }[]
+  tipoPagamentoPreselezionato?: 'CONTANTI' | 'BONIFICO' | null
   pagamento?: {
     id: string
     importo: number
@@ -45,6 +46,7 @@ export default function PagamentoDialog({
   limiteBonifico,
   coefficienteMaggiorazione,
   pagamentiEsistenti,
+  tipoPagamentoPreselezionato,
   pagamento
 }: PagamentoDialogProps) {
   const [loading, setLoading] = useState(false)
@@ -53,7 +55,7 @@ export default function PagamentoDialog({
 
   const [formData, setFormData] = useState({
     importo: pagamento?.importo?.toString() || '',
-    tipoPagamento: pagamento?.tipoPagamento || 'CONTANTI',
+    tipoPagamento: pagamento?.tipoPagamento || tipoPagamentoPreselezionato || 'CONTANTI',
     dataPagamento: pagamento?.dataPagamento
       ? new Date(pagamento.dataPagamento).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
