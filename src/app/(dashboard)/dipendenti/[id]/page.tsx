@@ -165,37 +165,65 @@ export default function DipendenteDetailPage() {
       </div>
 
       {/* Riepilogo Retribuzione - Sempre visibile */}
-      {dipendente.retribuzioneNetta && (
-        <Card className="mb-6 border-l-4 border-l-primary shadow-lg">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="text-center sm:text-left">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Retribuzione Netta</h3>
-                <p className="text-2xl font-bold text-primary">{formatCurrency(dipendente.retribuzioneNetta)}</p>
-              </div>
-              {dipendente.limiteBonifico && (
+      {dipendente.retribuzioneNetta && (() => {
+        // Calcola bonifico totale con maggiorazione
+        const limiteBonificoBase = dipendente.limiteBonifico || 0
+        const coefficiente = dipendente.coefficienteMaggiorazione || 0
+        const maggiorazione = limiteBonificoBase * (coefficiente / 100)
+        const bonificoTotale = limiteBonificoBase + maggiorazione
+
+        // Calcola retribuzione totale = Bonifico totale + Cash
+        const cash = dipendente.limiteContanti || 0
+        const retribuzioneTotale = bonificoTotale + cash
+
+        return (
+          <Card className="mb-6 border-l-4 border-l-primary shadow-lg">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="text-center sm:text-left">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Bonifico</h3>
-                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(dipendente.limiteBonifico)}</p>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Retribuzione Totale</h3>
+                  <p className="text-2xl font-bold text-primary">{formatCurrency(retribuzioneTotale)}</p>
+                </div>
+                {bonificoTotale > 0 && (
+                  <div className="text-center sm:text-left">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Bonifico</h3>
+                    <p className="text-2xl font-bold text-blue-600">{formatCurrency(bonificoTotale)}</p>
+                    {coefficiente > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Base: {formatCurrency(limiteBonificoBase)}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {cash > 0 && (
+                  <div className="text-center sm:text-left">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Cash</h3>
+                    <p className="text-2xl font-bold text-green-600">{formatCurrency(cash)}</p>
+                  </div>
+                )}
+              </div>
+              {coefficiente > 0 && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Maggiorazione Bonifico</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Applicata al limite bonifico base
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-orange-600">{coefficiente}%</p>
+                      <p className="text-sm font-semibold text-muted-foreground">
+                        +{formatCurrency(maggiorazione)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
-              {dipendente.limiteContanti && (
-                <div className="text-center sm:text-left">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Cash</h3>
-                  <p className="text-2xl font-bold text-green-600">{formatCurrency(dipendente.limiteContanti)}</p>
-                </div>
-              )}
-            </div>
-            {dipendente.coefficienteMaggiorazione && dipendente.coefficienteMaggiorazione > 0 && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground">
-                  Maggiorazione bonifico: <span className="font-semibold">{dipendente.coefficienteMaggiorazione}%</span>
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {/* Accordion con dettagli */}
       <Accordion type="multiple" className="space-y-4" defaultValue={["item-1"]}>

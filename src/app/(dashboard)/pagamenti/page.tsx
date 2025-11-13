@@ -437,93 +437,232 @@ export default function PagamentiPage() {
                         const { netto, pagato, saldo, contanti, bonifici } = calcolaSaldo(dipendente)
                         const percentuale = netto > 0 ? (pagato / netto) * 100 : 0
 
+                        // Calcola valori bonifico e contanti
+                        const limiteContanti = Number(dipendente.limiteContanti) || 0
+                        const limiteBonifico = Number(dipendente.limiteBonifico) || 0
+                        const coefficiente = Number(dipendente.coefficienteMaggiorazione) || 0
+                        const bonificoTotale = limiteBonifico + (limiteBonifico * coefficiente / 100)
+                        const retribuzioneTotale = bonificoTotale + limiteContanti
+                        const saldoContanti = limiteContanti - contanti
+                        const saldoBonifico = bonificoTotale - bonifici
+
                         return (
-                          <div key={dipendente.id} className="p-4 border rounded-lg bg-card">
-                            <div className="flex items-center justify-between mb-3">
+                          <div key={dipendente.id} className="border rounded-lg bg-card overflow-hidden">
+                            {/* Header con nome e retribuzione totale */}
+                            <div className="bg-gradient-to-r from-primary/10 to-transparent p-4 border-b">
                               <Link href={`/dipendenti/${dipendente.id}`}>
-                                <div className="flex items-center gap-3 cursor-pointer hover:text-primary transition-colors">
-                                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="font-bold text-primary text-sm">
-                                      {dipendente.nome.charAt(0)}{dipendente.cognome.charAt(0)}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <p className="font-medium">
-                                      {dipendente.nome} {dipendente.cognome}
+                                <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
+                                  <h3 className="text-lg font-bold">
+                                    {dipendente.nome} {dipendente.cognome}
+                                  </h3>
+                                  <div className="text-right">
+                                    <p className="text-xs text-muted-foreground">Retribuzione Totale</p>
+                                    <p className="text-xl font-bold text-primary">
+                                      {formatCurrency(retribuzioneTotale)}
                                     </p>
                                   </div>
                                 </div>
                               </Link>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">Retribuzione Netta</p>
-                                <p className="text-sm font-bold">{formatCurrency(netto)}</p>
+                            <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x">
+                              {/* Sezione BONIFICI */}
+                              <div className="p-4 bg-blue-50/50 dark:bg-blue-950/10">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <CreditCardIcon className="h-5 w-5 text-blue-600" />
+                                  <h4 className="font-semibold text-blue-900 dark:text-blue-400">BONIFICI</h4>
+                                </div>
+
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Totale Bonifico</span>
+                                    <span className="text-lg font-bold text-blue-600">
+                                      {formatCurrency(bonificoTotale)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Pagato</span>
+                                    <span className="text-base font-medium text-green-600">
+                                      {formatCurrency(bonifici)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between pt-2 border-t border-blue-200/50">
+                                    <span className="text-sm font-medium">Saldo</span>
+                                    <span className={`text-lg font-bold ${saldoBonifico > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                      {formatCurrency(saldoBonifico)}
+                                    </span>
+                                  </div>
+
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                    onClick={() => handleRegistraBonifico(dipendente)}
+                                  >
+                                    <CreditCardIcon className="h-4 w-4 mr-2" />
+                                    Registra Bonifico
+                                  </Button>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">Totale Pagato</p>
-                                <p className="text-sm font-bold text-green-600">{formatCurrency(pagato)}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">Saldo</p>
-                                <p className={`text-sm font-bold ${saldo > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                                  {formatCurrency(saldo)}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                                  <BanknotesIcon className="h-3 w-3" />
-                                  Contanti
-                                </p>
-                                <p className="text-sm font-medium mb-2">{formatCurrency(contanti)}</p>
-                                <Button
-                                  size="sm"
-                                  className="h-6 px-2 text-[10px] bg-green-600 hover:bg-green-700 text-white whitespace-nowrap w-auto"
-                                  onClick={() => handleRegistraContanti(dipendente)}
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                  Registra Contanti
-                                </Button>
-                              </div>
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                                  <CreditCardIcon className="h-3 w-3" />
-                                  Bonifici
-                                </p>
-                                <p className="text-sm font-medium mb-2">{formatCurrency(bonifici)}</p>
-                                <Button
-                                  size="sm"
-                                  className="h-6 px-2 text-[10px] bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap w-auto"
-                                  onClick={() => handleRegistraBonifico(dipendente)}
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                  </svg>
-                                  Registra Bonifico
-                                </Button>
+
+                              {/* Sezione CONTANTI */}
+                              <div className="p-4 bg-green-50/50 dark:bg-green-950/10">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <BanknotesIcon className="h-5 w-5 text-green-600" />
+                                  <h4 className="font-semibold text-green-900 dark:text-green-400">CONTANTI</h4>
+                                </div>
+
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Totale Contanti</span>
+                                    <span className="text-lg font-bold text-green-600">
+                                      {formatCurrency(limiteContanti)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Pagato</span>
+                                    <span className="text-base font-medium text-green-600">
+                                      {formatCurrency(contanti)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between pt-2 border-t border-green-200/50">
+                                    <span className="text-sm font-medium">Saldo</span>
+                                    <span className={`text-lg font-bold ${saldoContanti > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                      {formatCurrency(saldoContanti)}
+                                    </span>
+                                  </div>
+
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                    onClick={() => handleRegistraContanti(dipendente)}
+                                  >
+                                    <BanknotesIcon className="h-4 w-4 mr-2" />
+                                    Registra Contanti
+                                  </Button>
+                                </div>
                               </div>
                             </div>
 
-                            {/* Progress bar */}
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground">Avanzamento</span>
-                                <Badge variant={percentuale >= 100 ? 'default' : percentuale > 0 ? 'secondary' : 'outline'} className="text-xs">
-                                  {percentuale.toFixed(0)}%
-                                </Badge>
+                            {/* Progress bar migliorata */}
+                            <div className="px-4 py-3 bg-gradient-to-r from-muted/20 to-muted/10 border-t">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-semibold text-muted-foreground">Completamento</span>
+                                  {percentuale >= 100 && (
+                                    <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatCurrency(pagato)} / {formatCurrency(retribuzioneTotale)}
+                                  </span>
+                                  <Badge
+                                    variant={percentuale >= 100 ? 'default' : percentuale > 0 ? 'secondary' : 'outline'}
+                                    className={`text-xs font-bold ${
+                                      percentuale >= 100 ? 'bg-green-600' : percentuale >= 50 ? 'bg-orange-500' : ''
+                                    }`}
+                                  >
+                                    {percentuale.toFixed(0)}%
+                                  </Badge>
+                                </div>
                               </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div className="relative h-3 bg-muted/50 rounded-full overflow-hidden shadow-inner">
                                 <div
-                                  className={`h-full transition-all ${
-                                    percentuale >= 100 ? 'bg-green-600' : percentuale > 0 ? 'bg-orange-500' : 'bg-muted-foreground'
+                                  className={`h-full transition-all duration-500 ease-out relative ${
+                                    percentuale >= 100
+                                      ? 'bg-gradient-to-r from-green-500 to-green-600'
+                                      : percentuale > 0
+                                        ? 'bg-gradient-to-r from-orange-400 to-orange-500'
+                                        : 'bg-muted-foreground'
                                   }`}
                                   style={{ width: `${Math.min(percentuale, 100)}%` }}
-                                />
+                                >
+                                  {percentuale > 5 && (
+                                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-shimmer" />
+                                  )}
+                                </div>
+                                {percentuale >= 100 && (
+                                  <div className="absolute inset-0 bg-green-600/20 animate-pulse" />
+                                )}
                               </div>
                             </div>
+
+                            {/* Storico Pagamenti */}
+                            {dipendente.pagamenti.length > 0 && (
+                              <div className="border-t bg-muted/20">
+                                <details className="group">
+                                  <summary className="px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors flex items-center justify-between">
+                                    <span className="text-sm font-medium text-muted-foreground">
+                                      Storico Pagamenti ({dipendente.pagamenti.length})
+                                    </span>
+                                    <ChevronDownIcon className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                                  </summary>
+                                  <div className="px-4 pb-4 space-y-2">
+                                    {dipendente.pagamenti
+                                      .sort((a, b) => new Date(b.dataPagamento).getTime() - new Date(a.dataPagamento).getTime())
+                                      .map(pagamento => (
+                                        <div
+                                          key={pagamento.id}
+                                          className={`p-3 rounded-md border ${
+                                            pagamento.tipoPagamento === 'BONIFICO'
+                                              ? 'bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800'
+                                              : 'bg-green-50/50 border-green-200 dark:bg-green-950/20 dark:border-green-800'
+                                          }`}
+                                        >
+                                          <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-start gap-2 flex-1">
+                                              {pagamento.tipoPagamento === 'BONIFICO' ? (
+                                                <CreditCardIcon className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                              ) : (
+                                                <BanknotesIcon className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                              )}
+                                              <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                  <Badge
+                                                    variant="outline"
+                                                    className={`text-xs ${
+                                                      pagamento.tipoPagamento === 'BONIFICO'
+                                                        ? 'border-blue-600 text-blue-600'
+                                                        : 'border-green-600 text-green-600'
+                                                    }`}
+                                                  >
+                                                    {pagamento.tipoPagamento}
+                                                  </Badge>
+                                                  <span className="text-xs text-muted-foreground">
+                                                    {new Date(pagamento.dataPagamento).toLocaleDateString('it-IT', {
+                                                      day: '2-digit',
+                                                      month: '2-digit',
+                                                      year: 'numeric'
+                                                    })}
+                                                  </span>
+                                                </div>
+                                                {pagamento.note && (
+                                                  <p className="text-xs text-muted-foreground mt-1 break-words">
+                                                    {pagamento.note}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <div className="text-right flex-shrink-0">
+                                              <p className={`text-base font-bold ${
+                                                pagamento.tipoPagamento === 'BONIFICO' ? 'text-blue-600' : 'text-green-600'
+                                              }`}>
+                                                {formatCurrency(pagamento.importo)}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                  </div>
+                                </details>
+                              </div>
+                            )}
                           </div>
                         )
                       })}

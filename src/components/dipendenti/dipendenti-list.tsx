@@ -168,7 +168,8 @@ export default function DipendentiList({ dipendenti, statoFiltro }: DipendentiLi
                     <TableHead className="w-[40%] sm:w-auto">Dipendente</TableHead>
                     <TableHead className="hidden sm:table-cell">Contatti</TableHead>
                     <TableHead className="hidden sm:table-cell">Contratto</TableHead>
-                    <TableHead className="hidden sm:table-cell">Retribuzione Netta</TableHead>
+                    <TableHead className="hidden md:table-cell">Magg.</TableHead>
+                    <TableHead className="hidden sm:table-cell">Retribuzione</TableHead>
                     <TableHead className="text-right w-[20%] sm:w-auto">Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -214,23 +215,58 @@ export default function DipendentiList({ dipendenti, statoFiltro }: DipendentiLi
                           {dipendente.oreSettimanali} ore
                         </div>
                       </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {(() => {
+                          const limiteBonificoBase = dipendente.limiteBonifico || 0
+                          const coefficiente = dipendente.coefficienteMaggiorazione || 0
+                          const maggiorazione = limiteBonificoBase * (coefficiente / 100)
+
+                          if (coefficiente > 0) {
+                            return (
+                              <div className="space-y-1">
+                                <div className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+                                  {coefficiente}%
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {currencyFormatter(maggiorazione)}
+                                </div>
+                              </div>
+                            )
+                          }
+                          return <div className="text-xs text-muted-foreground">-</div>
+                        })()}
+                      </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         {dipendente.retribuzioneNetta ? (
-                          <div className="space-y-1">
-                            <div className="text-xs text-muted-foreground">
-                              Netta: <span className="font-semibold text-foreground">{currencyFormatter(dipendente.retribuzioneNetta)}</span>
-                            </div>
-                            {dipendente.limiteBonifico && (
-                              <div className="text-xs text-muted-foreground">
-                                Bonifico: <span className="font-medium text-foreground">{currencyFormatter(dipendente.limiteBonifico)}</span>
+                          (() => {
+                            // Calcola bonifico totale con maggiorazione
+                            const limiteBonificoBase = dipendente.limiteBonifico || 0
+                            const coefficiente = dipendente.coefficienteMaggiorazione || 0
+                            const maggiorazione = limiteBonificoBase * (coefficiente / 100)
+                            const bonificoTotale = limiteBonificoBase + maggiorazione
+
+                            // Calcola retribuzione totale = Bonifico totale + Cash
+                            const cash = dipendente.limiteContanti || 0
+                            const retribuzioneTotale = bonificoTotale + cash
+
+                            return (
+                              <div className="space-y-1">
+                                <div className="text-xs text-muted-foreground">
+                                  Totale: <span className="font-semibold text-foreground">{currencyFormatter(retribuzioneTotale)}</span>
+                                </div>
+                                {bonificoTotale > 0 && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Bonifico: <span className="font-medium text-foreground">{currencyFormatter(bonificoTotale)}</span>
+                                  </div>
+                                )}
+                                {cash > 0 && (
+                                  <div className="text-xs font-bold text-primary">
+                                    Cash: {currencyFormatter(cash)}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {dipendente.limiteContanti && (
-                              <div className="text-xs font-bold text-primary">
-                                Cash: {currencyFormatter(dipendente.limiteContanti)}
-                              </div>
-                            )}
-                          </div>
+                            )
+                          })()
                         ) : (
                           <div className="text-xs text-muted-foreground italic">Non configurato</div>
                         )}

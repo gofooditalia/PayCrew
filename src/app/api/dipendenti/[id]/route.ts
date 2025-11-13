@@ -56,11 +56,16 @@ export async function GET(
       )
     }
 
-    // Map sedi to sede for frontend compatibility
+    // Map sedi to sede for frontend compatibility and convert Decimal to Number
     const { sedi, ...dipendenteData } = dipendente
     const responseData = {
       ...dipendenteData,
-      sede: sedi
+      sede: sedi,
+      retribuzione: dipendenteData.retribuzione ? Number(dipendenteData.retribuzione) : null,
+      retribuzioneNetta: dipendenteData.retribuzioneNetta ? Number(dipendenteData.retribuzioneNetta) : null,
+      limiteContanti: dipendenteData.limiteContanti ? Number(dipendenteData.limiteContanti) : null,
+      limiteBonifico: dipendenteData.limiteBonifico ? Number(dipendenteData.limiteBonifico) : null,
+      coefficienteMaggiorazione: dipendenteData.coefficienteMaggiorazione ? Number(dipendenteData.coefficienteMaggiorazione) : 0
     }
 
     return NextResponse.json({ dipendente: responseData })
@@ -170,11 +175,16 @@ export async function PUT(
     // Log dell'attività di modifica dipendente
     await AttivitaLogger.logModificaDipendente(dipendente, user.id, userData.aziendaId)
 
-    // Map sedi to sede for frontend compatibility
+    // Map sedi to sede for frontend compatibility and convert Decimal to Number
     const { sedi, ...dipendenteData } = dipendente
     const responseData = {
       ...dipendenteData,
-      sede: sedi
+      sede: sedi,
+      retribuzione: dipendenteData.retribuzione ? Number(dipendenteData.retribuzione) : null,
+      retribuzioneNetta: dipendenteData.retribuzioneNetta ? Number(dipendenteData.retribuzioneNetta) : null,
+      limiteContanti: dipendenteData.limiteContanti ? Number(dipendenteData.limiteContanti) : null,
+      limiteBonifico: dipendenteData.limiteBonifico ? Number(dipendenteData.limiteBonifico) : null,
+      coefficienteMaggiorazione: dipendenteData.coefficienteMaggiorazione ? Number(dipendenteData.coefficienteMaggiorazione) : 0
     }
 
     return NextResponse.json({
