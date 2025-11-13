@@ -10,6 +10,12 @@ import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 interface Sede {
   id: string
@@ -223,12 +229,13 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Dati Anagrafici */}
+        {/* Dati Anagrafici e Contatto - UNIFICATI */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Dati Anagrafici</CardTitle>
+            <CardTitle className="text-lg">Informazioni Dipendente</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Campi obbligatori sempre visibili */}
             <div>
               <Label htmlFor="nome" className="mb-1">
                 Nome *
@@ -242,7 +249,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 onChange={handleChange}
               />
             </div>
-            
+
             <div>
               <Label htmlFor="cognome" className="mb-1">
                 Cognome *
@@ -256,144 +263,145 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 onChange={handleChange}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="codiceFiscale" className="mb-1">
-                Codice Fiscale
-              </Label>
-              <Input
-                type="text"
-                id="codiceFiscale"
-                name="codiceFiscale"
-                value={formData.codiceFiscale}
-                onChange={handleChange}
-                className="uppercase"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="dataNascita" className="mb-1">
-                Data di Nascita
-              </Label>
-              <Input
-                type="date"
-                id="dataNascita"
-                name="dataNascita"
-                value={formData.dataNascita}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="luogoNascita" className="mb-1">
-                Luogo di Nascita
-              </Label>
-              <Input
-                type="text"
-                id="luogoNascita"
-                name="luogoNascita"
-                value={formData.luogoNascita}
-                onChange={handleChange}
-              />
-            </div>
+
+            {/* Campi opzionali in accordion */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="dati-extra" className="border-none">
+                <AccordionTrigger className="text-sm text-muted-foreground hover:text-foreground py-2">
+                  Dati anagrafici e contatto (opzionali)
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                  <div>
+                    <Label htmlFor="codiceFiscale" className="mb-1">
+                      Codice Fiscale
+                    </Label>
+                    <Input
+                      type="text"
+                      id="codiceFiscale"
+                      name="codiceFiscale"
+                      value={formData.codiceFiscale}
+                      onChange={handleChange}
+                      className="uppercase"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="dataNascita" className="mb-1">
+                      Data di Nascita
+                    </Label>
+                    <Input
+                      type="date"
+                      id="dataNascita"
+                      name="dataNascita"
+                      value={formData.dataNascita}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="luogoNascita" className="mb-1">
+                      Luogo di Nascita
+                    </Label>
+                    <Input
+                      type="text"
+                      id="luogoNascita"
+                      name="luogoNascita"
+                      value={formData.luogoNascita}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="pt-2 border-t">
+                    <Label htmlFor="indirizzo" className="mb-1">
+                      Indirizzo
+                    </Label>
+                    <Input
+                      type="text"
+                      id="indirizzo"
+                      name="indirizzo"
+                      value={formData.indirizzo}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="citta" className="mb-1">
+                      Città
+                    </Label>
+                    <Input
+                      type="text"
+                      id="citta"
+                      name="citta"
+                      value={formData.citta}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="cap" className="mb-1">
+                      CAP
+                    </Label>
+                    <Input
+                      type="text"
+                      id="cap"
+                      name="cap"
+                      value={formData.cap}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="telefono" className="mb-1">
+                      Telefono
+                    </Label>
+                    <Input
+                      type="tel"
+                      id="telefono"
+                      name="telefono"
+                      value={formData.telefono}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email" className="mb-1">
+                      Email
+                    </Label>
+                    <Input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="iban" className="mb-1">
+                      IBAN
+                    </Label>
+                    <Input
+                      type="text"
+                      id="iban"
+                      name="iban"
+                      value={formData.iban}
+                      onChange={handleChange}
+                      className="uppercase"
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </CardContent>
         </Card>
-        
-        {/* Dati di Contatto */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Dati di Contatto</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="indirizzo" className="mb-1">
-                Indirizzo
-              </Label>
-              <Input
-                type="text"
-                id="indirizzo"
-                name="indirizzo"
-                value={formData.indirizzo}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="citta" className="mb-1">
-                Città
-              </Label>
-              <Input
-                type="text"
-                id="citta"
-                name="citta"
-                value={formData.citta}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="cap" className="mb-1">
-                CAP
-              </Label>
-              <Input
-                type="text"
-                id="cap"
-                name="cap"
-                value={formData.cap}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="telefono" className="mb-1">
-                Telefono
-              </Label>
-              <Input
-                type="tel"
-                id="telefono"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="email" className="mb-1">
-                Email
-              </Label>
-              <Input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="iban" className="mb-1">
-                IBAN
-              </Label>
-              <Input
-                type="text"
-                id="iban"
-                name="iban"
-                value={formData.iban}
-                onChange={handleChange}
-                className="uppercase"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
         {/* Dati Contrattuali */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Dati Contrattuali</CardTitle>
+            <CardTitle className="text-lg">Informazioni Contrattuali</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Campi principali sempre visibili */}
             <div>
               <Label htmlFor="dataAssunzione" className="mb-1">
                 Data Assunzione *
@@ -406,25 +414,6 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 value={formData.dataAssunzione}
                 onChange={handleChange}
               />
-            </div>
-            
-            <div>
-              <Label htmlFor="tipoContratto" className="mb-1">
-                Tipo Contratto
-              </Label>
-              <select
-                id="tipoContratto"
-                name="tipoContratto"
-                value={formData.tipoContratto}
-                onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="TEMPO_INDETERMINATO">Tempo Indeterminato</option>
-                <option value="TEMPO_DETERMINATO">Tempo Determinato</option>
-                <option value="APPRENDISTATO">Apprendistato</option>
-                <option value="STAGIONALE">Stagionale</option>
-                <option value="PARTTIME">Part-time</option>
-              </select>
             </div>
 
             {(formData.tipoContratto === 'TEMPO_DETERMINATO' || formData.tipoContratto === 'STAGIONALE') && (
@@ -443,76 +432,109 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
               </div>
             )}
 
-            <div>
-              <Label htmlFor="ccnl" className="mb-1">
-                CCNL
-              </Label>
-              <select
-                id="ccnl"
-                name="ccnl"
-                value={formData.ccnl}
-                onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="TURISMO">Turismo</option>
-                <option value="COMMERCIO">Commercio</option>
-                <option value="METALMECCANICI">Metalmeccanici</option>
-                <option value="ALTRO">Altro</option>
-              </select>
-            </div>
-            
-            <div>
-              <Label htmlFor="note" className="mb-1">
-                Note
-              </Label>
-              <Input
-                type="text"
-                id="note"
-                name="note"
-                placeholder="Note aggiuntive sul contratto..."
-                value={formData.note}
-                onChange={handleChange}
-              />
-            </div>
+            {/* Campi secondari in accordion */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="dati-contrattuali-extra" className="border-none">
+                <AccordionTrigger className="text-sm text-muted-foreground hover:text-foreground py-2">
+                  Dettagli contrattuali aggiuntivi
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                  <div>
+                    <Label htmlFor="tipoContratto" className="mb-1">
+                      Tipo Contratto
+                    </Label>
+                    <select
+                      id="tipoContratto"
+                      name="tipoContratto"
+                      value={formData.tipoContratto}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="TEMPO_INDETERMINATO">Tempo Indeterminato</option>
+                      <option value="TEMPO_DETERMINATO">Tempo Determinato</option>
+                      <option value="APPRENDISTATO">Apprendistato</option>
+                      <option value="STAGIONALE">Stagionale</option>
+                      <option value="PARTTIME">Part-time</option>
+                    </select>
+                  </div>
 
-            <div>
-              <Label htmlFor="qualifica" className="mb-1">
-                Qualifica
-              </Label>
-              <Input
-                type="text"
-                id="qualifica"
-                name="qualifica"
-                placeholder="es. Cameriere, Cuoco, Receptionist..."
-                value={formData.qualifica}
-                onChange={handleChange}
-              />
-            </div>
+                  <div>
+                    <Label htmlFor="ccnl" className="mb-1">
+                      CCNL
+                    </Label>
+                    <select
+                      id="ccnl"
+                      name="ccnl"
+                      value={formData.ccnl}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="TURISMO">Turismo</option>
+                      <option value="COMMERCIO">Commercio</option>
+                      <option value="METALMECCANICI">Metalmeccanici</option>
+                      <option value="ALTRO">Altro</option>
+                    </select>
+                  </div>
 
-            <div>
-              <Label htmlFor="retribuzione" className="mb-1">
-                Retribuzione Lorda Mensile (€)
-              </Label>
-              <Input
-                type="number"
-                id="retribuzione"
-                name="retribuzione"
-                step="0.01"
-                min="0"
-                value={formData.retribuzione}
-                onChange={handleChange}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Retribuzione lorda mensile (opzionale, per riferimento)
-              </p>
-            </div>
+                  <div>
+                    <Label htmlFor="qualifica" className="mb-1">
+                      Qualifica
+                    </Label>
+                    <Input
+                      type="text"
+                      id="qualifica"
+                      name="qualifica"
+                      placeholder="es. Cameriere, Cuoco, Receptionist..."
+                      value={formData.qualifica}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="retribuzione" className="mb-1">
+                      Retribuzione Lorda Mensile (€)
+                    </Label>
+                    <Input
+                      type="number"
+                      id="retribuzione"
+                      name="retribuzione"
+                      step="0.01"
+                      min="0"
+                      value={formData.retribuzione}
+                      onChange={handleChange}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Retribuzione lorda mensile (opzionale, per riferimento)
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="note" className="mb-1">
+                      Note
+                    </Label>
+                    <Input
+                      type="text"
+                      id="note"
+                      name="note"
+                      placeholder="Note aggiuntive sul contratto..."
+                      value={formData.note}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </CardContent>
         </Card>
 
-        {/* Configurazione Limiti Pagamento */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Configurazione Limiti Pagamento</CardTitle>
+        {/* Configurazione Limiti Pagamento - SEZIONE EVIDENZIATA */}
+        <Card className="border-2 border-primary/50 bg-primary/5 shadow-lg">
+          <CardHeader className="bg-primary/10">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <span className="text-primary">💰</span>
+              Configurazione Limiti Contrattuali
+              <span className="text-xs font-normal text-muted-foreground ml-2">(Sezione Importante)</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -639,56 +661,65 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                 onChange={handleChange}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="sedeId" className="mb-1">
-                Sede di Lavoro
-              </Label>
-              <select
-                id="sedeId"
-                name="sedeId"
-                value={formData.sedeId}
-                onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Seleziona una sede</option>
-                {sedi.map((sede) => (
-                  <option key={sede.id} value={sede.id}>
-                    {sede.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="attivo"
-                checked={formData.attivo}
-                onChange={handleCheckboxChange}
-              />
-              <Label
-                htmlFor="attivo"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Dipendente attivo
-              </Label>
-            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="sede-cessazione" className="border-none">
+                <AccordionTrigger className="text-sm text-muted-foreground hover:text-foreground py-2">
+                  Sede e stato dipendente
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                  <div>
+                    <Label htmlFor="sedeId" className="mb-1">
+                      Sede di Lavoro
+                    </Label>
+                    <select
+                      id="sedeId"
+                      name="sedeId"
+                      value={formData.sedeId}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Seleziona una sede</option>
+                      {sedi.map((sede) => (
+                        <option key={sede.id} value={sede.id}>
+                          {sede.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-            {!formData.attivo && (
-              <div>
-                <Label htmlFor="dataCessazione" className="mb-1">
-                  Data Cessazione {!formData.attivo && '*'}
-                </Label>
-                <Input
-                  type="date"
-                  id="dataCessazione"
-                  name="dataCessazione"
-                  required={!formData.attivo}
-                  value={formData.dataCessazione}
-                  onChange={handleChange}
-                />
-              </div>
-            )}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="attivo"
+                      checked={formData.attivo}
+                      onChange={handleCheckboxChange}
+                    />
+                    <Label
+                      htmlFor="attivo"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Dipendente attivo
+                    </Label>
+                  </div>
+
+                  {!formData.attivo && (
+                    <div>
+                      <Label htmlFor="dataCessazione" className="mb-1">
+                        Data Cessazione {!formData.attivo && '*'}
+                      </Label>
+                      <Input
+                        type="date"
+                        id="dataCessazione"
+                        name="dataCessazione"
+                        required={!formData.attivo}
+                        value={formData.dataCessazione}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </CardContent>
         </Card>
       </div>
