@@ -28,30 +28,30 @@ interface DipendenteFormProps {
     id: string
     nome: string
     cognome: string
-    codiceFiscale: string
-    dataNascita: string
-    luogoNascita: string
-    indirizzo: string
-    citta: string
-    cap: string
-    telefono: string
-    email: string
-    iban: string
+    codiceFiscale?: string
+    dataNascita?: string
+    luogoNascita?: string
+    indirizzo?: string
+    citta?: string
+    cap?: string
+    telefono?: string
+    email?: string
+    iban?: string
     dataAssunzione: string
-    dataScadenzaContratto: string | null
+    dataScadenzaContratto?: string | null
     tipoContratto: string
     ccnl: string
-    note: string
-    qualifica: string
-    retribuzione: number
-    retribuzioneNetta: number | null
-    limiteContanti: number | null
-    limiteBonifico: number | null
-    coefficienteMaggiorazione: number | null
+    note?: string
+    qualifica?: string
+    retribuzione?: number
+    retribuzioneNetta?: number | null
+    limiteContanti?: number | null
+    limiteBonifico?: number | null
+    coefficienteMaggiorazione?: number | null
     oreSettimanali: number
-    sedeId: string
+    sedeId?: string
     attivo: boolean
-    dataCessazione: string | null
+    dataCessazione?: string | null
   }
 }
 

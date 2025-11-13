@@ -27,7 +27,7 @@ interface Dipendente {
   nome: string
   cognome: string
   codiceFiscale: string
-  dataNascita: Date
+  dataNascita: string
   luogoNascita?: string
   indirizzo?: string
   citta?: string
@@ -35,8 +35,8 @@ interface Dipendente {
   telefono?: string
   email?: string
   iban?: string
-  dataAssunzione: Date
-  dataScadenzaContratto?: Date
+  dataAssunzione: string
+  dataScadenzaContratto?: string | null
   tipoContratto: string
   ccnl: string
   note?: string
@@ -53,7 +53,7 @@ interface Dipendente {
     nome: string
   }
   attivo: boolean
-  dataCessazione?: Date
+  dataCessazione?: string | null
 }
 
 interface Sede {
