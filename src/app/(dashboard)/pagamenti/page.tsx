@@ -185,19 +185,20 @@ export default function PagamentiPage() {
     }
   }
 
-  // Determina quale sede mostrare
-  const getSedeToShow = (): SedeGroup | null => {
+  // Determina quali sedi mostrare
+  const getSediToShow = (): SedeGroup[] => {
     const groups = raggruppaDipendentiPerSede()
 
-    if (groups.length === 0) return null
+    if (groups.length === 0) return []
 
-    // Se c'è un filtro sede attivo, mostra quella
+    // Se c'è un filtro sede attivo, mostra solo quella
     if (sedeFilter) {
-      return groups.find(g => g.sede?.id === sedeFilter) || groups[0]
+      const sedeGroup = groups.find(g => g.sede?.id === sedeFilter)
+      return sedeGroup ? [sedeGroup] : []
     }
 
-    // Altrimenti mostra la prima sede disponibile
-    return groups[0]
+    // Altrimenti mostra tutte le sedi
+    return groups
   }
 
   // Calcola saldo per dipendente
@@ -411,12 +412,12 @@ export default function PagamentiPage() {
         </CardContent>
       </Card>
 
-      {/* Sede selezionata con dipendenti */}
+      {/* Sedi con dipendenti */}
       <div className="grid gap-4">
         {(() => {
-          const sedeToShow = getSedeToShow()
+          const sediToShow = getSediToShow()
 
-          if (!sedeToShow) {
+          if (sediToShow.length === 0) {
             return (
               <Card>
                 <CardContent className="pt-6 text-center text-muted-foreground">
@@ -426,9 +427,7 @@ export default function PagamentiPage() {
             )
           }
 
-          const group = sedeToShow
-
-          return (
+          return sediToShow.map(group => (
             <Card key={group.sede?.id || 'no-sede'} className="overflow-hidden">
               {/* Header Sede - Solo Residui */}
               <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
@@ -765,7 +764,7 @@ export default function PagamentiPage() {
                     </div>
               </CardContent>
             </Card>
-          )
+          ))
         })()}
       </div>
 
