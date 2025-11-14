@@ -179,81 +179,113 @@ export function TurnoFormDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 overflow-hidden">
             <div className="flex-1 overflow-y-auto px-1 space-y-4">
-            {/* Dipendente */}
-            <FormField
-              control={form.control}
-              name="dipendenteId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dipendente *</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isEditing} // Non permettere cambio dipendente in modifica
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona dipendente" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {dipendenti.map((dip) => (
-                        <SelectItem key={dip.id} value={dip.id}>
-                          {dip.nome} {dip.cognome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Dipendente e Sede - affiancati */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="dipendenteId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dipendente *</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isEditing} // Non permettere cambio dipendente in modifica
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleziona dipendente" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {dipendenti.map((dip) => (
+                          <SelectItem key={dip.id} value={dip.id}>
+                            {dip.nome} {dip.cognome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Data */}
-            <FormField
-              control={form.control}
-              name="data"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data *</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="sedeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sede</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Nessuna" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">Nessuna sede</SelectItem>
+                        {sedi.map((sede) => (
+                          <SelectItem key={sede.id} value={sede.id}>
+                            {sede.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            {/* Tipo Turno */}
-            <FormField
-              control={form.control}
-              name="tipoTurno"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo Turno *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+            {/* Data e Tipo Turno - affiancati */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="data"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data *</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona tipo turno" />
-                      </SelectTrigger>
+                      <Input type="date" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {Object.values(TIPI_TURNO_CONFIG).map((config) => (
-                        <SelectItem key={config.value} value={config.value}>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`inline-block w-3 h-3 rounded-full ${config.bgColor}`}
-                            />
-                            {config.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tipoTurno"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo Turno *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleziona tipo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(TIPI_TURNO_CONFIG).map((config) => (
+                          <SelectItem key={config.value} value={config.value}>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`inline-block w-3 h-3 rounded-full ${config.bgColor}`}
+                              />
+                              {config.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Info auto-compilazione */}
             {fasceOrarie.length > 0 && !isEditing && (
@@ -343,39 +375,6 @@ export function TurnoFormDialog({
                 </p>
               </div>
             )}
-
-            {/* Sede */}
-            <FormField
-              control={form.control}
-              name="sedeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sede</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona sede (opzionale)" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Nessuna sede</SelectItem>
-                      {sedi.map((sede) => (
-                        <SelectItem key={sede.id} value={sede.id}>
-                          {sede.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Opzionale - assegna il turno ad una sede specifica
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             </div>
 
             {/* Footer Sticky */}
