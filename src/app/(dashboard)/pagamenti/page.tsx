@@ -273,6 +273,7 @@ export default function PagamentiPage() {
         const limiteBonifico = Number(dip.limiteBonifico) || 0
         const coefficiente = Number(dip.coefficienteMaggiorazione) || 0
         const bonificoMaggiorato = limiteBonifico + (limiteBonifico * coefficiente / 100)
+        const retribuzioneTotale = bonificoMaggiorato + limiteBonus
 
         group.totali.bonusTotale += limiteBonus
         group.totali.bonusPagato += bonus
@@ -282,7 +283,7 @@ export default function PagamentiPage() {
         group.totali.bonificoPagato += bonifici
         group.totali.bonificoResiduo += Math.max(0, bonificoMaggiorato - bonifici)
 
-        group.totali.nettoTotale += netto
+        group.totali.nettoTotale += retribuzioneTotale
         group.totali.totalePagato += pagato
         group.totali.totaleResiduo += saldo
       }
@@ -444,7 +445,7 @@ export default function PagamentiPage() {
                   </div>
                 </div>
 
-                {/* Totali: Bonus Residuo, Bonifico Residuo, Netto Totale */}
+                {/* Totali: Bonus Residuo, Bonifico Residuo, Retribuzione Totale */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-white dark:bg-gray-900 p-3 rounded-lg border border-primary/20 shadow-sm">
                   <div className="text-center">
                     <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Bonus<br className="sm:hidden" /> Residuo</p>
@@ -459,7 +460,7 @@ export default function PagamentiPage() {
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Netto<br className="sm:hidden" /> Totale</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Retribuzione<br className="sm:hidden" /> Complessiva</p>
                     <p className="text-sm sm:text-lg font-bold text-primary">
                       {formatCurrency(group.totali.nettoTotale)}
                     </p>
