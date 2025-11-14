@@ -20,7 +20,7 @@ import Link from 'next/link'
 import { ArrowLeftIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { PageLoader } from '@/components/loading'
 import { useToast } from '@/hooks/use-toast'
-import DipendenteForm from '@/components/dipendenti/dipendente-form'
+import NuovoDipendenteWrapper from '@/components/dipendenti/nuovo-dipendente-wrapper'
 
 interface Dipendente {
   id: string
@@ -199,7 +199,7 @@ export default function ModificaDipendentePage() {
       </div>
 
       {/* Form con nuovo layout */}
-      <DipendenteForm sedi={sedi} dipendente={dipendente} />
+      <NuovoDipendenteWrapper sedi={sedi} dipendente={dipendente} />
 
       {/* Danger Zone */}
       <Card className="mt-6 border-red-200 bg-red-50/50">

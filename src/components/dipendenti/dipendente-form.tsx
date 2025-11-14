@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
 import {
   Accordion,
   AccordionContent,
@@ -53,15 +53,21 @@ interface DipendenteFormProps {
     attivo: boolean
     dataCessazione?: string | null
   }
+  renderHeaderControls?: (controls: {
+    sedeId: string
+    attivo: boolean
+    onSedeChange: (sedeId: string) => void
+    onAttivoChange: (attivo: boolean) => void
+  }) => React.ReactNode
 }
 
-export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps) {
+export default function DipendenteForm({ sedi, dipendente, renderHeaderControls }: DipendenteFormProps) {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [formData, setFormData] = useState({
     nome: dipendente?.nome || '',
     cognome: dipendente?.cognome || '',
@@ -76,7 +82,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     iban: dipendente?.iban || '',
     dataAssunzione: dipendente?.dataAssunzione || '',
     dataScadenzaContratto: dipendente?.dataScadenzaContratto || '',
-    tipoContratto: dipendente?.tipoContratto || 'TEMPO_INDETERMINATO',
+    tipoContratto: dipendente?.tipoContratto || 'TEMPO_DETERMINATO',
     ccnl: dipendente?.ccnl || 'TURISMO',
     note: dipendente?.note || '',
     qualifica: dipendente?.qualifica || '',
@@ -86,7 +92,7 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     limiteBonifico: dipendente?.limiteBonifico?.toString() || '',
     coefficienteMaggiorazione: dipendente?.coefficienteMaggiorazione?.toString() || '',
     oreSettimanali: dipendente?.oreSettimanali?.toString() || '40',
-    sedeId: dipendente?.sedeId || '',
+    sedeId: dipendente?.sedeId || (sedi.length > 0 ? sedi[0].id : ''),
     attivo: dipendente?.attivo !== undefined ? dipendente.attivo : true,
     dataCessazione: dipendente?.dataCessazione || ''
   })
@@ -125,13 +131,19 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
     })
   }
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked
+  const handleAttivoChange = (checked: boolean) => {
     setFormData(prev => ({
       ...prev,
       attivo: checked,
       // Se il dipendente diventa attivo, rimuovi la data di cessazione
       dataCessazione: checked ? '' : prev.dataCessazione
+    }))
+  }
+
+  const handleSedeChange = (sedeId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      sedeId
     }))
   }
 
@@ -222,17 +234,24 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {renderHeaderControls && renderHeaderControls({
+        sedeId: formData.sedeId,
+        attivo: formData.attivo,
+        onSedeChange: handleSedeChange,
+        onAttivoChange: handleAttivoChange
+      })}
+
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
           {error}
         </div>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Dati Anagrafici e Contatto - UNIFICATI */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Informazioni Dipendente</CardTitle>
+            <CardTitle className="text-lg">Dati Anagrafici</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Campi obbligatori sempre visibili */}
@@ -403,6 +422,26 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
           <CardContent className="space-y-4">
             {/* Campi principali sempre visibili */}
             <div>
+              <Label htmlFor="tipoContratto" className="mb-1">
+                Tipo Contratto *
+              </Label>
+              <select
+                id="tipoContratto"
+                name="tipoContratto"
+                required
+                value={formData.tipoContratto}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="TEMPO_INDETERMINATO">Tempo Indeterminato</option>
+                <option value="TEMPO_DETERMINATO">Tempo Determinato</option>
+                <option value="APPRENDISTATO">Apprendistato</option>
+                <option value="STAGIONALE">Stagionale</option>
+                <option value="PARTTIME">Part-time</option>
+              </select>
+            </div>
+
+            <div>
               <Label htmlFor="dataAssunzione" className="mb-1">
                 Data Assunzione *
               </Label>
@@ -432,6 +471,22 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
               </div>
             )}
 
+            <div>
+              <Label htmlFor="oreSettimanali" className="mb-1">
+                Ore Settimanali *
+              </Label>
+              <Input
+                type="number"
+                id="oreSettimanali"
+                name="oreSettimanali"
+                required
+                min="1"
+                max="48"
+                value={formData.oreSettimanali}
+                onChange={handleChange}
+              />
+            </div>
+
             {/* Campi secondari in accordion */}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="dati-contrattuali-extra" className="border-none">
@@ -439,25 +494,6 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
                   Dettagli contrattuali aggiuntivi
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-2">
-                  <div>
-                    <Label htmlFor="tipoContratto" className="mb-1">
-                      Tipo Contratto
-                    </Label>
-                    <select
-                      id="tipoContratto"
-                      name="tipoContratto"
-                      value={formData.tipoContratto}
-                      onChange={handleChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="TEMPO_INDETERMINATO">Tempo Indeterminato</option>
-                      <option value="TEMPO_DETERMINATO">Tempo Determinato</option>
-                      <option value="APPRENDISTATO">Apprendistato</option>
-                      <option value="STAGIONALE">Stagionale</option>
-                      <option value="PARTTIME">Part-time</option>
-                    </select>
-                  </div>
-
                   <div>
                     <Label htmlFor="ccnl" className="mb-1">
                       CCNL
@@ -640,89 +676,35 @@ export default function DipendenteForm({ sedi, dipendente }: DipendenteFormProps
           </CardContent>
         </Card>
 
-        {/* Dettagli Contrattuali - Continuazione */}
-        <Card>
+      </div>
+
+      {/* Data cessazione condizionale - solo se dipendente non attivo */}
+      {!formData.attivo && (
+        <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
-            <CardTitle className="text-lg">Orario e Sede</CardTitle>
+            <CardTitle className="text-lg text-orange-900">Cessazione Dipendente</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div>
-              <Label htmlFor="oreSettimanali" className="mb-1">
-                Ore Settimanali *
+              <Label htmlFor="dataCessazione" className="mb-1">
+                Data Cessazione *
               </Label>
               <Input
-                type="number"
-                id="oreSettimanali"
-                name="oreSettimanali"
-                required
-                min="1"
-                max="48"
-                value={formData.oreSettimanali}
+                type="date"
+                id="dataCessazione"
+                name="dataCessazione"
+                required={!formData.attivo}
+                value={formData.dataCessazione}
                 onChange={handleChange}
+                className="max-w-xs"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Inserisci la data di cessazione del rapporto di lavoro
+              </p>
             </div>
-
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="sede-cessazione" className="border-none">
-                <AccordionTrigger className="text-sm text-muted-foreground hover:text-foreground py-2">
-                  Sede e stato dipendente
-                </AccordionTrigger>
-                <AccordionContent className="space-y-4 pt-2">
-                  <div>
-                    <Label htmlFor="sedeId" className="mb-1">
-                      Sede di Lavoro
-                    </Label>
-                    <select
-                      id="sedeId"
-                      name="sedeId"
-                      value={formData.sedeId}
-                      onChange={handleChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="">Seleziona una sede</option>
-                      {sedi.map((sede) => (
-                        <option key={sede.id} value={sede.id}>
-                          {sede.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="attivo"
-                      checked={formData.attivo}
-                      onChange={handleCheckboxChange}
-                    />
-                    <Label
-                      htmlFor="attivo"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Dipendente attivo
-                    </Label>
-                  </div>
-
-                  {!formData.attivo && (
-                    <div>
-                      <Label htmlFor="dataCessazione" className="mb-1">
-                        Data Cessazione {!formData.attivo && '*'}
-                      </Label>
-                      <Input
-                        type="date"
-                        id="dataCessazione"
-                        name="dataCessazione"
-                        required={!formData.attivo}
-                        value={formData.dataCessazione}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
           </CardContent>
         </Card>
-      </div>
+      )}
       
       <div className="flex justify-end space-x-4">
         <Button

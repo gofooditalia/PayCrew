@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import DipendenteForm from '@/components/dipendenti/dipendente-form'
+import NuovoDipendenteWrapper from '@/components/dipendenti/nuovo-dipendente-wrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -54,11 +54,8 @@ export default async function NuovoDipendentePage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Informazioni Dipendente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DipendenteForm sedi={sedi} />
+        <CardContent className="pt-6">
+          <NuovoDipendenteWrapper sedi={sedi} />
         </CardContent>
       </Card>
     </div>
