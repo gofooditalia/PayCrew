@@ -328,7 +328,7 @@ export default function PagamentiPage() {
         </div>
         <Link href="/pagamenti/storico">
           <Button variant="outline">
-            Storico Pagamenti
+            Riepilogo Pagamenti
           </Button>
         </Link>
       </div>
@@ -529,6 +529,7 @@ export default function PagamentiPage() {
                                     size="sm"
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm"
                                     onClick={() => handleRegistraBonifico(dipendente)}
+                                    disabled={saldoBonifico <= 0}
                                   >
                                     <CreditCardIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                                     Registra Bonifico
@@ -569,6 +570,7 @@ export default function PagamentiPage() {
                                     size="sm"
                                     className="w-full bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm"
                                     onClick={() => handleRegistraContanti(dipendente)}
+                                    disabled={saldoContanti <= 0}
                                   >
                                     <BanknotesIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                                     Registra Contanti
@@ -623,13 +625,13 @@ export default function PagamentiPage() {
                               </div>
                             </div>
 
-                            {/* Storico Pagamenti - Mobile Optimized */}
+                            {/* Riepilogo Pagamenti - Mobile Optimized */}
                             {dipendente.pagamenti.length > 0 && (
                               <div className="border-t bg-muted/20">
                                 <details className="group">
                                   <summary className="px-3 sm:px-4 py-2.5 sm:py-3 cursor-pointer hover:bg-muted/40 transition-colors flex items-center justify-between">
                                     <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                                      Storico Pagamenti ({dipendente.pagamenti.length})
+                                      Riepilogo Pagamenti ({dipendente.pagamenti.length})
                                     </span>
                                     <ChevronDownIcon className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
                                   </summary>

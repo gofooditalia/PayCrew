@@ -140,8 +140,7 @@ export default function StoricoPagamentiPage() {
       <div className="flex items-center gap-4">
         <Link href="/pagamenti">
           <Button variant="outline" size="sm">
-            <ChevronLeftIcon className="h-4 w-4 mr-2" />
-            Torna a Pagamenti
+            <ChevronLeftIcon className="h-4 w-4" />
           </Button>
         </Link>
         <div>
