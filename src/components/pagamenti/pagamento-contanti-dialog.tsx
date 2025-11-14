@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,6 +15,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency } from '@/lib/utils/currency'
 import { BanknotesIcon } from '@heroicons/react/24/outline'
 
+interface Pagamento {
+  id: string
+  importo: number
+  tipoPagamento: 'CONTANTI' | 'BONIFICO'
+  dataPagamento: string
+  note: string | null
+}
+
 interface PagamentoContantiDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -23,6 +31,7 @@ interface PagamentoContantiDialogProps {
   onSuccess: () => void
   limiteContanti: number | null
   pagamentiContantiEsistenti: number
+  editingPagamento?: Pagamento | null
 }
 
 export default function PagamentoContantiDialog({
@@ -33,6 +42,7 @@ export default function PagamentoContantiDialog({
   onSuccess,
   limiteContanti,
   pagamentiContantiEsistenti,
+  editingPagamento = null,
 }: PagamentoContantiDialogProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,9 +53,32 @@ export default function PagamentoContantiDialog({
     note: ''
   })
 
+  // Popola form quando si modifica un pagamento
+  useEffect(() => {
+    if (editingPagamento) {
+      setFormData({
+        importo: editingPagamento.importo.toString(),
+        dataPagamento: new Date(editingPagamento.dataPagamento).toISOString().split('T')[0],
+        note: editingPagamento.note || ''
+      })
+    } else {
+      // Reset form per nuovo pagamento
+      setFormData({
+        importo: '',
+        dataPagamento: new Date().toISOString().split('T')[0],
+        note: ''
+      })
+    }
+    setError(null)
+  }, [editingPagamento, open])
+
   // Calcola disponibilità contanti
   const limiteContantiValue = Number(limiteContanti) || 0
-  const disponibile = Math.max(0, limiteContantiValue - pagamentiContantiEsistenti)
+  // Se stiamo modificando, non contiamo il pagamento attuale nei pagamenti esistenti
+  const pagamentiEffettivi = editingPagamento
+    ? pagamentiContantiEsistenti - editingPagamento.importo
+    : pagamentiContantiEsistenti
+  const disponibile = Math.max(0, limiteContantiValue - pagamentiEffettivi)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -75,16 +108,27 @@ export default function PagamentoContantiDialog({
         return
       }
 
-      const response = await fetch('/api/pagamenti', {
-        method: 'POST',
+      const url = editingPagamento
+        ? `/api/pagamenti/${editingPagamento.id}`
+        : '/api/pagamenti'
+      const method = editingPagamento ? 'PUT' : 'POST'
+
+      const body: any = {
+        importo,
+        tipoPagamento: 'CONTANTI',
+        dataPagamento: formData.dataPagamento,
+        note: formData.note || null
+      }
+
+      // dipendenteId è richiesto solo in POST
+      if (!editingPagamento) {
+        body.dipendenteId = dipendenteId
+      }
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dipendenteId,
-          importo,
-          tipoPagamento: 'CONTANTI',
-          dataPagamento: formData.dataPagamento,
-          note: formData.note || null
-        })
+        body: JSON.stringify(body)
       })
 
       if (!response.ok) {
@@ -114,7 +158,7 @@ export default function PagamentoContantiDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BanknotesIcon className="h-6 w-6 text-green-600" />
-            Registra Pagamento CONTANTI
+            {editingPagamento ? 'Modifica Pagamento CONTANTI' : 'Registra Pagamento CONTANTI'}
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-2">
             {dipendenteNome}
@@ -213,7 +257,10 @@ export default function PagamentoContantiDialog({
               Annulla
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Registrazione...' : 'Registra Pagamento'}
+              {loading
+                ? (editingPagamento ? 'Aggiornamento...' : 'Registrazione...')
+                : (editingPagamento ? 'Aggiorna Pagamento' : 'Registra Pagamento')
+              }
             </Button>
           </DialogFooter>
         </form>

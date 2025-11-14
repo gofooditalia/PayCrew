@@ -12,14 +12,15 @@ import {
   BanknotesIcon,
   CreditCardIcon,
   ChevronDownIcon,
-  ChevronUpIcon,
-  PlusIcon,
-  BuildingStorefrontIcon
+  BuildingStorefrontIcon,
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline'
 import { PageLoader } from '@/components/loading'
 import PagamentoContantiDialog from '@/components/pagamenti/pagamento-contanti-dialog'
 import PagamentoBonificoDialog from '@/components/pagamenti/pagamento-bonifico-dialog'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 interface Sede {
   id: string
@@ -76,14 +77,15 @@ export default function PagamentiPage() {
   const now = new Date()
   const [meseFilter, setMeseFilter] = useState((now.getMonth() + 1).toString())
   const [annoFilter, setAnnoFilter] = useState(now.getFullYear().toString())
+  const [sedeFilter, setSedeFilter] = useState<string>('') // '' = mostra prima sede disponibile
 
   // Dialog
   const [dialogContantiOpen, setDialogContantiOpen] = useState(false)
   const [dialogBonificoOpen, setDialogBonificoOpen] = useState(false)
   const [selectedDipendente, setSelectedDipendente] = useState<Dipendente | null>(null)
+  const [editingPagamento, setEditingPagamento] = useState<Pagamento | null>(null)
 
-  // Espansione sedi
-  const [expandedSedi, setExpandedSedi] = useState<Set<string>>(new Set())
+  // Non serve più il tracking delle sedi espanse (sempre visibile la sede selezionata)
 
   useEffect(() => {
     loadData()
@@ -132,36 +134,75 @@ export default function PagamentiPage() {
 
   const handleRegistraContanti = (dipendente: Dipendente) => {
     setSelectedDipendente(dipendente)
+    setEditingPagamento(null) // Reset editing
     setDialogContantiOpen(true)
   }
 
   const handleRegistraBonifico = (dipendente: Dipendente) => {
     setSelectedDipendente(dipendente)
+    setEditingPagamento(null) // Reset editing
     setDialogBonificoOpen(true)
   }
 
-  const toggleSede = (sedeId: string) => {
-    setExpandedSedi(prev => {
-      const next = new Set(prev)
-      if (next.has(sedeId)) {
-        next.delete(sedeId)
+  const handleEditPagamento = (dipendente: Dipendente, pagamento: Pagamento) => {
+    setSelectedDipendente(dipendente)
+    setEditingPagamento(pagamento)
+
+    if (pagamento.tipoPagamento === 'CONTANTI') {
+      setDialogContantiOpen(true)
+    } else {
+      setDialogBonificoOpen(true)
+    }
+  }
+
+  const handleDeletePagamento = async (pagamentoId: string) => {
+    if (!confirm('Sei sicuro di voler eliminare questo pagamento?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/pagamenti/${pagamentoId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Pagamento eliminato con successo')
+        loadData()
       } else {
-        next.add(sedeId)
+        const error = await response.json()
+        toast.error(error.error || 'Errore nell\'eliminazione del pagamento')
       }
-      return next
-    })
+    } catch (error) {
+      console.error('Error deleting pagamento:', error)
+      toast.error('Errore nell\'eliminazione del pagamento')
+    }
+  }
+
+  // Determina quale sede mostrare
+  const getSedeToShow = (): SedeGroup | null => {
+    const groups = raggruppaDipendentiPerSede()
+
+    if (groups.length === 0) return null
+
+    // Se c'è un filtro sede attivo, mostra quella
+    if (sedeFilter) {
+      return groups.find(g => g.sede?.id === sedeFilter) || groups[0]
+    }
+
+    // Altrimenti mostra la prima sede disponibile
+    return groups[0]
   }
 
   // Calcola saldo per dipendente
   const calcolaSaldo = (dipendente: Dipendente) => {
-    const netto = dipendente.retribuzioneNetta || 0
-    const pagato = dipendente.pagamenti.reduce((sum, p) => sum + p.importo, 0)
+    const netto = Number(dipendente.retribuzioneNetta) || 0
+    const pagato = dipendente.pagamenti.reduce((sum, p) => sum + Number(p.importo), 0)
     const contanti = dipendente.pagamenti
       .filter(p => p.tipoPagamento === 'CONTANTI')
-      .reduce((sum, p) => sum + p.importo, 0)
+      .reduce((sum, p) => sum + Number(p.importo), 0)
     const bonifici = dipendente.pagamenti
       .filter(p => p.tipoPagamento === 'BONIFICO')
-      .reduce((sum, p) => sum + p.importo, 0)
+      .reduce((sum, p) => sum + Number(p.importo), 0)
 
     return {
       netto,
@@ -292,11 +333,12 @@ export default function PagamentiPage() {
         </Link>
       </div>
 
-      {/* Filtri Mese/Anno */}
+      {/* Filtri Periodo e Sede */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            {/* Filtro Periodo */}
+            <div className="flex items-center gap-2 flex-wrap">
               <Label className="text-sm font-medium">Periodo:</Label>
               <Select value={meseFilter} onValueChange={setMeseFilter}>
                 <SelectTrigger className="w-[140px]">
@@ -323,115 +365,103 @@ export default function PagamentiPage() {
                   ))}
                 </SelectContent>
               </Select>
+
+              {(meseFilter !== (now.getMonth() + 1).toString() || annoFilter !== now.getFullYear().toString()) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setMeseFilter((now.getMonth() + 1).toString())
+                    setAnnoFilter(now.getFullYear().toString())
+                  }}
+                >
+                  Mese corrente
+                </Button>
+              )}
             </div>
 
-            {(meseFilter !== (now.getMonth() + 1).toString() || annoFilter !== now.getFullYear().toString()) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setMeseFilter((now.getMonth() + 1).toString())
-                  setAnnoFilter(now.getFullYear().toString())
-                }}
-              >
-                Torna a mese corrente
-              </Button>
+            {/* Filtro Sede */}
+            {sedi.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium">Sede:</Label>
+                <Select value={sedeFilter || '__all__'} onValueChange={(val) => setSedeFilter(val === '__all__' ? '' : val)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Tutte le sedi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">Tutte le sedi</SelectItem>
+                    {sedi.map(sede => (
+                      <SelectItem key={sede.id} value={sede.id}>
+                        {sede.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Lista sedi con dipendenti */}
+      {/* Sede selezionata con dipendenti */}
       <div className="grid gap-4">
-        {sedeGroups.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              Nessun dipendente trovato per il periodo selezionato
-            </CardContent>
-          </Card>
-        ) : (
-          sedeGroups.map(group => {
-            const sedeId = group.sede?.id || 'no-sede'
-            const isExpanded = expandedSedi.has(sedeId)
+        {(() => {
+          const sedeToShow = getSedeToShow()
 
+          if (!sedeToShow) {
             return (
-              <Card key={sedeId} className="overflow-hidden">
-                {/* Header Sede con Totali Cash */}
-                <CardHeader className="pb-3 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => toggleSede(sedeId)}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <BuildingStorefrontIcon className="h-6 w-6 text-primary" />
-                      <div>
-                        <CardTitle className="text-xl">
-                          {group.sede?.nome || 'Senza Sede'}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {group.dipendenti.length} dipendent{group.dipendenti.length === 1 ? 'e' : 'i'}
-                        </p>
-                      </div>
-                    </div>
+              <Card>
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                  Nessun dipendente trovato per il periodo selezionato
+                </CardContent>
+              </Card>
+            )
+          }
 
-                    <div className="flex items-center gap-4">
-                      {/* Totali Cash - Evidenziati */}
-                      <div className="grid grid-cols-3 gap-4 mr-4">
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground mb-1">Cash Totale</p>
-                          <p className="text-lg font-bold text-primary">
-                            {formatCurrency(group.totali.cashTotale)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground mb-1">Cash Pagato</p>
-                          <p className="text-lg font-bold text-green-600">
-                            {formatCurrency(group.totali.cashPagato)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground mb-1">Cash Residuo</p>
-                          <p className={`text-lg font-bold ${group.totali.cashResiduo > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                            {formatCurrency(group.totali.cashResiduo)}
-                          </p>
-                        </div>
-                      </div>
+          const group = sedeToShow
 
-                      <Button variant="ghost" size="sm">
-                        {isExpanded ? (
-                          <ChevronUpIcon className="h-5 w-5" />
-                        ) : (
-                          <ChevronDownIcon className="h-5 w-5" />
-                        )}
-                      </Button>
-                    </div>
+          return (
+            <Card key={group.sede?.id || 'no-sede'} className="overflow-hidden">
+              {/* Header Sede - Solo Residui */}
+              <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
+                {/* Nome sede */}
+                <div className="flex items-center gap-3 mb-3">
+                  <BuildingStorefrontIcon className="h-6 w-6 text-primary flex-shrink-0" />
+                  <div className="flex-1">
+                    <CardTitle className="text-lg sm:text-xl break-words">
+                      {group.sede?.nome || 'Senza Sede'}
+                    </CardTitle>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                      {group.dipendenti.length} dipendent{group.dipendenti.length === 1 ? 'e' : 'i'}
+                    </p>
                   </div>
+                </div>
 
-                  {/* Totali Bonifico e Netto (riga secondaria) */}
-                  {!isExpanded && (
-                    <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Bonifico Totale</p>
-                        <p className="font-medium">{formatCurrency(group.totali.bonificoTotale)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Bonifico Pagato</p>
-                        <p className="font-medium text-green-600">{formatCurrency(group.totali.bonificoPagato)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Netto Totale</p>
-                        <p className="font-medium">{formatCurrency(group.totali.nettoTotale)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Residuo Totale</p>
-                        <p className={`font-medium ${group.totali.totaleResiduo > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                          {formatCurrency(group.totali.totaleResiduo)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </CardHeader>
+                {/* Totali: Cash Residuo, Bonifico Residuo, Netto Totale */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-white dark:bg-gray-900 p-3 rounded-lg border border-primary/20 shadow-sm">
+                  <div className="text-center">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Cash<br className="sm:hidden" /> Residuo</p>
+                    <p className={`text-sm sm:text-lg font-bold ${group.totali.cashResiduo > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                      {formatCurrency(group.totali.cashResiduo)}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Bonifico<br className="sm:hidden" /> Residuo</p>
+                    <p className={`text-sm sm:text-lg font-bold ${group.totali.bonificoResiduo > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                      {formatCurrency(group.totali.bonificoResiduo)}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Netto<br className="sm:hidden" /> Totale</p>
+                    <p className="text-sm sm:text-lg font-bold text-primary">
+                      {formatCurrency(group.totali.nettoTotale)}
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
 
-                {/* Lista Dipendenti (espandibile) */}
-                {isExpanded && (
-                  <CardContent className="pt-0">
+              {/* Lista Dipendenti - Sempre visibile */}
+              <CardContent className="pt-0">
                     <div className="space-y-3">
                       {group.dipendenti.map(dipendente => {
                         const { netto, pagato, saldo, contanti, bonifici } = calcolaSaldo(dipendente)
@@ -448,16 +478,16 @@ export default function PagamentiPage() {
 
                         return (
                           <div key={dipendente.id} className="border rounded-lg bg-card overflow-hidden">
-                            {/* Header con nome e retribuzione totale */}
-                            <div className="bg-gradient-to-r from-primary/10 to-transparent p-4 border-b">
+                            {/* Header con nome e retribuzione totale - Mobile Optimized */}
+                            <div className="bg-gradient-to-r from-primary/10 to-transparent p-3 sm:p-4 border-b">
                               <Link href={`/dipendenti/${dipendente.id}`}>
-                                <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
-                                  <h3 className="text-lg font-bold">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                                  <h3 className="text-base sm:text-lg font-bold">
                                     {dipendente.nome} {dipendente.cognome}
                                   </h3>
-                                  <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">Retribuzione Totale</p>
-                                    <p className="text-xl font-bold text-primary">
+                                  <div className="text-left sm:text-right">
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground">Retribuzione Totale</p>
+                                    <p className="text-lg sm:text-xl font-bold text-primary">
                                       {formatCurrency(retribuzioneTotale)}
                                     </p>
                                   </div>
@@ -466,105 +496,105 @@ export default function PagamentiPage() {
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x">
-                              {/* Sezione BONIFICI */}
-                              <div className="p-4 bg-blue-50/50 dark:bg-blue-950/10">
-                                <div className="flex items-center gap-2 mb-3">
-                                  <CreditCardIcon className="h-5 w-5 text-blue-600" />
-                                  <h4 className="font-semibold text-blue-900 dark:text-blue-400">BONIFICI</h4>
+                              {/* Sezione BONIFICI - Mobile Optimized */}
+                              <div className="p-3 sm:p-4 bg-blue-50/50 dark:bg-blue-950/10">
+                                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                                  <CreditCardIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+                                  <h4 className="text-sm sm:text-base font-semibold text-blue-900 dark:text-blue-400">BONIFICI</h4>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2 sm:space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">Totale Bonifico</span>
-                                    <span className="text-lg font-bold text-blue-600">
+                                    <span className="text-xs sm:text-sm text-muted-foreground">Totale Bonifico</span>
+                                    <span className="text-sm sm:text-lg font-bold text-blue-600">
                                       {formatCurrency(bonificoTotale)}
                                     </span>
                                   </div>
 
                                   <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">Pagato</span>
-                                    <span className="text-base font-medium text-green-600">
+                                    <span className="text-xs sm:text-sm text-muted-foreground">Pagato</span>
+                                    <span className="text-sm sm:text-base font-medium text-green-600">
                                       {formatCurrency(bonifici)}
                                     </span>
                                   </div>
 
-                                  <div className="flex items-center justify-between pt-2 border-t border-blue-200/50">
-                                    <span className="text-sm font-medium">Saldo</span>
-                                    <span className={`text-lg font-bold ${saldoBonifico > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-blue-200/50">
+                                    <span className="text-xs sm:text-sm font-medium">Saldo</span>
+                                    <span className={`text-sm sm:text-lg font-bold ${saldoBonifico > 0 ? 'text-orange-600' : 'text-green-600'}`}>
                                       {formatCurrency(saldoBonifico)}
                                     </span>
                                   </div>
 
                                   <Button
                                     size="sm"
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm"
                                     onClick={() => handleRegistraBonifico(dipendente)}
                                   >
-                                    <CreditCardIcon className="h-4 w-4 mr-2" />
+                                    <CreditCardIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                                     Registra Bonifico
                                   </Button>
                                 </div>
                               </div>
 
-                              {/* Sezione CONTANTI */}
-                              <div className="p-4 bg-green-50/50 dark:bg-green-950/10">
-                                <div className="flex items-center gap-2 mb-3">
-                                  <BanknotesIcon className="h-5 w-5 text-green-600" />
-                                  <h4 className="font-semibold text-green-900 dark:text-green-400">CONTANTI</h4>
+                              {/* Sezione CONTANTI - Mobile Optimized */}
+                              <div className="p-3 sm:p-4 bg-green-50/50 dark:bg-green-950/10">
+                                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                                  <BanknotesIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                                  <h4 className="text-sm sm:text-base font-semibold text-green-900 dark:text-green-400">CONTANTI</h4>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2 sm:space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">Totale Contanti</span>
-                                    <span className="text-lg font-bold text-green-600">
+                                    <span className="text-xs sm:text-sm text-muted-foreground">Totale Contanti</span>
+                                    <span className="text-sm sm:text-lg font-bold text-green-600">
                                       {formatCurrency(limiteContanti)}
                                     </span>
                                   </div>
 
                                   <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">Pagato</span>
-                                    <span className="text-base font-medium text-green-600">
+                                    <span className="text-xs sm:text-sm text-muted-foreground">Pagato</span>
+                                    <span className="text-sm sm:text-base font-medium text-green-600">
                                       {formatCurrency(contanti)}
                                     </span>
                                   </div>
 
-                                  <div className="flex items-center justify-between pt-2 border-t border-green-200/50">
-                                    <span className="text-sm font-medium">Saldo</span>
-                                    <span className={`text-lg font-bold ${saldoContanti > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-green-200/50">
+                                    <span className="text-xs sm:text-sm font-medium">Saldo</span>
+                                    <span className={`text-sm sm:text-lg font-bold ${saldoContanti > 0 ? 'text-orange-600' : 'text-green-600'}`}>
                                       {formatCurrency(saldoContanti)}
                                     </span>
                                   </div>
 
                                   <Button
                                     size="sm"
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm"
                                     onClick={() => handleRegistraContanti(dipendente)}
                                   >
-                                    <BanknotesIcon className="h-4 w-4 mr-2" />
+                                    <BanknotesIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                                     Registra Contanti
                                   </Button>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Progress bar migliorata */}
-                            <div className="px-4 py-3 bg-gradient-to-r from-muted/20 to-muted/10 border-t">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-semibold text-muted-foreground">Completamento</span>
+                            {/* Progress bar - Mobile Optimized */}
+                            <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-muted/20 to-muted/10 border-t">
+                              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                  <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground">Completamento</span>
                                   {percentuale >= 100 && (
-                                    <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-muted-foreground">
+                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                  <span className="text-[10px] sm:text-xs text-muted-foreground">
                                     {formatCurrency(pagato)} / {formatCurrency(retribuzioneTotale)}
                                   </span>
                                   <Badge
                                     variant={percentuale >= 100 ? 'default' : percentuale > 0 ? 'secondary' : 'outline'}
-                                    className={`text-xs font-bold ${
+                                    className={`text-[10px] sm:text-xs font-bold ${
                                       percentuale >= 100 ? 'bg-green-600' : percentuale >= 50 ? 'bg-orange-500' : ''
                                     }`}
                                   >
@@ -572,7 +602,7 @@ export default function PagamentiPage() {
                                   </Badge>
                                 </div>
                               </div>
-                              <div className="relative h-3 bg-muted/50 rounded-full overflow-hidden shadow-inner">
+                              <div className="relative h-2.5 sm:h-3 bg-muted/50 rounded-full overflow-hidden shadow-inner">
                                 <div
                                   className={`h-full transition-all duration-500 ease-out relative ${
                                     percentuale >= 100
@@ -593,68 +623,102 @@ export default function PagamentiPage() {
                               </div>
                             </div>
 
-                            {/* Storico Pagamenti */}
+                            {/* Storico Pagamenti - Mobile Optimized */}
                             {dipendente.pagamenti.length > 0 && (
                               <div className="border-t bg-muted/20">
                                 <details className="group">
-                                  <summary className="px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">
+                                  <summary className="px-3 sm:px-4 py-2.5 sm:py-3 cursor-pointer hover:bg-muted/40 transition-colors flex items-center justify-between">
+                                    <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                                       Storico Pagamenti ({dipendente.pagamenti.length})
                                     </span>
                                     <ChevronDownIcon className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
                                   </summary>
-                                  <div className="px-4 pb-4 space-y-2">
+                                  <div className="px-2 sm:px-4 pb-3 sm:pb-4 space-y-2">
                                     {dipendente.pagamenti
                                       .sort((a, b) => new Date(b.dataPagamento).getTime() - new Date(a.dataPagamento).getTime())
                                       .map(pagamento => (
                                         <div
                                           key={pagamento.id}
-                                          className={`p-3 rounded-md border ${
+                                          className={`p-2 sm:p-3 rounded-md border ${
                                             pagamento.tipoPagamento === 'BONIFICO'
                                               ? 'bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800'
                                               : 'bg-green-50/50 border-green-200 dark:bg-green-950/20 dark:border-green-800'
                                           }`}
                                         >
-                                          <div className="flex items-start justify-between gap-3">
-                                            <div className="flex items-start gap-2 flex-1">
-                                              {pagamento.tipoPagamento === 'BONIFICO' ? (
-                                                <CreditCardIcon className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                                              ) : (
-                                                <BanknotesIcon className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                                              )}
-                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                  <Badge
-                                                    variant="outline"
-                                                    className={`text-xs ${
-                                                      pagamento.tipoPagamento === 'BONIFICO'
-                                                        ? 'border-blue-600 text-blue-600'
-                                                        : 'border-green-600 text-green-600'
-                                                    }`}
-                                                  >
-                                                    {pagamento.tipoPagamento}
-                                                  </Badge>
-                                                  <span className="text-xs text-muted-foreground">
-                                                    {new Date(pagamento.dataPagamento).toLocaleDateString('it-IT', {
-                                                      day: '2-digit',
-                                                      month: '2-digit',
-                                                      year: 'numeric'
-                                                    })}
-                                                  </span>
-                                                </div>
-                                                {pagamento.note && (
-                                                  <p className="text-xs text-muted-foreground mt-1 break-words">
-                                                    {pagamento.note}
-                                                  </p>
+                                          {/* Layout mobile: stack verticale con importo in alto */}
+                                          <div className="flex flex-col gap-2">
+                                            {/* Header: tipo, data, importo */}
+                                            <div className="flex items-start justify-between gap-2">
+                                              <div className="flex items-start gap-1.5 sm:gap-2 flex-1 min-w-0">
+                                                {pagamento.tipoPagamento === 'BONIFICO' ? (
+                                                  <CreditCardIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                                ) : (
+                                                  <BanknotesIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 mt-0.5 flex-shrink-0" />
                                                 )}
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <Badge
+                                                      variant="outline"
+                                                      className={`text-[10px] sm:text-xs ${
+                                                        pagamento.tipoPagamento === 'BONIFICO'
+                                                          ? 'border-blue-600 text-blue-600'
+                                                          : 'border-green-600 text-green-600'
+                                                      }`}
+                                                    >
+                                                      {pagamento.tipoPagamento}
+                                                    </Badge>
+                                                    <span className="text-[10px] sm:text-xs text-muted-foreground">
+                                                      {new Date(pagamento.dataPagamento).toLocaleDateString('it-IT', {
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric'
+                                                      })}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div className="flex items-start gap-1 flex-shrink-0">
+                                                <p className={`text-sm sm:text-base font-bold whitespace-nowrap ${
+                                                  pagamento.tipoPagamento === 'BONIFICO' ? 'text-blue-600' : 'text-green-600'
+                                                }`}>
+                                                  {formatCurrency(pagamento.importo)}
+                                                </p>
                                               </div>
                                             </div>
-                                            <div className="text-right flex-shrink-0">
-                                              <p className={`text-base font-bold ${
-                                                pagamento.tipoPagamento === 'BONIFICO' ? 'text-blue-600' : 'text-green-600'
-                                              }`}>
-                                                {formatCurrency(pagamento.importo)}
-                                              </p>
+
+                                            {/* Note (se presenti) e pulsanti azione */}
+                                            <div className="flex items-end justify-between gap-2">
+                                              {pagamento.note ? (
+                                                <p className="text-[10px] sm:text-xs text-muted-foreground break-words flex-1">
+                                                  {pagamento.note}
+                                                </p>
+                                              ) : (
+                                                <div className="flex-1" />
+                                              )}
+                                              <div className="flex gap-0.5 sm:gap-1 flex-shrink-0">
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  className="h-6 w-6 sm:h-8 sm:w-8 p-0"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleEditPagamento(dipendente, pagamento)
+                                                  }}
+                                                >
+                                                  <PencilIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hover:text-primary" />
+                                                </Button>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  className="h-6 w-6 sm:h-8 sm:w-8 p-0"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleDeletePagamento(pagamento.id)
+                                                  }}
+                                                >
+                                                  <TrashIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hover:text-destructive" />
+                                                </Button>
+                                              </div>
                                             </div>
                                           </div>
                                         </div>
@@ -667,12 +731,10 @@ export default function PagamentiPage() {
                         )
                       })}
                     </div>
-                  </CardContent>
-                )}
-              </Card>
-            )
-          })
-        )}
+              </CardContent>
+            </Card>
+          )
+        })()}
       </div>
 
       {/* Dialog per pagamento contanti */}
@@ -690,6 +752,7 @@ export default function PagamentiPage() {
                 .filter(p => p.tipoPagamento === 'CONTANTI')
                 .reduce((sum, p) => sum + p.importo, 0)
             }
+            editingPagamento={editingPagamento}
           />
 
           {/* Dialog per pagamento bonifico */}
@@ -706,6 +769,7 @@ export default function PagamentiPage() {
                 .filter(p => p.tipoPagamento === 'BONIFICO')
                 .reduce((sum, p) => sum + p.importo, 0)
             }
+            editingPagamento={editingPagamento}
           />
         </>
       )}

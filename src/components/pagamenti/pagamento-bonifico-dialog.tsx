@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,6 +15,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency } from '@/lib/utils/currency'
 import { CreditCardIcon } from '@heroicons/react/24/outline'
 
+interface Pagamento {
+  id: string
+  importo: number
+  tipoPagamento: 'CONTANTI' | 'BONIFICO'
+  dataPagamento: string
+  note: string | null
+}
+
 interface PagamentoBonificoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -24,6 +32,7 @@ interface PagamentoBonificoDialogProps {
   limiteBonifico: number | null
   coefficienteMaggiorazione: number | null
   pagamentiBonificoEsistenti: number
+  editingPagamento?: Pagamento | null
 }
 
 export default function PagamentoBonificoDialog({
@@ -35,6 +44,7 @@ export default function PagamentoBonificoDialog({
   limiteBonifico,
   coefficienteMaggiorazione,
   pagamentiBonificoEsistenti,
+  editingPagamento = null,
 }: PagamentoBonificoDialogProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -45,12 +55,35 @@ export default function PagamentoBonificoDialog({
     note: ''
   })
 
+  // Popola form quando si modifica un pagamento
+  useEffect(() => {
+    if (editingPagamento) {
+      setFormData({
+        importo: editingPagamento.importo.toString(),
+        dataPagamento: new Date(editingPagamento.dataPagamento).toISOString().split('T')[0],
+        note: editingPagamento.note || ''
+      })
+    } else {
+      // Reset form per nuovo pagamento
+      setFormData({
+        importo: '',
+        dataPagamento: new Date().toISOString().split('T')[0],
+        note: ''
+      })
+    }
+    setError(null)
+  }, [editingPagamento, open])
+
   // Calcola limite bonifico con maggiorazione
   const limiteBonificoBase = Number(limiteBonifico) || 0
   const coefficiente = Number(coefficienteMaggiorazione) || 0
   const maggiorazione = limiteBonificoBase * (coefficiente / 100)
   const limiteBonificoTotale = limiteBonificoBase + maggiorazione
-  const disponibile = Math.max(0, limiteBonificoTotale - pagamentiBonificoEsistenti)
+  // Se stiamo modificando, non contiamo il pagamento attuale nei pagamenti esistenti
+  const pagamentiEffettivi = editingPagamento
+    ? pagamentiBonificoEsistenti - editingPagamento.importo
+    : pagamentiBonificoEsistenti
+  const disponibile = Math.max(0, limiteBonificoTotale - pagamentiEffettivi)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -80,16 +113,27 @@ export default function PagamentoBonificoDialog({
         return
       }
 
-      const response = await fetch('/api/pagamenti', {
-        method: 'POST',
+      const url = editingPagamento
+        ? `/api/pagamenti/${editingPagamento.id}`
+        : '/api/pagamenti'
+      const method = editingPagamento ? 'PUT' : 'POST'
+
+      const body: any = {
+        importo,
+        tipoPagamento: 'BONIFICO',
+        dataPagamento: formData.dataPagamento,
+        note: formData.note || null
+      }
+
+      // dipendenteId è richiesto solo in POST
+      if (!editingPagamento) {
+        body.dipendenteId = dipendenteId
+      }
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dipendenteId,
-          importo,
-          tipoPagamento: 'BONIFICO',
-          dataPagamento: formData.dataPagamento,
-          note: formData.note || null
-        })
+        body: JSON.stringify(body)
       })
 
       if (!response.ok) {
@@ -119,7 +163,7 @@ export default function PagamentoBonificoDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCardIcon className="h-6 w-6 text-blue-600" />
-            Registra Pagamento BONIFICO
+            {editingPagamento ? 'Modifica Pagamento BONIFICO' : 'Registra Pagamento BONIFICO'}
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-2">
             {dipendenteNome}
@@ -232,7 +276,10 @@ export default function PagamentoBonificoDialog({
               Annulla
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Registrazione...' : 'Registra Pagamento'}
+              {loading
+                ? (editingPagamento ? 'Aggiornamento...' : 'Registrazione...')
+                : (editingPagamento ? 'Aggiorna Pagamento' : 'Registra Pagamento')
+              }
             </Button>
           </DialogFooter>
         </form>
