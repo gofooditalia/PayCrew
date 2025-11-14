@@ -221,7 +221,7 @@ export default function PresenzePage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Presenze</h1>
-          <p className="text-gray-600">Conferma le presenze generate dai turni o segna le assenze</p>
+          <p className="text-gray-600">Gestisci le presenze: modifica orari, registra assenze o aggiungi note</p>
         </div>
       </div>
 

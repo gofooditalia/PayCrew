@@ -168,8 +168,11 @@ export async function PUT(
       const oreLavorateNette = Math.max(0, oreTotali - pausaPranzoOre)
 
       // Calcola straordinari
-      oreLavorate = Math.min(oreLavorateNette, oreGiornaliere || 8)
-      oreStraordinario = Math.max(0, oreLavorateNette - (oreGiornaliere || 8))
+      // oreLavorate contiene TUTTE le ore lavorate (normali + straordinari)
+      // oreStraordinario contiene solo le ore oltre il limite giornaliero
+      const oreGiornaliereStandard = oreGiornaliere || 8
+      oreLavorate = oreLavorateNette // Tutte le ore lavorate
+      oreStraordinario = Math.max(0, oreLavorateNette - oreGiornaliereStandard)
     }
 
     // Prepara i dati per l'update
@@ -199,6 +202,11 @@ export async function PUT(
     }
     if (oreStraordinario !== null) {
       dataToUpdate.oreStraordinario = oreStraordinario
+    }
+
+    // Marca la presenza come MODIFICATA se ci sono modifiche agli orari
+    if (validatedData.entrata !== undefined || validatedData.uscita !== undefined || validatedData.data !== undefined) {
+      dataToUpdate.stato = 'MODIFICATA'
     }
 
     // Aggiorna la presenza

@@ -152,7 +152,7 @@ export class PresenzeFromTurniService {
       uscita,
       oreLavorate,
       oreStraordinario,
-      stato: 'DA_CONFERMARE',
+      stato: 'CONFERMATA', // Le presenze generate da turno sono automaticamente confermate
       generataDaTurno: true,
       dipendenti: {
         connect: { id: turno.dipendenteId }
@@ -163,7 +163,8 @@ export class PresenzeFromTurniService {
     }
 
     if (presenzaEsistente) {
-      // Aggiorna presenza esistente
+      // Aggiorna presenza esistente solo se non è stata già modificata manualmente
+      const nuovoStato = presenzaEsistente.stato === 'MODIFICATA' ? 'MODIFICATA' : 'CONFERMATA'
       await prisma.presenze.update({
         where: { id: presenzaEsistente.id },
         data: {
@@ -171,7 +172,7 @@ export class PresenzeFromTurniService {
           uscita,
           oreLavorate,
           oreStraordinario,
-          stato: 'DA_CONFERMARE',
+          stato: nuovoStato,
           generataDaTurno: true,
           turnoId: turno.id
         }

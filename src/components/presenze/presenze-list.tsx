@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { MessageSquare, Calendar, Edit, Plus } from 'lucide-react'
+import { MessageSquare, Calendar, Edit, Plus, Pencil } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { NoteDialog } from './note-dialog'
+import { PresenzaEditDialog } from './presenza-edit-dialog'
 import { toast } from 'sonner'
 
 interface Presenza {
@@ -40,6 +41,7 @@ interface PresenzeListProps {
 
 export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onRefresh, isLoading }: PresenzeListProps) {
   const [noteDialogOpen, setNoteDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedPresenza, setSelectedPresenza] = useState<Presenza | null>(null)
 
   const handleOpenNoteDialog = (presenza: Presenza) => {
@@ -47,8 +49,19 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
     setNoteDialogOpen(true)
   }
 
+  const handleOpenEditDialog = (presenza: Presenza) => {
+    setSelectedPresenza(presenza)
+    setEditDialogOpen(true)
+  }
+
   const handleNoteSaved = () => {
     toast.success('Nota salvata con successo')
+    if (onRefresh) {
+      onRefresh()
+    }
+  }
+
+  const handlePresenzaSaved = () => {
     if (onRefresh) {
       onRefresh()
     }
@@ -276,31 +289,28 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
               </td>
               <td className="p-4 text-right">
                 <div className="flex justify-end gap-2">
-                  {presenza.stato === 'DA_CONFERMARE' && onConfirm && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => onConfirm(presenza.id)}
-                        disabled={isLoading}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        Conferma
-                      </Button>
-                      {onMarkAsAbsent && (
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => onMarkAsAbsent(presenza.id)}
-                          disabled={isLoading}
-                          className="bg-red-600 hover:bg-red-700 text-white"
-                        >
-                          Assente
-                        </Button>
-                      )}
-                    </>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleOpenEditDialog(presenza)}
+                    disabled={isLoading}
+                    className="text-blue-600 hover:text-blue-700 border-blue-300 hover:bg-blue-50"
+                    title="Modifica orari e dettagli"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  {presenza.stato !== 'ASSENTE' && onMarkAsAbsent && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onMarkAsAbsent(presenza.id)}
+                      disabled={isLoading}
+                      className="text-red-600 hover:text-red-700 border-red-300 hover:bg-red-50"
+                    >
+                      Segna Assente
+                    </Button>
                   )}
-                  {(presenza.stato === 'CONFERMATA' || presenza.stato === 'ASSENTE') && onReset && presenza.stato && (
+                  {presenza.stato === 'ASSENTE' && onReset && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -308,11 +318,8 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
                       disabled={isLoading}
                       className="text-orange-600 hover:text-orange-700 border-orange-300 hover:bg-orange-50"
                     >
-                      Annulla {presenza.stato === 'CONFERMATA' ? 'Conferma' : 'Assenza'}
+                      Annulla Assenza
                     </Button>
-                  )}
-                  {presenza.stato === 'MODIFICATA' && (
-                    <span className="text-sm text-gray-500">Modificata</span>
                   )}
                 </div>
               </td>
@@ -323,14 +330,22 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
     </div>
 
     {selectedPresenza && (
-      <NoteDialog
-        open={noteDialogOpen}
-        onOpenChange={setNoteDialogOpen}
-        currentNote={selectedPresenza.nota}
-        presenzaId={selectedPresenza.id}
-        dipendenteName={`${selectedPresenza.dipendenti.nome} ${selectedPresenza.dipendenti.cognome}`}
-        onSave={handleNoteSaved}
-      />
+      <>
+        <NoteDialog
+          open={noteDialogOpen}
+          onOpenChange={setNoteDialogOpen}
+          currentNote={selectedPresenza.nota}
+          presenzaId={selectedPresenza.id}
+          dipendenteName={`${selectedPresenza.dipendenti.nome} ${selectedPresenza.dipendenti.cognome}`}
+          onSave={handleNoteSaved}
+        />
+        <PresenzaEditDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          presenza={selectedPresenza}
+          onSave={handlePresenzaSaved}
+        />
+      </>
     )}
   </>
   )
