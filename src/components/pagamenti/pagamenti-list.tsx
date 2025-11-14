@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
-import { Pencil, Trash2, Plus, Banknote, CreditCard } from 'lucide-react'
+import { Pencil, Trash2, Plus, Building2, CreditCard } from 'lucide-react'
 import PagamentoDialog from './pagamento-dialog'
 
 interface Pagamento {
   id: string
   importo: number
-  tipoPagamento: 'CONTANTI' | 'BONIFICO'
+  tipoPagamento: 'BONUS' | 'BONIFICO'
   dataPagamento: string
   note: string | null
 }
@@ -19,7 +19,7 @@ interface Pagamento {
 interface PagamentiListProps {
   dipendenteId: string
   retribuzioneNetta: number | null
-  limiteContanti: number | null
+  limiteBonus: number | null
   limiteBonifico: number | null
   coefficienteMaggiorazione: number | null
   mese?: number
@@ -29,7 +29,7 @@ interface PagamentiListProps {
 export default function PagamentiList({
   dipendenteId,
   retribuzioneNetta,
-  limiteContanti,
+  limiteBonus,
   limiteBonifico,
   coefficienteMaggiorazione,
   mese,
@@ -98,8 +98,8 @@ export default function PagamentiList({
 
   // Calculate totals
   const totalePagato = pagamenti.reduce((sum, p) => sum + p.importo, 0)
-  const totaleContanti = pagamenti
-    .filter(p => p.tipoPagamento === 'CONTANTI')
+  const totaleBonus = pagamenti
+    .filter(p => p.tipoPagamento === 'BONUS')
     .reduce((sum, p) => sum + p.importo, 0)
   const totaleBonifici = pagamenti
     .filter(p => p.tipoPagamento === 'BONIFICO')
@@ -143,11 +143,11 @@ export default function PagamentiList({
             )}
 
             <div className="bg-muted/50 p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Contanti / Bonifici</div>
+              <div className="text-sm text-muted-foreground mb-1">Bonus / Bonifici</div>
               <div className="text-sm font-medium">
                 <div className="flex items-center gap-2">
-                  <Banknote className="h-4 w-4" />
-                  {formatCurrency(totaleContanti)}
+                  <Building2 className="h-4 w-4" />
+                  {formatCurrency(totaleBonus)}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <CreditCard className="h-4 w-4" />
@@ -175,8 +175,8 @@ export default function PagamentiList({
                 >
                   <div className="flex items-start gap-4 flex-1">
                     <div className="mt-1">
-                      {pagamento.tipoPagamento === 'CONTANTI' ? (
-                        <Banknote className="h-5 w-5 text-green-600" />
+                      {pagamento.tipoPagamento === 'BONUS' ? (
+                        <Building2 className="h-5 w-5 text-green-600" />
                       ) : (
                         <CreditCard className="h-5 w-5 text-blue-600" />
                       )}
@@ -186,8 +186,8 @@ export default function PagamentiList({
                         <span className="font-semibold text-lg">
                           {formatCurrency(pagamento.importo)}
                         </span>
-                        <Badge variant={pagamento.tipoPagamento === 'CONTANTI' ? 'default' : 'secondary'}>
-                          {pagamento.tipoPagamento === 'CONTANTI' ? 'Contanti' : 'Bonifico'}
+                        <Badge variant={pagamento.tipoPagamento === 'BONUS' ? 'default' : 'secondary'}>
+                          {pagamento.tipoPagamento === 'BONUS' ? 'Bonus' : 'Bonifico'}
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -234,7 +234,7 @@ export default function PagamentiList({
         dipendenteId={dipendenteId}
         onSuccess={handleSuccess}
         retribuzioneNetta={retribuzioneNetta}
-        limiteContanti={limiteContanti}
+        limiteBonus={limiteBonus}
         limiteBonifico={limiteBonifico}
         coefficienteMaggiorazione={coefficienteMaggiorazione}
         pagamentiEsistenti={pagamenti.map(p => ({

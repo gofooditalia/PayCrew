@@ -63,7 +63,7 @@ export async function GET(
       sede: sedi,
       retribuzione: dipendenteData.retribuzione ? Number(dipendenteData.retribuzione) : null,
       retribuzioneNetta: dipendenteData.retribuzioneNetta ? Number(dipendenteData.retribuzioneNetta) : null,
-      limiteContanti: dipendenteData.limiteContanti ? Number(dipendenteData.limiteContanti) : null,
+      limiteBonus: dipendenteData.limiteBonus ? Number(dipendenteData.limiteBonus) : null,
       limiteBonifico: dipendenteData.limiteBonifico ? Number(dipendenteData.limiteBonifico) : null,
       coefficienteMaggiorazione: dipendenteData.coefficienteMaggiorazione ? Number(dipendenteData.coefficienteMaggiorazione) : 0
     }
@@ -154,7 +154,7 @@ export async function PUT(
         qualifica: updateData.qualifica || null,
         retribuzione: updateData.retribuzione ? parseFloat(updateData.retribuzione) : null,
         retribuzioneNetta: updateData.retribuzioneNetta ? parseFloat(updateData.retribuzioneNetta) : null,
-        limiteContanti: updateData.limiteContanti ? parseFloat(updateData.limiteContanti) : null,
+        limiteBonus: updateData.limiteBonus ? parseFloat(updateData.limiteBonus) : null,
         limiteBonifico: updateData.limiteBonifico ? parseFloat(updateData.limiteBonifico) : null,
         coefficienteMaggiorazione: updateData.coefficienteMaggiorazione ? parseFloat(updateData.coefficienteMaggiorazione) : 0,
         oreSettimanali: parseInt(updateData.oreSettimanali) || 40,
@@ -182,7 +182,7 @@ export async function PUT(
       sede: sedi,
       retribuzione: dipendenteData.retribuzione ? Number(dipendenteData.retribuzione) : null,
       retribuzioneNetta: dipendenteData.retribuzioneNetta ? Number(dipendenteData.retribuzioneNetta) : null,
-      limiteContanti: dipendenteData.limiteContanti ? Number(dipendenteData.limiteContanti) : null,
+      limiteBonus: dipendenteData.limiteBonus ? Number(dipendenteData.limiteBonus) : null,
       limiteBonifico: dipendenteData.limiteBonifico ? Number(dipendenteData.limiteBonifico) : null,
       coefficienteMaggiorazione: dipendenteData.coefficienteMaggiorazione ? Number(dipendenteData.coefficienteMaggiorazione) : 0
     }

@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
         qualifica: dipendenteData.qualifica || null,
         retribuzione: dipendenteData.retribuzione ? parseFloat(dipendenteData.retribuzione) : null,
         retribuzioneNetta: dipendenteData.retribuzioneNetta ? parseFloat(dipendenteData.retribuzioneNetta) : null,
-        limiteContanti: dipendenteData.limiteContanti ? parseFloat(dipendenteData.limiteContanti) : null,
+        limiteBonus: dipendenteData.limiteBonus ? parseFloat(dipendenteData.limiteBonus) : null,
         limiteBonifico: dipendenteData.limiteBonifico ? parseFloat(dipendenteData.limiteBonifico) : null,
         coefficienteMaggiorazione: dipendenteData.coefficienteMaggiorazione ? parseFloat(dipendenteData.coefficienteMaggiorazione) : 0,
         oreSettimanali: parseInt(dipendenteData.oreSettimanali) || 40,

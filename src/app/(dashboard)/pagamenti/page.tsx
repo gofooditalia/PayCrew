@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import {
-  BanknotesIcon,
+  BuildingLibraryIcon,
   CreditCardIcon,
   ChevronDownIcon,
   BuildingStorefrontIcon,
@@ -17,7 +17,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline'
 import { PageLoader } from '@/components/loading'
-import PagamentoContantiDialog from '@/components/pagamenti/pagamento-contanti-dialog'
+import PagamentoBonusDialog from '@/components/pagamenti/pagamento-bonus-dialog'
 import PagamentoBonificoDialog from '@/components/pagamenti/pagamento-bonifico-dialog'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -30,7 +30,7 @@ interface Sede {
 interface Pagamento {
   id: string
   importo: number
-  tipoPagamento: 'CONTANTI' | 'BONIFICO'
+  tipoPagamento: 'BONUS' | 'BONIFICO'
   dataPagamento: string
   note: string | null
 }
@@ -40,7 +40,7 @@ interface Dipendente {
   nome: string
   cognome: string
   retribuzioneNetta: number | null
-  limiteContanti: number | null
+  limiteBonus: number | null
   limiteBonifico: number | null
   coefficienteMaggiorazione: number | null
   attivo: boolean
@@ -55,9 +55,9 @@ interface SedeGroup {
   sede: Sede | null
   dipendenti: Dipendente[]
   totali: {
-    cashTotale: number
-    cashPagato: number
-    cashResiduo: number
+    bonusTotale: number
+    bonusPagato: number
+    bonusResiduo: number
     bonificoTotale: number
     bonificoPagato: number
     bonificoResiduo: number
@@ -80,7 +80,7 @@ export default function PagamentiPage() {
   const [sedeFilter, setSedeFilter] = useState<string>('') // '' = mostra prima sede disponibile
 
   // Dialog
-  const [dialogContantiOpen, setDialogContantiOpen] = useState(false)
+  const [dialogBonusOpen, setDialogBonusOpen] = useState(false)
   const [dialogBonificoOpen, setDialogBonificoOpen] = useState(false)
   const [selectedDipendente, setSelectedDipendente] = useState<Dipendente | null>(null)
   const [editingPagamento, setEditingPagamento] = useState<Pagamento | null>(null)
@@ -132,10 +132,10 @@ export default function PagamentiPage() {
     loadData()
   }
 
-  const handleRegistraContanti = (dipendente: Dipendente) => {
+  const handleRegistraBonus = (dipendente: Dipendente) => {
     setSelectedDipendente(dipendente)
     setEditingPagamento(null) // Reset editing
-    setDialogContantiOpen(true)
+    setDialogBonusOpen(true)
   }
 
   const handleRegistraBonifico = (dipendente: Dipendente) => {
@@ -148,8 +148,8 @@ export default function PagamentiPage() {
     setSelectedDipendente(dipendente)
     setEditingPagamento(pagamento)
 
-    if (pagamento.tipoPagamento === 'CONTANTI') {
-      setDialogContantiOpen(true)
+    if (pagamento.tipoPagamento === 'BONUS') {
+      setDialogBonusOpen(true)
     } else {
       setDialogBonificoOpen(true)
     }
@@ -197,8 +197,8 @@ export default function PagamentiPage() {
   const calcolaSaldo = (dipendente: Dipendente) => {
     const netto = Number(dipendente.retribuzioneNetta) || 0
     const pagato = dipendente.pagamenti.reduce((sum, p) => sum + Number(p.importo), 0)
-    const contanti = dipendente.pagamenti
-      .filter(p => p.tipoPagamento === 'CONTANTI')
+    const bonus = dipendente.pagamenti
+      .filter(p => p.tipoPagamento === 'BONUS')
       .reduce((sum, p) => sum + Number(p.importo), 0)
     const bonifici = dipendente.pagamenti
       .filter(p => p.tipoPagamento === 'BONIFICO')
@@ -208,7 +208,7 @@ export default function PagamentiPage() {
       netto,
       pagato,
       saldo: netto - pagato,
-      contanti,
+      bonus,
       bonifici
     }
   }
@@ -223,9 +223,9 @@ export default function PagamentiPage() {
         sede,
         dipendenti: [],
         totali: {
-          cashTotale: 0,
-          cashPagato: 0,
-          cashResiduo: 0,
+          bonusTotale: 0,
+          bonusPagato: 0,
+          bonusResiduo: 0,
           bonificoTotale: 0,
           bonificoPagato: 0,
           bonificoResiduo: 0,
@@ -241,9 +241,9 @@ export default function PagamentiPage() {
       sede: null,
       dipendenti: [],
       totali: {
-        cashTotale: 0,
-        cashPagato: 0,
-        cashResiduo: 0,
+        bonusTotale: 0,
+        bonusPagato: 0,
+        bonusResiduo: 0,
         bonificoTotale: 0,
         bonificoPagato: 0,
         bonificoResiduo: 0,
@@ -261,15 +261,15 @@ export default function PagamentiPage() {
       if (group) {
         group.dipendenti.push(dip)
 
-        const { netto, pagato, saldo, contanti, bonifici } = calcolaSaldo(dip)
-        const limiteContanti = Number(dip.limiteContanti) || 0
+        const { netto, pagato, saldo, bonus, bonifici } = calcolaSaldo(dip)
+        const limiteBonus = Number(dip.limiteBonus) || 0
         const limiteBonifico = Number(dip.limiteBonifico) || 0
         const coefficiente = Number(dip.coefficienteMaggiorazione) || 0
         const bonificoMaggiorato = limiteBonifico + (limiteBonifico * coefficiente / 100)
 
-        group.totali.cashTotale += limiteContanti
-        group.totali.cashPagato += contanti
-        group.totali.cashResiduo += Math.max(0, limiteContanti - contanti)
+        group.totali.bonusTotale += limiteBonus
+        group.totali.bonusPagato += bonus
+        group.totali.bonusResiduo += Math.max(0, limiteBonus - bonus)
 
         group.totali.bonificoTotale += bonificoMaggiorato
         group.totali.bonificoPagato += bonifici
@@ -323,7 +323,7 @@ export default function PagamentiPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Gestione Pagamenti</h1>
           <p className="text-muted-foreground">
-            Vista aggregata per sede - Cash e bonifici
+            Vista aggregata per sede - Bonus e bonifici
           </p>
         </div>
         <Link href="/pagamenti/storico">
@@ -437,12 +437,12 @@ export default function PagamentiPage() {
                   </div>
                 </div>
 
-                {/* Totali: Cash Residuo, Bonifico Residuo, Netto Totale */}
+                {/* Totali: Bonus Residuo, Bonifico Residuo, Netto Totale */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-white dark:bg-gray-900 p-3 rounded-lg border border-primary/20 shadow-sm">
                   <div className="text-center">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Cash<br className="sm:hidden" /> Residuo</p>
-                    <p className={`text-sm sm:text-lg font-bold ${group.totali.cashResiduo > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                      {formatCurrency(group.totali.cashResiduo)}
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 leading-tight">Bonus<br className="sm:hidden" /> Residuo</p>
+                    <p className={`text-sm sm:text-lg font-bold ${group.totali.bonusResiduo > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                      {formatCurrency(group.totali.bonusResiduo)}
                     </p>
                   </div>
                   <div className="text-center">
@@ -464,16 +464,16 @@ export default function PagamentiPage() {
               <CardContent className="pt-0">
                     <div className="space-y-3">
                       {group.dipendenti.map(dipendente => {
-                        const { netto, pagato, saldo, contanti, bonifici } = calcolaSaldo(dipendente)
+                        const { netto, pagato, saldo, bonus, bonifici } = calcolaSaldo(dipendente)
                         const percentuale = netto > 0 ? (pagato / netto) * 100 : 0
 
-                        // Calcola valori bonifico e contanti
-                        const limiteContanti = Number(dipendente.limiteContanti) || 0
+                        // Calcola valori bonifico e bonus
+                        const limiteBonus = Number(dipendente.limiteBonus) || 0
                         const limiteBonifico = Number(dipendente.limiteBonifico) || 0
                         const coefficiente = Number(dipendente.coefficienteMaggiorazione) || 0
                         const bonificoTotale = limiteBonifico + (limiteBonifico * coefficiente / 100)
-                        const retribuzioneTotale = bonificoTotale + limiteContanti
-                        const saldoContanti = limiteContanti - contanti
+                        const retribuzioneTotale = bonificoTotale + limiteBonus
+                        const saldoBonus = limiteBonus - bonus
                         const saldoBonifico = bonificoTotale - bonifici
 
                         return (
@@ -537,43 +537,43 @@ export default function PagamentiPage() {
                                 </div>
                               </div>
 
-                              {/* Sezione CONTANTI - Mobile Optimized */}
+                              {/* Sezione BONUS - Mobile Optimized */}
                               <div className="p-3 sm:p-4 bg-green-50/50 dark:bg-green-950/10">
                                 <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                                  <BanknotesIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
-                                  <h4 className="text-sm sm:text-base font-semibold text-green-900 dark:text-green-400">CONTANTI</h4>
+                                  <BuildingLibraryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                                  <h4 className="text-sm sm:text-base font-semibold text-green-900 dark:text-green-400">BONUS</h4>
                                 </div>
 
                                 <div className="space-y-2 sm:space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs sm:text-sm text-muted-foreground">Totale Contanti</span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground">Totale Bonus</span>
                                     <span className="text-sm sm:text-lg font-bold text-green-600">
-                                      {formatCurrency(limiteContanti)}
+                                      {formatCurrency(limiteBonus)}
                                     </span>
                                   </div>
 
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs sm:text-sm text-muted-foreground">Pagato</span>
                                     <span className="text-sm sm:text-base font-medium text-green-600">
-                                      {formatCurrency(contanti)}
+                                      {formatCurrency(bonus)}
                                     </span>
                                   </div>
 
                                   <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-green-200/50">
                                     <span className="text-xs sm:text-sm font-medium">Saldo</span>
-                                    <span className={`text-sm sm:text-lg font-bold ${saldoContanti > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                                      {formatCurrency(saldoContanti)}
+                                    <span className={`text-sm sm:text-lg font-bold ${saldoBonus > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                      {formatCurrency(saldoBonus)}
                                     </span>
                                   </div>
 
                                   <Button
                                     size="sm"
                                     className="w-full bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm"
-                                    onClick={() => handleRegistraContanti(dipendente)}
-                                    disabled={saldoContanti <= 0}
+                                    onClick={() => handleRegistraBonus(dipendente)}
+                                    disabled={saldoBonus <= 0}
                                   >
-                                    <BanknotesIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                                    Registra Contanti
+                                    <BuildingLibraryIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                                    Registra Bonus
                                   </Button>
                                 </div>
                               </div>
@@ -655,7 +655,7 @@ export default function PagamentiPage() {
                                                 {pagamento.tipoPagamento === 'BONIFICO' ? (
                                                   <CreditCardIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                                                 ) : (
-                                                  <BanknotesIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                                  <BuildingLibraryIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 mt-0.5 flex-shrink-0" />
                                                 )}
                                                 <div className="flex-1 min-w-0">
                                                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -739,19 +739,19 @@ export default function PagamentiPage() {
         })()}
       </div>
 
-      {/* Dialog per pagamento contanti */}
+      {/* Dialog per pagamento bonus */}
       {selectedDipendente && (
         <>
-          <PagamentoContantiDialog
-            open={dialogContantiOpen}
-            onOpenChange={setDialogContantiOpen}
+          <PagamentoBonusDialog
+            open={dialogBonusOpen}
+            onOpenChange={setDialogBonusOpen}
             dipendenteId={selectedDipendente.id}
             dipendenteNome={`${selectedDipendente.nome} ${selectedDipendente.cognome}`}
             onSuccess={handleSuccess}
-            limiteContanti={selectedDipendente.limiteContanti}
-            pagamentiContantiEsistenti={
+            limiteBonus={selectedDipendente.limiteBonus}
+            pagamentiBonusEsistenti={
               selectedDipendente.pagamenti
-                .filter(p => p.tipoPagamento === 'CONTANTI')
+                .filter(p => p.tipoPagamento === 'BONUS')
                 .reduce((sum, p) => sum + p.importo, 0)
             }
             editingPagamento={editingPagamento}

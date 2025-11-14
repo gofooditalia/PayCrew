@@ -83,17 +83,17 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 
 ## 🚀 Release v0.7.0 - Gestione Pagamenti Mensili e UX Dipendenti 💰
 
-PayCrew v0.7.0 introduce il sistema completo di gestione pagamenti mensili organizzati per sede, con focus su tracking contanti e bonifici, plus miglioramenti sostanziali all'UX dipendenti!
+PayCrew v0.7.0 introduce il sistema completo di gestione pagamenti mensili organizzati per sede, con focus su tracking bonus e bonifici, plus miglioramenti sostanziali all'UX dipendenti!
 
 ### 🎯 Novità v0.7.0
 
 #### 💰 Sistema Pagamenti Mensili
 - **Organizzazione Mensile**: Gestione pagamenti per mese/anno (come cedolini)
-- **Raggruppamento per Sede**: Vista aggregata con totali Cash/Bonifici per sede
-- **Dashboard Dedicata**: Metriche chiave sempre visibili (Cash Totale, Pagato, Residuo)
+- **Raggruppamento per Sede**: Vista aggregata con totali Bonus/Bonifici per sede
+- **Dashboard Dedicata**: Metriche chiave sempre visibili (Bonus Totale, Pagato, Residuo)
 - **Storico Pagamenti**: Sezione separata con comparazione mensile e statistiche
-- **Dialog Separati**: Form specifici per contanti e bonifici con validazioni dedicate
-  - Dialog Contanti: limite contanti, disponibile, pulsante verde
+- **Dialog Separati**: Form specifici per bonus e bonifici con validazioni dedicate
+  - Dialog Bonus: limite bonus, disponibile, pulsante verde
   - Dialog Bonifici: limite base + maggiorazione, disponibile, pulsante blu
 
 #### 👥 UX Dipendenti Migliorata
@@ -137,13 +137,13 @@ PayCrew v0.7.0 introduce il sistema completo di gestione pagamenti mensili organ
 
 #### Gestione Pagamenti Mensili 💰 NEW!
 - **Organizzazione Mensile**: Pagamenti organizzati per mese/anno come cedolini
-- **Raggruppamento per Sede**: Vista aggregata con totali Cash e Bonifici per sede
-- **Dashboard Pagamenti**: Metriche chiave sempre visibili (Cash Totale, Pagato, Residuo)
+- **Raggruppamento per Sede**: Vista aggregata con totali Bonus e Bonifici per sede
+- **Dashboard Pagamenti**: Metriche chiave sempre visibili (Bonus Totale, Pagato, Residuo)
 - **Storico Comparativo**: Sezione dedicata con comparazione mensile e statistiche
-- **Dialog Specializzati**: Form separati per contanti e bonifici
-  - **Dialog Contanti**: Box verde, limite contanti, validazione dedicata
+- **Dialog Specializzati**: Form separati per bonus e bonifici
+  - **Dialog Bonus**: Box verde, limite bonus, validazione dedicata
   - **Dialog Bonifici**: Box blu, limite + maggiorazione, validazione dedicata
-- **Pulsanti Dedicati**: "Registra Contanti" (verde) e "Registra Bonifico" (blu)
+- **Pulsanti Dedicati**: "Registra Bonus" (verde) e "Registra Bonifico" (blu)
 - **Tracking Preciso**: Monitoraggio separato per tipo di pagamento
 
 #### Elaborazione Cedolini

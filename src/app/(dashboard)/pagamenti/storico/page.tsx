@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
-import { ChevronLeftIcon, BanknotesIcon, CreditCardIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, BuildingLibraryIcon, CreditCardIcon } from '@heroicons/react/24/outline'
 import { PageLoader } from '@/components/loading'
 import Link from 'next/link'
 
@@ -14,8 +14,8 @@ interface MeseStorico {
   mese: number
   anno: number
   totali: {
-    cashTotale: number
-    cashPagato: number
+    bonusTotale: number
+    bonusPagato: number
     bonificoTotale: number
     bonificoPagato: number
     nettoTotale: number
@@ -64,8 +64,8 @@ export default function StoricoPagamentiPage() {
             mese: pagamento.mese,
             anno: pagamento.anno,
             totali: {
-              cashTotale: 0,
-              cashPagato: 0,
+              bonusTotale: 0,
+              bonusPagato: 0,
               bonificoTotale: 0,
               bonificoPagato: 0,
               nettoTotale: 0,
@@ -80,8 +80,8 @@ export default function StoricoPagamentiPage() {
         meseData.numeroPagamenti++
         meseData.totali.totalePagato += pagamento.importo
 
-        if (pagamento.tipoPagamento === 'CONTANTI') {
-          meseData.totali.cashPagato += pagamento.importo
+        if (pagamento.tipoPagamento === 'BONUS') {
+          meseData.totali.bonusPagato += pagamento.importo
         } else {
           meseData.totali.bonificoPagato += pagamento.importo
         }
@@ -102,7 +102,7 @@ export default function StoricoPagamentiPage() {
           .filter((d: any) => dipendentiUnici.has(d.id))
           .forEach((dip: any) => {
             meseData.totali.nettoTotale += Number(dip.retribuzioneNetta) || 0
-            meseData.totali.cashTotale += Number(dip.limiteContanti) || 0
+            meseData.totali.bonusTotale += Number(dip.limiteBonus) || 0
 
             const limiteBonifico = Number(dip.limiteBonifico) || 0
             const coefficiente = Number(dip.coefficienteMaggiorazione) || 0
@@ -161,8 +161,8 @@ export default function StoricoPagamentiPage() {
           </Card>
         ) : (
           storicoMesi.map(mese => {
-            const percentualeCash = mese.totali.cashTotale > 0
-              ? (mese.totali.cashPagato / mese.totali.cashTotale) * 100
+            const percentualeBonus = mese.totali.bonusTotale > 0
+              ? (mese.totali.bonusPagato / mese.totali.bonusTotale) * 100
               : 0
             const percentualeBonifico = mese.totali.bonificoTotale > 0
               ? (mese.totali.bonificoPagato / mese.totali.bonificoTotale) * 100
@@ -191,35 +191,35 @@ export default function StoricoPagamentiPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {/* Statistiche Cash */}
+                  {/* Statistiche Bonus */}
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <BanknotesIcon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Contanti</span>
+                      <BuildingLibraryIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Bonus</span>
                       <Badge variant="secondary" className="ml-auto">
-                        {percentualeCash.toFixed(0)}%
+                        {percentualeBonus.toFixed(0)}%
                       </Badge>
                     </div>
                     <div className="grid grid-cols-3 gap-4 mb-2">
                       <div>
                         <p className="text-xs text-muted-foreground">Totale</p>
-                        <p className="text-sm font-medium">{formatCurrency(mese.totali.cashTotale)}</p>
+                        <p className="text-sm font-medium">{formatCurrency(mese.totali.bonusTotale)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Pagato</p>
-                        <p className="text-sm font-medium text-green-600">{formatCurrency(mese.totali.cashPagato)}</p>
+                        <p className="text-sm font-medium text-green-600">{formatCurrency(mese.totali.bonusPagato)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Residuo</p>
                         <p className="text-sm font-medium text-orange-600">
-                          {formatCurrency(Math.max(0, mese.totali.cashTotale - mese.totali.cashPagato))}
+                          {formatCurrency(Math.max(0, mese.totali.bonusTotale - mese.totali.bonusPagato))}
                         </p>
                       </div>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-green-600 transition-all"
-                        style={{ width: `${Math.min(percentualeCash, 100)}%` }}
+                        style={{ width: `${Math.min(percentualeBonus, 100)}%` }}
                       />
                     </div>
                   </div>

@@ -10,7 +10,7 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/spec/v2.0
 ### 💰 [0.7.0] - 2025-11-13 - Gestione Pagamenti Mensili e UX Dipendenti
 
 #### 🎯 Highlights
-Implementazione completa del sistema di gestione pagamenti mensili organizzati per sede con focus su tracking contanti e bonifici, plus redesign sostanziale dell'UX gestione dipendenti.
+Implementazione completa del sistema di gestione pagamenti mensili organizzati per sede con focus su tracking bonus e bonifici, plus redesign sostanziale dell'UX gestione dipendenti.
 
 #### Added
 - **Sistema Pagamenti Mensili**: Nuova gestione pagamenti organizzata per mese/anno
@@ -19,7 +19,7 @@ Implementazione completa del sistema di gestione pagamenti mensili organizzati p
   - Filtri mese/anno con default al periodo corrente
   - Index database per ottimizzare query su mese/anno
 - **Raggruppamento per Sede**: Vista dashboard aggregata per sede
-  - Totali Cash: Totale, Pagato, Residuo per sede
+  - Totali Bonus: Totale, Pagato, Residuo per sede
   - Totali Bonifici: Totale, Pagato, Residuo per sede
   - Card espandibili per visualizzare dettaglio dipendenti
   - Icona edificio per ogni sede
@@ -29,10 +29,10 @@ Implementazione completa del sistema di gestione pagamenti mensili organizzati p
   - Link diretti al dettaglio mese specifico
   - Navigazione semplificata tra dashboard e storico
 - **Dialog Pagamenti Separati**: Form specifici per tipo pagamento
-  - `PagamentoContantiDialog`: focus su limite contanti e disponibile
-    - Box verde con metriche contanti
-    - Validazione contro limite contanti
-    - Icona dollaro, pulsante verde "Registra Contanti"
+  - `PagamentoBonusDialog`: focus su limite bonus e disponibile
+    - Box verde con metriche bonus
+    - Validazione contro limite bonus
+    - Icona dollaro, pulsante verde "Registra Bonus"
   - `PagamentoBonificoDialog`: focus su limite bonifico + maggiorazione
     - Box blu con limite base, maggiorazione%, totale
     - Validazione contro limite bonifico totale
@@ -61,7 +61,7 @@ Implementazione completa del sistema di gestione pagamenti mensili organizzati p
 - **API Pagamenti**:
   - `GET /api/pagamenti`: filtro su `mese` e `anno` invece di date range
   - `POST /api/pagamenti`: auto-set mese/anno dal timestamp corrente
-  - Calcolo limiti separato per contanti e bonifici
+  - Calcolo limiti separato per bonus e bonifici
 - **API Dipendenti**:
   - `POST /api/dipendenti`: validazione ridotta, handle null per campi opzionali
   - `PUT /api/dipendenti/[id]`: handle null per campi opzionali
@@ -77,15 +77,15 @@ Implementazione completa del sistema di gestione pagamenti mensili organizzati p
   - Visualizzazione: Netta, Bonifico, Cash invece di Retribuzione Lorda
   - Messaggio "Non configurato" per dipendenti senza retribuzione netta
 - **UI Pagamenti**:
-  - Due pulsanti separati "Registra Contanti" (verde) e "Registra Bonifico" (blu)
+  - Due pulsanti separati "Registra Bonus" (verde) e "Registra Bonifico" (blu)
   - Pulsanti compatti: h-6, px-2, text-[10px], posizionati sotto importi
-  - Icone SVG inline: dollaro cerchiato (cash), edificio banca (bonifico)
-  - Colori distintivi: green-600/700 (contanti), blue-600/700 (bonifici)
+  - Icone SVG inline: dollaro cerchiato (bonus), edificio banca (bonifico)
+  - Colori distintivi: green-600/700 (bonus), blue-600/700 (bonifici)
 
 #### Fixed
-- **Calcolo Cash Dipendenti**: Formula corretta per considerare bonus nella retribuzione totale
-  - Prima: `cash = retribuzioneBase - bonificoTotale` (errato)
-  - Ora: `cash = (retribuzioneBase + bonus) - (bonifico + bonus)` (corretto)
+- **Calcolo Bonus Dipendenti**: Formula corretta per considerare bonus nella retribuzione totale
+  - Prima: `bonus = retribuzioneBase - bonificoTotale` (errato)
+  - Ora: `bonus = (retribuzioneBase + bonus) - (bonifico + bonus)` (corretto)
   - Esempio: Base 1250 + Bonus 30 = 1280, poi 1280 - 780 = 500 (non 470)
 - **Conversion Null Values**: Gestione corretta di `retribuzione` nullable in lista dipendenti
   - Check esistenza prima di `toString()` per evitare errori
@@ -104,7 +104,7 @@ Implementazione completa del sistema di gestione pagamenti mensili organizzati p
 - **Responsive Design**: Grid adaptive, pulsanti compatti, layout mobile-friendly
 
 #### Use Cases Supportati
-- ✅ Ristoranti: tracking contanti giornaliero per sede, bonifici mensili
+- ✅ Ristoranti: tracking bonus giornaliero per sede, bonifici mensili
 - ✅ Aziende multi-sede: vista aggregata pagamenti per location
 - ✅ Gestione flessibile: dipendenti senza codice fiscale (assunzioni in progress)
 - ✅ Storico trasparente: comparazione mensile con statistiche

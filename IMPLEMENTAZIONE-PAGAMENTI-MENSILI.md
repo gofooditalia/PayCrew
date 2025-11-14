@@ -13,7 +13,7 @@
 ### 🎯 Obiettivo Raggiunto
 
 Dashboard intuitiva che fornisce **a colpo d'occhio**:
-- 💰 **Quanto cash serve prelevare per ogni sede**
+- 💰 **Quanto bonus serve prelevare per ogni sede**
 - ✅ **Quanto è già stato pagato**
 - ⚠️ **Quanto resta da pagare**
 
@@ -68,12 +68,12 @@ const anno = now.getFullYear()
 - 🏢 Card per ogni sede con dipendenti associati
 - 👥 Gruppo separato "Senza Sede" per dipendenti non assegnati
 
-**Totali Cash in Evidenza** (per sede):
+**Totali Bonus in Evidenza** (per sede):
 ```
 ┌─────────────────────────────────────────────┐
 │ [Sede Nome]                                 │
-│ Cash Totale | Cash Pagato | Cash Residuo   │
-│  €1,500.00  |  €800.00    |  €700.00      │
+│ Bonus Totale | Bonus Pagato | Bonus Residuo │
+│  €1,500.00   |  €800.00     |  €700.00     │
 └─────────────────────────────────────────────┘
 ```
 
@@ -84,7 +84,7 @@ const anno = now.getFullYear()
 **Dettaglio Dipendente** (quando espansa):
 - Nome + link a profilo dipendente
 - Retribuzione Netta | Totale Pagato | Saldo
-- Contanti pagati | Bonifici pagati
+- Bonus pagati | Bonifici pagati
 - Progress bar avanzamento pagamento
 - Bottone "Registra Pagamento"
 
@@ -101,7 +101,7 @@ const anno = now.getFullYear()
 - Lista cronologica di tutti i mesi con pagamenti (più recente prima)
 - Per ogni mese:
   - Header: "Novembre 2025" + numero pagamenti + numero dipendenti
-  - **Sezione Contanti**: Totale | Pagato | Residuo + progress bar
+  - **Sezione Bonus**: Totale | Pagato | Residuo + progress bar
   - **Sezione Bonifici**: Totale | Pagato | Residuo + progress bar
   - **Totale Generale**: Netto Totale | Totale Pagato | Residuo
   - Bottone "Vedi Dettaglio" → porta alla dashboard filtrata per quel mese
@@ -117,19 +117,19 @@ const anno = now.getFullYear()
 
 ### Totali per Sede
 
-**Cash Totale per Sede**:
+**Bonus Totale per Sede**:
 ```typescript
-somma(limiteContanti di ogni dipendente nella sede)
+somma(limiteBonus di ogni dipendente nella sede)
 ```
 
-**Cash Pagato per Sede**:
+**Bonus Pagato per Sede**:
 ```typescript
-somma(pagamenti CONTANTI del mese per dipendenti nella sede)
+somma(pagamenti BONUS del mese per dipendenti nella sede)
 ```
 
-**Cash Residuo per Sede**:
+**Bonus Residuo per Sede**:
 ```typescript
-Cash Totale - Cash Pagato
+Bonus Totale - Bonus Pagato
 ```
 
 **Bonifico con Maggiorazione**:
@@ -140,8 +140,8 @@ bonificoMaggiorato = limiteBonifico + (limiteBonifico * coefficienteMaggiorazion
 ### Saldo Mensile (NON cumulativo)
 
 Ogni mese ha il suo saldo indipendente:
-- **Mese 11/2025**: Cash Residuo = €700
-- **Mese 12/2025**: Cash Residuo = €0 (nuovo mese, reset automatico)
+- **Mese 11/2025**: Bonus Residuo = €700
+- **Mese 12/2025**: Bonus Residuo = €0 (nuovo mese, reset automatico)
 
 ---
 
@@ -167,7 +167,7 @@ Ogni mese ha il suo saldo indipendente:
 
 ### ✅ Vista Aggregata per Sede
 - Card collassabili per ogni sede
-- Totali Cash evidenziati per facilitare prelievo contanti
+- Totali Bonus evidenziati per facilitare prelievo bonus
 - Lista dipendenti espandibile al click
 
 ### ✅ Filtri Mese/Anno
@@ -178,7 +178,7 @@ Ogni mese ha il suo saldo indipendente:
 ### ✅ Registrazione Pagamento
 - Dialog modale per registrare pagamento
 - Mese/Anno impostati automaticamente (mese corrente)
-- Validazione limiti contanti/bonifico
+- Validazione limiti bonus/bonifico
 - Calcolo automatico saldo disponibile
 
 ### ✅ Storico Mensile
@@ -200,11 +200,11 @@ Ogni mese ha il suo saldo indipendente:
 1. Vai su **Pagamenti** dalla sidebar
 2. Vedi automaticamente il mese corrente (Novembre 2025)
 3. Espandi una sede per vedere i dipendenti
-4. **Cash Residuo** indica quanto devi ancora prelevare/pagare per quella sede
+4. **Bonus Residuo** indica quanto devi ancora prelevare/pagare per quella sede
 
 ### 2️⃣ Registrare un Pagamento
 1. Clicca "Registra" sul dipendente
-2. Inserisci importo e tipo (Contanti/Bonifico)
+2. Inserisci importo e tipo (Bonus/Bonifico)
 3. Aggiungi note opzionali
 4. Conferma → Il pagamento viene registrato sul **mese corrente automaticamente**
 
@@ -231,7 +231,7 @@ Ogni mese ha il suo saldo indipendente:
 - ⚪ **Muted**: Etichette secondarie (text-muted-foreground)
 
 ### Icone
-- 💵 `BanknotesIcon` - Contanti
+- 💵 `BanknotesIcon` - Bonus
 - 💳 `CreditCardIcon` - Bonifici
 - 🏢 `BuildingStorefrontIcon` - Sede
 - ⬇️ `ChevronDownIcon` - Espandi
@@ -337,7 +337,7 @@ WHERE mese = 11 AND anno = 2025;
 
 ## 🎉 Risultato Finale
 
-**Dashboard Pagamenti Mensili** completamente funzionante e ottimizzata per gestire la liquidità mensile dei dipendenti con focus particolare sul cash per sede.
+**Dashboard Pagamenti Mensili** completamente funzionante e ottimizzata per gestire la liquidità mensile dei dipendenti con focus particolare sul bonus per sede.
 
 **Pronto per l'uso in produzione!** 🚀
 

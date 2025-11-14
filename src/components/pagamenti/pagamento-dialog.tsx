@@ -19,14 +19,14 @@ interface PagamentoDialogProps {
   dipendenteId: string
   onSuccess: () => void
   retribuzioneNetta: number | null
-  limiteContanti: number | null
+  limiteBonus: number | null
   limiteBonifico: number | null
   coefficienteMaggiorazione: number | null
   pagamentiEsistenti: {
-    tipoPagamento: 'CONTANTI' | 'BONIFICO'
+    tipoPagamento: 'BONUS' | 'BONIFICO'
     importo: number
   }[]
-  tipoPagamentoPreselezionato?: 'CONTANTI' | 'BONIFICO' | null
+  tipoPagamentoPreselezionato?: 'BONUS' | 'BONIFICO' | null
   pagamento?: {
     id: string
     importo: number
@@ -42,7 +42,7 @@ export default function PagamentoDialog({
   dipendenteId,
   onSuccess,
   retribuzioneNetta,
-  limiteContanti,
+  limiteBonus,
   limiteBonifico,
   coefficienteMaggiorazione,
   pagamentiEsistenti,
@@ -55,7 +55,7 @@ export default function PagamentoDialog({
 
   const [formData, setFormData] = useState({
     importo: pagamento?.importo?.toString() || '',
-    tipoPagamento: pagamento?.tipoPagamento || tipoPagamentoPreselezionato || 'CONTANTI',
+    tipoPagamento: pagamento?.tipoPagamento || tipoPagamentoPreselezionato || 'BONUS',
     dataPagamento: pagamento?.dataPagamento
       ? new Date(pagamento.dataPagamento).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
@@ -65,30 +65,30 @@ export default function PagamentoDialog({
   // Calcola limiti disponibili
   const calcolaLimiti = () => {
     const netto = Number(retribuzioneNetta) || 0
-    const contantiLimit = Number(limiteContanti) || 0
+    const bonusLimit = Number(limiteBonus) || 0
     const bonificoLimit = Number(limiteBonifico) || 0
     const coefficiente = Number(coefficienteMaggiorazione) || 0
     const bonificoMaggiorato = bonificoLimit + (bonificoLimit * coefficiente / 100)
 
     // Calcola totali già pagati (escludendo il pagamento in modifica)
-    const pagatoContanti = pagamentiEsistenti
-      .filter(p => p.tipoPagamento === 'CONTANTI' && (!pagamento || pagamento.tipoPagamento !== 'CONTANTI'))
+    const pagatoBonus = pagamentiEsistenti
+      .filter(p => p.tipoPagamento === 'BONUS' && (!pagamento || pagamento.tipoPagamento !== 'BONUS'))
       .reduce((sum, p) => sum + p.importo, 0)
 
     const pagatoBonifico = pagamentiEsistenti
       .filter(p => p.tipoPagamento === 'BONIFICO' && (!pagamento || pagamento.tipoPagamento !== 'BONIFICO'))
       .reduce((sum, p) => sum + p.importo, 0)
 
-    const totalePagato = pagatoContanti + pagatoBonifico
+    const totalePagato = pagatoBonus + pagatoBonifico
 
     return {
       retribuzioneNetta: netto,
-      limiteContanti: contantiLimit,
+      limiteBonus: bonusLimit,
       limiteBonifico: bonificoMaggiorato,
-      pagatoContanti,
+      pagatoBonus,
       pagatoBonifico,
       totalePagato,
-      disponibileContanti: Math.max(0, contantiLimit - pagatoContanti),
+      disponibileBonus: Math.max(0, bonusLimit - pagatoBonus),
       disponibileBonifico: Math.max(0, bonificoMaggiorato - pagatoBonifico),
       disponibileTotale: Math.max(0, netto - totalePagato),
       saldoMancante: Math.max(0, netto - totalePagato)
@@ -116,8 +116,8 @@ export default function PagamentoDialog({
 
       if (importo > 0) {
         // Verifica limite tipo pagamento
-        if (tipo === 'CONTANTI' && importo > limiti.disponibileContanti) {
-          setError(`L'importo supera il limite contanti disponibile di €${limiti.disponibileContanti.toFixed(2)}`)
+        if (tipo === 'BONUS' && importo > limiti.disponibileBonus) {
+          setError(`L'importo supera il limite bonus disponibile di €${limiti.disponibileBonus.toFixed(2)}`)
         } else if (tipo === 'BONIFICO' && importo > limiti.disponibileBonifico) {
           setError(`L'importo supera il limite bonifico disponibile di €${limiti.disponibileBonifico.toFixed(2)}`)
         }
@@ -128,9 +128,9 @@ export default function PagamentoDialog({
         }
 
         // Warning se si avvicina al limite
-        const percentualeUtilizzo = (importo / (tipo === 'CONTANTI' ? limiti.disponibileContanti : limiti.disponibileBonifico)) * 100
+        const percentualeUtilizzo = (importo / (tipo === 'BONUS' ? limiti.disponibileBonus : limiti.disponibileBonifico)) * 100
         if (percentualeUtilizzo > 90 && percentualeUtilizzo <= 100 && !error) {
-          setWarning(`Attenzione: stai utilizzando il ${percentualeUtilizzo.toFixed(0)}% del limite ${tipo === 'CONTANTI' ? 'contanti' : 'bonifico'}`)
+          setWarning(`Attenzione: stai utilizzando il ${percentualeUtilizzo.toFixed(0)}% del limite ${tipo === 'BONUS' ? 'bonus' : 'bonifico'}`)
         }
       }
     }
@@ -143,8 +143,8 @@ export default function PagamentoDialog({
     const importo = parseFloat(formData.importo) || 0
     const tipo = formData.tipoPagamento
 
-    if (tipo === 'CONTANTI' && importo > limiti.disponibileContanti) {
-      setError(`L'importo supera il limite contanti disponibile di €${limiti.disponibileContanti.toFixed(2)}`)
+    if (tipo === 'BONUS' && importo > limiti.disponibileBonus) {
+      setError(`L'importo supera il limite bonus disponibile di €${limiti.disponibileBonus.toFixed(2)}`)
       return
     }
 
@@ -189,7 +189,7 @@ export default function PagamentoDialog({
         // Reset form
         setFormData({
           importo: '',
-          tipoPagamento: 'CONTANTI',
+          tipoPagamento: 'BONUS',
           dataPagamento: new Date().toISOString().split('T')[0],
           note: ''
         })
@@ -223,8 +223,8 @@ export default function PagamentoDialog({
 
               <div className="col-span-2 h-px bg-border my-0.5"></div>
 
-              <span className="text-muted-foreground">Disponibile Contanti:</span>
-              <span className="font-semibold text-right text-primary">€{limiti.disponibileContanti.toFixed(2)}</span>
+              <span className="text-muted-foreground">Disponibile Bonus:</span>
+              <span className="font-semibold text-right text-primary">€{limiti.disponibileBonus.toFixed(2)}</span>
 
               <span className="text-muted-foreground">Disponibile Bonifico:</span>
               <span className="font-semibold text-right text-primary">€{limiti.disponibileBonifico.toFixed(2)}</span>
@@ -275,7 +275,7 @@ export default function PagamentoDialog({
               onChange={handleChange}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <option value="CONTANTI">Contanti</option>
+              <option value="BONUS">Bonus</option>
               <option value="BONIFICO">Bonifico</option>
             </select>
           </div>

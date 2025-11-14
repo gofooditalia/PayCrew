@@ -45,7 +45,7 @@ interface DipendenteFormProps {
     qualifica?: string
     retribuzione?: number
     retribuzioneNetta?: number | null
-    limiteContanti?: number | null
+    limiteBonus?: number | null
     limiteBonifico?: number | null
     coefficienteMaggiorazione?: number | null
     oreSettimanali: number
@@ -88,7 +88,7 @@ export default function DipendenteForm({ sedi, dipendente, renderHeaderControls 
     qualifica: dipendente?.qualifica || '',
     retribuzione: dipendente?.retribuzione?.toString() || '',
     retribuzioneNetta: dipendente?.retribuzioneNetta?.toString() || '',
-    limiteContanti: dipendente?.limiteContanti?.toString() || '',
+    limiteBonus: dipendente?.limiteBonus?.toString() || '',
     limiteBonifico: dipendente?.limiteBonifico?.toString() || '',
     coefficienteMaggiorazione: dipendente?.coefficienteMaggiorazione?.toString() || '',
     oreSettimanali: dipendente?.oreSettimanali?.toString() || '40',
@@ -120,11 +120,11 @@ export default function DipendenteForm({ sedi, dipendente, renderHeaderControls 
         // 3. Calcola retribuzione totale (base + bonus)
         const retribuzioneTotale = retribuzioneBase + bonus
 
-        // 4. Calcola cash (retribuzione totale - bonifico totale)
-        const cash = retribuzioneTotale - bonificoTotale
+        // 4. Calcola bonus rimanente (retribuzione totale - bonifico totale)
+        const bonusRimanente = retribuzioneTotale - bonificoTotale
 
-        // Aggiorna limiteContanti con il cash calcolato
-        updated.limiteContanti = cash > 0 ? cash.toFixed(2) : ''
+        // Aggiorna limiteBonus con il bonus calcolato
+        updated.limiteBonus = bonusRimanente > 0 ? bonusRimanente.toFixed(2) : ''
       }
 
       return updated
@@ -181,7 +181,7 @@ export default function DipendenteForm({ sedi, dipendente, renderHeaderControls 
         ...formData,
         retribuzione: formData.retribuzione ? parseFloat(formData.retribuzione) : null,
         retribuzioneNetta: formData.retribuzioneNetta ? parseFloat(formData.retribuzioneNetta) : null,
-        limiteContanti: formData.limiteContanti ? parseFloat(formData.limiteContanti) : null,
+        limiteBonus: formData.limiteBonus ? parseFloat(formData.limiteBonus) : null,
         limiteBonifico: formData.limiteBonifico ? parseFloat(formData.limiteBonifico) : null,
         coefficienteMaggiorazione: formData.coefficienteMaggiorazione ? parseFloat(formData.coefficienteMaggiorazione) : 0,
         oreSettimanali: parseInt(formData.oreSettimanali),
@@ -568,7 +568,7 @@ export default function DipendenteForm({ sedi, dipendente, renderHeaderControls 
           <CardHeader className="bg-primary/10">
             <CardTitle className="text-lg flex items-center gap-2">
               <span className="text-primary">💰</span>
-              Configurazione Limiti Contrattuali
+              Configurazione Limiti Bonus
               <span className="text-xs font-normal text-muted-foreground ml-2">(Sezione Importante)</span>
             </CardTitle>
           </CardHeader>
@@ -666,9 +666,9 @@ export default function DipendenteForm({ sedi, dipendente, renderHeaderControls 
 
                   <div className="col-span-2 h-px bg-border my-2"></div>
 
-                  <span className="text-lg font-bold text-foreground">CONTANTI:</span>
+                  <span className="text-lg font-bold text-foreground">BONUS:</span>
                   <span className="font-bold text-right text-2xl text-primary">
-                    {parseFloat(formData.limiteContanti || '0').toFixed(2)} €
+                    {parseFloat(formData.limiteBonus || '0').toFixed(2)} €
                   </span>
                 </div>
               </div>

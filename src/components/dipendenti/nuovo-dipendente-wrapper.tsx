@@ -29,7 +29,7 @@ interface Dipendente {
   qualifica?: string
   retribuzione?: number
   retribuzioneNetta?: number | null
-  limiteContanti?: number | null
+  limiteBonus?: number | null
   limiteBonifico?: number | null
   coefficienteMaggiorazione?: number | null
   oreSettimanali: number

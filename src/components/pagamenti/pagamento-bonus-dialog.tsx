@@ -13,37 +13,37 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency } from '@/lib/utils/currency'
-import { BanknotesIcon } from '@heroicons/react/24/outline'
+import { BuildingLibraryIcon } from '@heroicons/react/24/outline'
 
 interface Pagamento {
   id: string
   importo: number
-  tipoPagamento: 'CONTANTI' | 'BONIFICO'
+  tipoPagamento: 'BONUS' | 'BONIFICO'
   dataPagamento: string
   note: string | null
 }
 
-interface PagamentoContantiDialogProps {
+interface PagamentoBonusDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   dipendenteId: string
   dipendenteNome: string
   onSuccess: () => void
-  limiteContanti: number | null
-  pagamentiContantiEsistenti: number
+  limiteBonus: number | null
+  pagamentiBonusEsistenti: number
   editingPagamento?: Pagamento | null
 }
 
-export default function PagamentoContantiDialog({
+export default function PagamentoBonusDialog({
   open,
   onOpenChange,
   dipendenteId,
   dipendenteNome,
   onSuccess,
-  limiteContanti,
-  pagamentiContantiEsistenti,
+  limiteBonus,
+  pagamentiBonusEsistenti,
   editingPagamento = null,
-}: PagamentoContantiDialogProps) {
+}: PagamentoBonusDialogProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -72,13 +72,13 @@ export default function PagamentoContantiDialog({
     setError(null)
   }, [editingPagamento, open])
 
-  // Calcola disponibilità contanti
-  const limiteContantiValue = Number(limiteContanti) || 0
+  // Calcola disponibilità bonus
+  const limiteBonusValue = Number(limiteBonus) || 0
   // Se stiamo modificando, non contiamo il pagamento attuale nei pagamenti esistenti
   const pagamentiEffettivi = editingPagamento
-    ? pagamentiContantiEsistenti - editingPagamento.importo
-    : pagamentiContantiEsistenti
-  const disponibile = Math.max(0, limiteContantiValue - pagamentiEffettivi)
+    ? pagamentiBonusEsistenti - editingPagamento.importo
+    : pagamentiBonusEsistenti
+  const disponibile = Math.max(0, limiteBonusValue - pagamentiEffettivi)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -103,7 +103,7 @@ export default function PagamentoContantiDialog({
       }
 
       if (importo > disponibile) {
-        setError(`L'importo supera il limite contanti disponibile di ${formatCurrency(disponibile)}`)
+        setError(`L'importo supera il limite bonus disponibile di ${formatCurrency(disponibile)}`)
         setLoading(false)
         return
       }
@@ -115,7 +115,7 @@ export default function PagamentoContantiDialog({
 
       const body: any = {
         importo,
-        tipoPagamento: 'CONTANTI',
+        tipoPagamento: 'BONUS',
         dataPagamento: formData.dataPagamento,
         note: formData.note || null
       }
@@ -157,8 +157,8 @@ export default function PagamentoContantiDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BanknotesIcon className="h-6 w-6 text-green-600" />
-            {editingPagamento ? 'Modifica Pagamento CONTANTI' : 'Registra Pagamento CONTANTI'}
+            <BuildingLibraryIcon className="h-6 w-6 text-green-600" />
+            {editingPagamento ? 'Modifica Pagamento BONUS' : 'Registra Pagamento BONUS'}
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-2">
             {dipendenteNome}
@@ -167,19 +167,19 @@ export default function PagamentoContantiDialog({
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
-            {/* Riepilogo Limiti Contanti */}
+            {/* Riepilogo Limiti Bonus */}
             <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Limite Contanti</p>
+                  <p className="text-xs text-muted-foreground mb-1">Limite Bonus</p>
                   <p className="text-lg font-bold text-green-700 dark:text-green-400">
-                    {formatCurrency(limiteContantiValue)}
+                    {formatCurrency(limiteBonusValue)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Già Pagato</p>
                   <p className="text-lg font-bold text-muted-foreground">
-                    {formatCurrency(pagamentiContantiEsistenti)}
+                    {formatCurrency(pagamentiBonusEsistenti)}
                   </p>
                 </div>
                 <div>
@@ -199,7 +199,7 @@ export default function PagamentoContantiDialog({
 
             <div>
               <Label htmlFor="importo">
-                Importo Contanti *
+                Importo Bonus *
               </Label>
               <Input
                 type="number"

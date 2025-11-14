@@ -38,7 +38,7 @@ interface Dipendente {
   qualifica?: string
   retribuzione?: number | null
   retribuzioneNetta?: number | null
-  limiteContanti?: number | null
+  limiteBonus?: number | null
   limiteBonifico?: number | null
   coefficienteMaggiorazione?: number | null
   oreSettimanali: number
@@ -172,9 +172,9 @@ export default function DipendenteDetailPage() {
         const maggiorazione = limiteBonificoBase * (coefficiente / 100)
         const bonificoTotale = limiteBonificoBase + maggiorazione
 
-        // Calcola retribuzione totale = Bonifico totale + Cash
-        const cash = dipendente.limiteContanti || 0
-        const retribuzioneTotale = bonificoTotale + cash
+        // Calcola retribuzione totale = Bonifico totale + Bonus
+        const bonus = dipendente.limiteBonus || 0
+        const retribuzioneTotale = bonificoTotale + bonus
 
         return (
           <Card className="mb-6 border-l-4 border-l-primary shadow-lg">
@@ -195,10 +195,10 @@ export default function DipendenteDetailPage() {
                     )}
                   </div>
                 )}
-                {cash > 0 && (
+                {bonus > 0 && (
                   <div className="text-center sm:text-left">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Cash</h3>
-                    <p className="text-2xl font-bold text-green-600">{formatCurrency(cash)}</p>
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quota Bonus</h3>
+                    <p className="text-2xl font-bold text-green-600">{formatCurrency(bonus)}</p>
                   </div>
                 )}
               </div>

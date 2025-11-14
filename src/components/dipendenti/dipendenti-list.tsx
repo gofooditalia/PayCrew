@@ -32,7 +32,7 @@ interface Dipendente {
   tipoContratto: string
   retribuzione?: number | null
   retribuzioneNetta?: number | null
-  limiteContanti?: number | null
+  limiteBonus?: number | null
   limiteBonifico?: number | null
   coefficienteMaggiorazione?: number | null
   oreSettimanali: number
@@ -245,9 +245,9 @@ export default function DipendentiList({ dipendenti, statoFiltro }: DipendentiLi
                             const maggiorazione = limiteBonificoBase * (coefficiente / 100)
                             const bonificoTotale = limiteBonificoBase + maggiorazione
 
-                            // Calcola retribuzione totale = Bonifico totale + Cash
-                            const cash = dipendente.limiteContanti || 0
-                            const retribuzioneTotale = bonificoTotale + cash
+                            // Calcola retribuzione totale = Bonifico totale + Bonus
+                            const bonus = dipendente.limiteBonus || 0
+                            const retribuzioneTotale = bonificoTotale + bonus
 
                             return (
                               <div className="space-y-1">
@@ -259,9 +259,9 @@ export default function DipendentiList({ dipendenti, statoFiltro }: DipendentiLi
                                     Bonifico: <span className="font-medium text-foreground">{currencyFormatter(bonificoTotale)}</span>
                                   </div>
                                 )}
-                                {cash > 0 && (
+                                {bonus > 0 && (
                                   <div className="text-xs font-bold text-primary">
-                                    Cash: {currencyFormatter(cash)}
+                                    Bonus: {currencyFormatter(bonus)}
                                   </div>
                                 )}
                               </div>

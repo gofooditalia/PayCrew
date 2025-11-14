@@ -55,7 +55,7 @@ async function getDipendenti(statoFiltro?: string) {
     dataCessazione: dipendente.dataCessazione || undefined,
     retribuzione: dipendente.retribuzione ? parseFloat(dipendente.retribuzione.toString()) : null,
     retribuzioneNetta: dipendente.retribuzioneNetta ? parseFloat(dipendente.retribuzioneNetta.toString()) : null,
-    limiteContanti: dipendente.limiteContanti ? parseFloat(dipendente.limiteContanti.toString()) : null,
+    limiteBonus: dipendente.limiteBonus ? parseFloat(dipendente.limiteBonus.toString()) : null,
     limiteBonifico: dipendente.limiteBonifico ? parseFloat(dipendente.limiteBonifico.toString()) : null,
     coefficienteMaggiorazione: dipendente.coefficienteMaggiorazione ? parseFloat(dipendente.coefficienteMaggiorazione.toString()) : 0,
     sede: dipendente.sedi || undefined

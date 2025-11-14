@@ -18,7 +18,7 @@ import { CreditCardIcon } from '@heroicons/react/24/outline'
 interface Pagamento {
   id: string
   importo: number
-  tipoPagamento: 'CONTANTI' | 'BONIFICO'
+  tipoPagamento: 'BONUS' | 'BONIFICO'
   dataPagamento: string
   note: string | null
 }

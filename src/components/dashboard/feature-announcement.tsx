@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { XMarkIcon, SparklesIcon, CalendarIcon, UsersIcon, CogIcon, BanknotesIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, SparklesIcon, CalendarIcon, UsersIcon, CogIcon, BuildingLibraryIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { BuildingOfficeIcon, ClockIcon } from '@heroicons/react/24/solid'
 import Link from 'next/link'
 
 const FEATURES = [
   {
-    icon: BanknotesIcon,
+    icon: BuildingLibraryIcon,
     title: 'Gestione Pagamenti Mensili',
-    description: 'Sistema completo pagamenti organizzati per mese/anno con raggruppamento per sede, tracking Cash/Bonifici e validazioni dedicate',
+    description: 'Sistema completo pagamenti organizzati per mese/anno con raggruppamento per sede, tracking Bonus/Bonifici e validazioni dedicate',
     link: '/pagamenti',
     linkText: 'Vai a Pagamenti',
     color: 'from-green-500 to-emerald-500',
@@ -20,7 +20,7 @@ const FEATURES = [
   {
     icon: UserGroupIcon,
     title: 'UX Dipendenti Migliorata',
-    description: 'Campi opzionali, focus su Netta/Bonifico/Cash, calcolo automatico cash con maggiorazione e scheda compatta con accordion',
+    description: 'Campi opzionali, focus su Netta/Bonifico/Bonus, calcolo automatico bonus con maggiorazione e scheda compatta con accordion',
     link: '/dipendenti',
     linkText: 'Vai a Dipendenti',
     color: 'from-blue-500 to-cyan-500',
