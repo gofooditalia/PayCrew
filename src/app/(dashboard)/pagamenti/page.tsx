@@ -7,6 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { formatCurrency } from '@/lib/utils/currency'
 import {
   BuildingLibraryIcon,
@@ -14,7 +20,8 @@ import {
   ChevronDownIcon,
   BuildingStorefrontIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import { PageLoader } from '@/components/loading'
 import PagamentoBonusDialog from '@/components/pagamenti/pagamento-bonus-dialog'
@@ -327,7 +334,7 @@ export default function PagamentiPage() {
           </p>
         </div>
         <Link href="/pagamenti/storico">
-          <Button variant="outline">
+          <Button variant="default" className="bg-primary hover:bg-primary/90">
             Riepilogo Pagamenti
           </Button>
         </Link>
@@ -465,7 +472,6 @@ export default function PagamentiPage() {
                     <div className="space-y-3">
                       {group.dipendenti.map(dipendente => {
                         const { netto, pagato, saldo, bonus, bonifici } = calcolaSaldo(dipendente)
-                        const percentuale = netto > 0 ? (pagato / netto) * 100 : 0
 
                         // Calcola valori bonifico e bonus
                         const limiteBonus = Number(dipendente.limiteBonus) || 0
@@ -476,31 +482,74 @@ export default function PagamentiPage() {
                         const saldoBonus = limiteBonus - bonus
                         const saldoBonifico = bonificoTotale - bonifici
 
+                        // Calcola percentuali per ciascuna modalità
+                        const percentualeBonifico = bonificoTotale > 0 ? (bonifici / bonificoTotale) * 100 : 0
+                        const percentualeBonus = limiteBonus > 0 ? (bonus / limiteBonus) * 100 : 0
+
                         return (
                           <div key={dipendente.id} className="border rounded-lg bg-card overflow-hidden">
                             {/* Header con nome e retribuzione totale - Mobile Optimized */}
                             <div className="bg-gradient-to-r from-primary/10 to-transparent p-3 sm:p-4 border-b">
-                              <Link href={`/dipendenti/${dipendente.id}`}>
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-                                  <h3 className="text-base sm:text-lg font-bold">
-                                    {dipendente.nome} {dipendente.cognome}
-                                  </h3>
-                                  <div className="text-left sm:text-right">
-                                    <p className="text-[10px] sm:text-xs text-muted-foreground">Retribuzione Totale</p>
-                                    <p className="text-lg sm:text-xl font-bold text-primary">
-                                      {formatCurrency(retribuzioneTotale)}
-                                    </p>
-                                  </div>
+                              <div className="flex items-center justify-between gap-3">
+                                {/* Nome dipendente */}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Link href={`/dipendenti/${dipendente.id}`} className="flex items-center gap-2 cursor-pointer hover:bg-primary/5 px-2 py-1 -mx-2 -my-1 rounded transition-all group">
+                                        <h3 className="text-base sm:text-lg font-bold whitespace-nowrap">
+                                          {dipendente.nome} {dipendente.cognome}
+                                        </h3>
+                                        <ArrowRightIcon className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                      </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Clicca per vedere il dettaglio dipendente</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+
+                                {/* Retribuzione Totale */}
+                                <div className="text-right">
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">Retribuzione Totale</p>
+                                  <p className="text-lg sm:text-xl font-bold text-primary whitespace-nowrap">
+                                    {formatCurrency(retribuzioneTotale)}
+                                  </p>
                                 </div>
-                              </Link>
+                              </div>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x">
                               {/* Sezione BONIFICI - Mobile Optimized */}
                               <div className="p-3 sm:p-4 bg-blue-50/50 dark:bg-blue-950/10">
-                                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                                  <CreditCardIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
-                                  <h4 className="text-sm sm:text-base font-semibold text-blue-900 dark:text-blue-400">BONIFICI</h4>
+                                <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <CreditCardIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+                                    <h4 className="text-sm sm:text-base font-semibold text-blue-900 dark:text-blue-400 whitespace-nowrap">BONIFICI</h4>
+                                  </div>
+
+                                  {/* Progress Bar Bonifici - A fianco del titolo */}
+                                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                                    <div className="relative h-2 bg-blue-100 dark:bg-blue-950 rounded-full overflow-hidden flex-1">
+                                      <div
+                                        className={`h-full transition-all duration-500 ease-out ${
+                                          percentualeBonifico >= 100
+                                            ? 'bg-gradient-to-r from-green-500 to-green-600'
+                                            : percentualeBonifico > 0
+                                              ? 'bg-gradient-to-r from-blue-500 to-blue-600'
+                                              : 'bg-muted-foreground'
+                                        }`}
+                                        style={{ width: `${Math.min(percentualeBonifico, 100)}%` }}
+                                      />
+                                    </div>
+                                    <Badge
+                                      variant={percentualeBonifico >= 100 ? 'default' : percentualeBonifico > 0 ? 'secondary' : 'outline'}
+                                      className={`text-[10px] font-bold flex-shrink-0 ${
+                                        percentualeBonifico >= 100 ? 'bg-green-600' : percentualeBonifico >= 50 ? 'bg-orange-500' : ''
+                                      }`}
+                                    >
+                                      {percentualeBonifico.toFixed(0)}%
+                                    </Badge>
+                                  </div>
                                 </div>
 
                                 <div className="space-y-2 sm:space-y-3">
@@ -539,9 +588,35 @@ export default function PagamentiPage() {
 
                               {/* Sezione BONUS - Mobile Optimized */}
                               <div className="p-3 sm:p-4 bg-green-50/50 dark:bg-green-950/10">
-                                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                                  <BuildingLibraryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
-                                  <h4 className="text-sm sm:text-base font-semibold text-green-900 dark:text-green-400">BONUS</h4>
+                                <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <BuildingLibraryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                                    <h4 className="text-sm sm:text-base font-semibold text-green-900 dark:text-green-400 whitespace-nowrap">BONUS</h4>
+                                  </div>
+
+                                  {/* Progress Bar Bonus - A fianco del titolo */}
+                                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                                    <div className="relative h-2 bg-green-100 dark:bg-green-950 rounded-full overflow-hidden flex-1">
+                                      <div
+                                        className={`h-full transition-all duration-500 ease-out ${
+                                          percentualeBonus >= 100
+                                            ? 'bg-gradient-to-r from-green-500 to-green-600'
+                                            : percentualeBonus > 0
+                                              ? 'bg-gradient-to-r from-green-400 to-green-500'
+                                              : 'bg-muted-foreground'
+                                        }`}
+                                        style={{ width: `${Math.min(percentualeBonus, 100)}%` }}
+                                      />
+                                    </div>
+                                    <Badge
+                                      variant={percentualeBonus >= 100 ? 'default' : percentualeBonus > 0 ? 'secondary' : 'outline'}
+                                      className={`text-[10px] font-bold flex-shrink-0 ${
+                                        percentualeBonus >= 100 ? 'bg-green-600' : percentualeBonus >= 50 ? 'bg-orange-500' : ''
+                                      }`}
+                                    >
+                                      {percentualeBonus.toFixed(0)}%
+                                    </Badge>
+                                  </div>
                                 </div>
 
                                 <div className="space-y-2 sm:space-y-3">
@@ -576,52 +651,6 @@ export default function PagamentiPage() {
                                     Registra Bonus
                                   </Button>
                                 </div>
-                              </div>
-                            </div>
-
-                            {/* Progress bar - Mobile Optimized */}
-                            <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-muted/20 to-muted/10 border-t">
-                              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                                <div className="flex items-center gap-1.5 sm:gap-2">
-                                  <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground">Completamento</span>
-                                  {percentuale >= 100 && (
-                                    <svg className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1.5 sm:gap-2">
-                                  <span className="text-[10px] sm:text-xs text-muted-foreground">
-                                    {formatCurrency(pagato)} / {formatCurrency(retribuzioneTotale)}
-                                  </span>
-                                  <Badge
-                                    variant={percentuale >= 100 ? 'default' : percentuale > 0 ? 'secondary' : 'outline'}
-                                    className={`text-[10px] sm:text-xs font-bold ${
-                                      percentuale >= 100 ? 'bg-green-600' : percentuale >= 50 ? 'bg-orange-500' : ''
-                                    }`}
-                                  >
-                                    {percentuale.toFixed(0)}%
-                                  </Badge>
-                                </div>
-                              </div>
-                              <div className="relative h-2.5 sm:h-3 bg-muted/50 rounded-full overflow-hidden shadow-inner">
-                                <div
-                                  className={`h-full transition-all duration-500 ease-out relative ${
-                                    percentuale >= 100
-                                      ? 'bg-gradient-to-r from-green-500 to-green-600'
-                                      : percentuale > 0
-                                        ? 'bg-gradient-to-r from-orange-400 to-orange-500'
-                                        : 'bg-muted-foreground'
-                                  }`}
-                                  style={{ width: `${Math.min(percentuale, 100)}%` }}
-                                >
-                                  {percentuale > 5 && (
-                                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-shimmer" />
-                                  )}
-                                </div>
-                                {percentuale >= 100 && (
-                                  <div className="absolute inset-0 bg-green-600/20 animate-pulse" />
-                                )}
                               </div>
                             </div>
 
