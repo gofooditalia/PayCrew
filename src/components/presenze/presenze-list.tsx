@@ -28,6 +28,11 @@ interface Presenza {
     nome: string
     cognome: string
   }
+  turni?: {
+    sedi?: {
+      nome: string
+    } | null
+  } | null
 }
 
 interface PresenzeListProps {
@@ -118,10 +123,10 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
         <Table>
           <thead>
             <tr className="border-b bg-gray-50">
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Data</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Entrata</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Sede</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Orario</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore Totali</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
@@ -133,16 +138,16 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
             {[...Array(10)].map((_, i) => (
               <tr key={i} className="border-b">
                 <td className="p-4">
-                  <Skeleton className="h-5 w-32" />
-                </td>
-                <td className="p-4">
                   <Skeleton className="h-5 w-24" />
                 </td>
                 <td className="p-4">
-                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-32" />
                 </td>
                 <td className="p-4">
-                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-20" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-28" />
                 </td>
                 <td className="p-4">
                   <Skeleton className="h-6 w-14" />
@@ -202,10 +207,10 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
         <Table>
           <thead>
             <tr className="border-b bg-gray-50">
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Data</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Entrata</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Uscita</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Sede</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Orario</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore Totali</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
@@ -216,14 +221,24 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
           <tbody>
             {presenze.map((presenza) => (
             <tr key={presenza.id} className="border-b hover:bg-gray-50">
+              <td className="p-4">{formatDate(presenza.data)}</td>
               <td className="p-4">
                 <span className="font-medium">
                   {presenza.dipendenti.nome} {presenza.dipendenti.cognome}
                 </span>
               </td>
-              <td className="p-4">{formatDate(presenza.data)}</td>
-              <td className="p-4">{formatTime(presenza.entrata)}</td>
-              <td className="p-4">{formatTime(presenza.uscita)}</td>
+              <td className="p-4">
+                {presenza.turni?.sedi?.nome ? (
+                  <span className="text-sm">{presenza.turni.sedi.nome}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">N/D</span>
+                )}
+              </td>
+              <td className="p-4">
+                <span className="font-mono text-sm">
+                  {formatTime(presenza.entrata)} - {formatTime(presenza.uscita)}
+                </span>
+              </td>
               <td className="p-4">
                 {presenza.oreLavorate !== null ? (
                   <Badge variant="secondary">{Number(presenza.oreLavorate).toFixed(2)}h</Badge>

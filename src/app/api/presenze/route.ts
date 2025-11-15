@@ -97,6 +97,16 @@ export async function GET(request: NextRequest) {
                 }
               }
             }
+          },
+          turni: {
+            select: {
+              sedi: {
+                select: {
+                  id: true,
+                  nome: true
+                }
+              }
+            }
           }
         },
         orderBy: [
