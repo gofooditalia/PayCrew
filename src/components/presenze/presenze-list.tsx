@@ -7,12 +7,19 @@ import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { MessageSquare, Calendar, Edit, Plus, Pencil } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { MessageSquare, Calendar, Edit, Plus, Pencil, UserX } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { NoteDialog } from './note-dialog'
 import { PresenzaEditDialog } from './presenza-edit-dialog'
 import { toast } from 'sonner'
+import { TIPI_TURNO_CONFIG } from '@/types/turni'
 
 interface Presenza {
   id: string
@@ -29,6 +36,7 @@ interface Presenza {
     cognome: string
   }
   turni?: {
+    tipoTurno?: 'MATTINA' | 'PRANZO' | 'SERA' | 'NOTTE' | 'SPEZZATO'
     sedi?: {
       nome: string
     } | null
@@ -83,36 +91,21 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
 
   const getStatoBadge = (stato?: string) => {
     switch (stato) {
-      case 'DA_CONFERMARE':
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
-            Da Confermare
-          </Badge>
-        )
-      case 'CONFERMATA':
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-300">
-            Confermata
-          </Badge>
-        )
       case 'MODIFICATA':
         return (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-300">
-            Modificata
+          <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-xs px-2 py-0.5">
+            MOD
           </Badge>
         )
       case 'ASSENTE':
         return (
-          <Badge className="bg-red-100 text-red-800 border-red-300">
-            Assente
+          <Badge className="bg-red-100 text-red-800 border-red-300 text-xs px-2 py-0.5">
+            ASS
           </Badge>
         )
+      // CONFERMATA e DA_CONFERMARE non mostrano badge (stato normale)
       default:
-        return (
-          <Badge variant="secondary">
-            Manuale
-          </Badge>
-        )
+        return null
     }
   }
 
@@ -127,8 +120,7 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Sede</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Orario</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore Totali</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
               <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
@@ -150,10 +142,7 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
                   <Skeleton className="h-5 w-28" />
                 </td>
                 <td className="p-4">
-                  <Skeleton className="h-6 w-14" />
-                </td>
-                <td className="p-4">
-                  <Skeleton className="h-6 w-14" />
+                  <Skeleton className="h-6 w-20" />
                 </td>
                 <td className="p-4">
                   <Skeleton className="h-6 w-24" />
@@ -211,8 +200,7 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Sede</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Orario</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore Totali</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Straord.</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
               <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
@@ -235,22 +223,36 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
                 )}
               </td>
               <td className="p-4">
-                <span className="font-mono text-sm">
-                  {formatTime(presenza.entrata)} - {formatTime(presenza.uscita)}
-                </span>
+                <div className="flex items-center gap-2">
+                  {presenza.turni?.tipoTurno && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span
+                            className={`inline-block w-3 h-3 rounded-full ${TIPI_TURNO_CONFIG[presenza.turni.tipoTurno].bgColor} cursor-help`}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Turno {TIPI_TURNO_CONFIG[presenza.turni.tipoTurno].label}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  <span className="font-mono text-sm">
+                    {formatTime(presenza.entrata)} - {formatTime(presenza.uscita)}
+                  </span>
+                </div>
               </td>
               <td className="p-4">
                 {presenza.oreLavorate !== null ? (
-                  <Badge variant="secondary">{Number(presenza.oreLavorate).toFixed(2)}h</Badge>
-                ) : (
-                  '-'
-                )}
-              </td>
-              <td className="p-4">
-                {presenza.oreStraordinario && Number(presenza.oreStraordinario) > 0 ? (
-                  <Badge className="bg-orange-100 text-orange-800">
-                    +{Number(presenza.oreStraordinario).toFixed(2)}h
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{Number(presenza.oreLavorate).toFixed(2)}h</Badge>
+                    {presenza.oreStraordinario && Number(presenza.oreStraordinario) > 0 && (
+                      <Badge className="bg-orange-100 text-orange-800">
+                        +{Number(presenza.oreStraordinario).toFixed(2)}h
+                      </Badge>
+                    )}
+                  </div>
                 ) : (
                   '-'
                 )}
@@ -321,8 +323,9 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
                       onClick={() => onMarkAsAbsent(presenza.id)}
                       disabled={isLoading}
                       className="text-red-600 hover:text-red-700 border-red-300 hover:bg-red-50"
+                      title="Segna assente"
                     >
-                      Segna Assente
+                      <UserX className="h-4 w-4" />
                     </Button>
                   )}
                   {presenza.stato === 'ASSENTE' && onReset && (

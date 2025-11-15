@@ -100,6 +100,7 @@ export async function GET(request: NextRequest) {
           },
           turni: {
             select: {
+              tipoTurno: true,
               sedi: {
                 select: {
                   id: true,
