@@ -17,7 +17,7 @@ import { TurniFiltri } from '@/components/turni/turni-filters'
 import { PianificazioneMultiplaDialog } from '@/components/turni/pianificazione-multipla-dialog'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Plus, Loader2, CalendarDays, CalendarRange, Sparkles, X } from 'lucide-react'
+import { Plus, Loader2, CalendarDays, CalendarRange, Sparkles, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { z } from 'zod'
 import { turnoCreateSchema, turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
 import Link from 'next/link'
@@ -38,6 +38,12 @@ export default function TurniPage() {
   const [pianificazioneDialogOpen, setPianificazioneDialogOpen] = useState(false)
   const [turnoInModifica, setTurnoInModifica] = useState<Turno | null>(null)
   const [showBanner, setShowBanner] = useState(true)
+
+  // Paginazione
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalTurni, setTotalTurni] = useState(0)
+  const pageSize = 50
 
   const [filtri, setFiltri] = useState<{
     dipendenteId?: string
@@ -73,6 +79,10 @@ export default function TurniPage() {
       if (filtri.dataInizio) params.append('dataInizio', filtri.dataInizio)
       if (filtri.dataFine) params.append('dataFine', filtri.dataFine)
 
+      // Aggiungi parametri paginazione
+      params.append('page', currentPage.toString())
+      params.append('limit', pageSize.toString())
+
       const response = await fetch(`/api/turni?${params.toString()}`)
 
       if (!response.ok) {
@@ -81,13 +91,19 @@ export default function TurniPage() {
 
       const data = await response.json()
       setTurni(data.turni || [])
+
+      // Aggiorna info paginazione
+      if (data.pagination) {
+        setTotalPages(data.pagination.pages)
+        setTotalTurni(data.pagination.total)
+      }
     } catch (error) {
       console.error('Errore caricamento turni:', error)
       toast.error('Impossibile caricare i turni')
     } finally {
       setLoading(false)
     }
-  }, [filtri])
+  }, [filtri, currentPage, pageSize])
 
   // Carica dipendenti
   const caricaDipendenti = async () => {
@@ -121,7 +137,12 @@ export default function TurniPage() {
     caricaSedi()
   }, [])
 
-  // Ricarica turni quando cambiano i filtri
+  // Reset pagina quando cambiano i filtri
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filtri])
+
+  // Ricarica turni quando cambiano i filtri o la pagina
   useEffect(() => {
     caricaTurni()
   }, [caricaTurni])
@@ -129,6 +150,25 @@ export default function TurniPage() {
   const handleCreate = () => {
     setTurnoInModifica(null)
     setDialogOpen(true)
+  }
+
+  // Funzioni paginazione
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1)
+    }
+  }
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1)
+    }
+  }
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
   }
 
   const handleEdit = (turno: Turno) => {
@@ -331,7 +371,10 @@ export default function TurniPage() {
                   Totale Turni
                 </span>
               </div>
-              <p className="mt-2 text-2xl font-bold">{turni.length}</p>
+              <p className="mt-2 text-2xl font-bold">{totalTurni}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {turni.length} in questa pagina
+              </p>
             </div>
           </div>
 
@@ -341,6 +384,64 @@ export default function TurniPage() {
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
+
+          {/* Paginazione */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-2 py-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Pagina {currentPage} di {totalPages} • {totalTurni} turni totali
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToPrevPage}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Precedente
+                </Button>
+
+                {/* Numeri pagina */}
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum
+                    if (totalPages <= 5) {
+                      pageNum = i + 1
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i
+                    } else {
+                      pageNum = currentPage - 2 + i
+                    }
+
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => goToPage(pageNum)}
+                        className="w-9"
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Successivo
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
