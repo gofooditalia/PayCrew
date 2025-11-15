@@ -41,7 +41,13 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Loader2, CalendarRange } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { Loader2, CalendarRange, Info } from 'lucide-react'
 import { z } from 'zod'
 
 type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
@@ -50,7 +56,7 @@ interface PianificazioneMultiplaDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (data: TurniMultipliFormData) => Promise<void>
-  dipendenti: Array<{ id: string; nome: string; cognome: string }>
+  dipendenti: Array<{ id: string; nome: string; cognome: string; sedeId: string | null }>
   sedi: Array<{ id: string; nome: string }>
   isSubmitting?: boolean
 }
@@ -141,6 +147,7 @@ export function PianificazioneMultiplaDialog({
 
   // Watch tipoTurno per auto-compilazione da fasce orarie
   const tipoTurnoValue = form.watch('tipoTurno')
+  const dipendenteIdValue = form.watch('dipendenteId')
 
   useEffect(() => {
     if (!tipoTurnoValue || !open) return
@@ -154,6 +161,16 @@ export function PianificazioneMultiplaDialog({
     }
   }, [tipoTurnoValue, fasceOrarie, open, form])
 
+  // Auto-compila sede quando cambia il dipendente selezionato
+  useEffect(() => {
+    if (!dipendenteIdValue || !open) return
+
+    const dipendenteSelezionato = dipendenti.find(d => d.id === dipendenteIdValue)
+    if (dipendenteSelezionato?.sedeId) {
+      form.setValue('sedeId', dipendenteSelezionato.sedeId)
+    }
+  }, [dipendenteIdValue, dipendenti, open, form])
+
   const handleGiornoToggle = (giorno: number) => {
     const nuoviGiorni = giorniSelezionati.includes(giorno)
       ? giorniSelezionati.filter(g => g !== giorno)
@@ -163,13 +180,23 @@ export function PianificazioneMultiplaDialog({
     form.setValue('giorni', nuoviGiorni)
   }
 
-  const handleSubmit = async (data: TurniMultipliFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Valida il form prima di inviare
+    const isValid = await form.trigger()
+    if (!isValid) return
+
+    const data = form.getValues()
+
     try {
       await onSubmit(data)
+      // Reset form solo se non ci sono errori
       form.reset()
       setGiorniSelezionati([1, 2, 3, 4, 5])
     } catch (error) {
-      console.error('Errore submit form pianificazione:', error)
+      // L'errore viene gestito dal parent e mostrato nel toast
+      // Non fare nulla qui, l'errore è già stato loggato e mostrato
     }
   }
 
@@ -184,29 +211,102 @@ export function PianificazioneMultiplaDialog({
             Pianificazione Multipla Turni
           </DialogTitle>
           <DialogDescription>
-            Crea più turni contemporaneamente selezionando un range di date e i giorni della settimana
+            Crea più turni in batch per date e giorni selezionati
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {/* Dipendente */}
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            {/* Riga 1: Dipendente e Sede */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="dipendenteId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dipendente *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleziona dipendente" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {dipendenti.map((dip) => (
+                          <SelectItem key={dip.id} value={dip.id}>
+                            {dip.nome} {dip.cognome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="sedeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sede</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Nessuna" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">Nessuna sede</SelectItem>
+                        {sedi.map((sede) => (
+                          <SelectItem key={sede.id} value={sede.id}>
+                            {sede.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Riga 2: Tipo Turno */}
             <FormField
               control={form.control}
-              name="dipendenteId"
+              name="tipoTurno"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dipendente *</FormLabel>
+                  <div className="flex items-center gap-1">
+                    <FormLabel>Tipo Turno *</FormLabel>
+                    {fasceOrarie.length > 0 && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[250px]">
+                            <p className="text-xs">
+                              Gli orari si compilano automaticamente in base al tipo turno selezionato dalle fasce orarie configurate
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleziona dipendente" />
+                        <SelectValue placeholder="Seleziona tipo turno" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {dipendenti.map((dip) => (
-                        <SelectItem key={dip.id} value={dip.id}>
-                          {dip.nome} {dip.cognome}
+                      {Object.values(TIPI_TURNO_CONFIG).map((config) => (
+                        <SelectItem key={config.value} value={config.value}>
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-block w-3 h-3 rounded-full ${config.bgColor}`} />
+                            {config.label}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -216,7 +316,38 @@ export function PianificazioneMultiplaDialog({
               )}
             />
 
-            {/* Range Date */}
+            {/* Riga 3: Orari */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="oraInizio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ora Inizio *</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="oraFine"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ora Fine *</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Riga 4: Range Date */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -254,99 +385,28 @@ export function PianificazioneMultiplaDialog({
               render={() => (
                 <FormItem>
                   <FormLabel>Giorni della Settimana *</FormLabel>
-                  <FormDescription>
-                    Seleziona i giorni in cui creare i turni
-                  </FormDescription>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="grid grid-cols-2 gap-3 mt-2">
                     {GIORNI_SETTIMANA.map((giorno) => (
-                      <div key={giorno.value} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`giorno-${giorno.value}`}
+                      <label
+                        key={giorno.value}
+                        className="flex items-center gap-2 rounded-md border px-3 py-2 hover:bg-accent cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
                           checked={giorniSelezionati.includes(giorno.value)}
                           onChange={() => handleGiornoToggle(giorno.value)}
+                          className="h-4 w-4 rounded border-primary text-primary focus:ring-2 focus:ring-primary cursor-pointer"
                         />
-                        <Label
-                          htmlFor={`giorno-${giorno.value}`}
-                          className="text-sm font-normal cursor-pointer"
-                        >
+                        <span className="text-sm font-normal">
                           {giorno.label}
-                        </Label>
-                      </div>
+                        </span>
+                      </label>
                     ))}
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* Tipo Turno */}
-            <FormField
-              control={form.control}
-              name="tipoTurno"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo Turno *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona tipo turno" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.values(TIPI_TURNO_CONFIG).map((config) => (
-                        <SelectItem key={config.value} value={config.value}>
-                          <div className="flex items-center gap-2">
-                            <span className={`inline-block w-3 h-3 rounded-full ${config.bgColor}`} />
-                            {config.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Info auto-compilazione */}
-            {fasceOrarie.length > 0 && (
-              <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-3">
-                <p className="text-xs text-blue-900 dark:text-blue-100">
-                  💡 Gli orari si compilano automaticamente in base al tipo turno selezionato dalle fasce orarie configurate
-                </p>
-              </div>
-            )}
-
-            {/* Orari */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="oraInizio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ora Inizio *</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="oraFine"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ora Fine *</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
 
             {/* Pausa Pranzo - mostrata solo se presente */}
             {hasPausaPranzo && (
@@ -393,36 +453,6 @@ export function PianificazioneMultiplaDialog({
                 </div>
               </div>
             )}
-
-            {/* Sede */}
-            <FormField
-              control={form.control}
-              name="sedeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sede</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona sede (opzionale)" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Nessuna sede</SelectItem>
-                      {sedi.map((sede) => (
-                        <SelectItem key={sede.id} value={sede.id}>
-                          {sede.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Opzionale - assegna i turni ad una sede specifica
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <DialogFooter>
               <Button

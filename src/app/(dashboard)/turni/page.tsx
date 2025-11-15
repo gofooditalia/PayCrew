@@ -16,7 +16,7 @@ import { TurnoFormDialog } from '@/components/turni/turno-form-dialog'
 import { TurniFiltri } from '@/components/turni/turni-filters'
 import { PianificazioneMultiplaDialog } from '@/components/turni/pianificazione-multipla-dialog'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { Plus, Loader2, CalendarDays, CalendarRange, Sparkles, X } from 'lucide-react'
 import { z } from 'zod'
 import { turnoCreateSchema, turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
@@ -27,10 +27,9 @@ type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
 
 export default function TurniPage() {
   const router = useRouter()
-  const { toast } = useToast()
 
   const [turni, setTurni] = useState<Turno[]>([])
-  const [dipendenti, setDipendenti] = useState<Array<{ id: string; nome: string; cognome: string }>>([])
+  const [dipendenti, setDipendenti] = useState<Array<{ id: string; nome: string; cognome: string; sedeId: string | null }>>([])
   const [sedi, setSedi] = useState<Array<{ id: string; nome: string }>>([])
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -84,15 +83,11 @@ export default function TurniPage() {
       setTurni(data.turni || [])
     } catch (error) {
       console.error('Errore caricamento turni:', error)
-      toast({
-        title: 'Errore',
-        description: 'Impossibile caricare i turni',
-        variant: 'destructive'
-      })
+      toast.error('Impossibile caricare i turni')
     } finally {
       setLoading(false)
     }
-  }, [filtri, toast])
+  }, [filtri])
 
   // Carica dipendenti
   const caricaDipendenti = async () => {
@@ -161,23 +156,18 @@ export default function TurniPage() {
         throw new Error(errorData.message || errorData.error || 'Errore nel salvataggio')
       }
 
-      toast({
-        title: 'Successo',
-        description: turnoInModifica
-          ? 'Turno aggiornato con successo'
-          : 'Turno creato con successo'
-      })
+      toast.success(turnoInModifica
+        ? 'Turno aggiornato con successo'
+        : 'Turno creato con successo')
 
       setDialogOpen(false)
       setTurnoInModifica(null)
       await caricaTurni()
     } catch (error: any) {
       console.error('Errore salvataggio turno:', error)
-      toast({
-        title: 'Errore',
-        description: error.message || 'Impossibile salvare il turno',
-        variant: 'destructive'
-      })
+      toast.error(error.message || 'Impossibile salvare il turno')
+      // Rilancia l'errore per impedire il reset del form nel dialog
+      throw error
     } finally {
       setIsSubmitting(false)
     }
@@ -193,25 +183,24 @@ export default function TurniPage() {
         throw new Error('Errore nell\'eliminazione del turno')
       }
 
-      toast({
-        title: 'Successo',
-        description: 'Turno eliminato con successo'
-      })
+      toast.success('Turno eliminato con successo')
 
       await caricaTurni()
     } catch (error) {
       console.error('Errore eliminazione turno:', error)
-      toast({
-        title: 'Errore',
-        description: 'Impossibile eliminare il turno',
-        variant: 'destructive'
-      })
+      toast.error('Impossibile eliminare il turno')
       throw error
     }
   }
 
   const handlePianificazioneMultipla = async (data: TurniMultipliFormData) => {
     setIsSubmitting(true)
+
+    // Mostra toast di caricamento
+    const loadingToast = toast.loading('Generazione turni in corso... Questa operazione potrebbe richiedere alcuni secondi. Non chiudere la pagina.', {
+      duration: Infinity, // Non scompare automaticamente
+    })
+
     try {
       const response = await fetch('/api/turni/multipli', {
         method: 'POST',
@@ -226,20 +215,19 @@ export default function TurniPage() {
 
       const result = await response.json()
 
-      toast({
-        title: 'Successo',
-        description: result.message || `${result.count} turni creati con successo`
-      })
+      // Dismissi il toast di caricamento e mostra successo
+      toast.dismiss(loadingToast)
+      toast.success(result.message || `${result.count} turni creati con successo`)
 
       setPianificazioneDialogOpen(false)
       await caricaTurni()
     } catch (error: any) {
       console.error('Errore pianificazione multipla:', error)
-      toast({
-        title: 'Errore',
-        description: error.message || 'Impossibile creare i turni',
-        variant: 'destructive'
-      })
+      // Dismissi il toast di caricamento e mostra errore
+      toast.dismiss(loadingToast)
+      toast.error(error.message || 'Impossibile creare i turni')
+      // Rilancia l'errore per impedire il reset del form nel dialog
+      throw error
     } finally {
       setIsSubmitting(false)
     }

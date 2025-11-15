@@ -134,10 +134,17 @@ export async function POST(request: Request) {
         )
 
         if (conflitto) {
+          // Formatta la data in formato italiano (DD/MM/YYYY)
+          const dataFormattata = nuovoTurno.data.toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })
+
           return NextResponse.json(
             {
               error: 'Sovrapposizione turni',
-              message: `Il dipendente ha già un turno il ${nuovoTurno.data.toISOString().split('T')[0]} dalle ${turnoEsistente.oraInizio} alle ${turnoEsistente.oraFine}`
+              message: `Il dipendente ha già un turno il ${dataFormattata} dalle ${turnoEsistente.oraInizio} alle ${turnoEsistente.oraFine}`
             },
             { status: 409 }
           )

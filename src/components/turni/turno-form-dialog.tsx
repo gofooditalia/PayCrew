@@ -49,7 +49,7 @@ interface TurnoFormDialogProps {
   onOpenChange: (open: boolean) => void
   onSubmit: (data: TurnoFormData) => Promise<void>
   turno?: Turno | null
-  dipendenti: Array<{ id: string; nome: string; cognome: string }>
+  dipendenti: Array<{ id: string; nome: string; cognome: string; sedeId: string | null }>
   sedi: Array<{ id: string; nome: string }>
   isSubmitting?: boolean
 }
@@ -82,6 +82,7 @@ export function TurnoFormDialog({
   })
 
   const tipoTurnoValue = form.watch('tipoTurno')
+  const dipendenteIdValue = form.watch('dipendenteId')
   const hasPausaPranzo = form.watch('pausaPranzoInizio') || form.watch('pausaPranzoFine')
 
   // Carica fasce orarie quando si apre il dialog
@@ -119,6 +120,16 @@ export function TurnoFormDialog({
     }
   }, [tipoTurnoValue, fasceOrarie, form])
 
+  // Auto-compila sede quando cambia il dipendente selezionato
+  useEffect(() => {
+    if (!dipendenteIdValue || !open) return
+
+    const dipendenteSelezionato = dipendenti.find(d => d.id === dipendenteIdValue)
+    if (dipendenteSelezionato?.sedeId) {
+      form.setValue('sedeId', dipendenteSelezionato.sedeId)
+    }
+  }, [dipendenteIdValue, dipendenti, open, form])
+
   // Reset form quando il dialog si apre/chiude o quando cambia il turno
   useEffect(() => {
     if (open && turno) {
@@ -153,12 +164,22 @@ export function TurnoFormDialog({
     }
   }, [open, turno, form])
 
-  const handleSubmit = async (data: TurnoFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Valida il form prima di inviare
+    const isValid = await form.trigger()
+    if (!isValid) return
+
+    const data = form.getValues()
+
     try {
       await onSubmit(data)
+      // Reset form solo se non ci sono errori
       form.reset()
     } catch (error) {
-      console.error('Errore submit form turno:', error)
+      // L'errore viene gestito dal parent e mostrato nel toast
+      // Non fare nulla qui, l'errore è già stato loggato e mostrato
     }
   }
 
@@ -177,7 +198,7 @@ export function TurnoFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 overflow-hidden">
+          <form onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden">
             <div className="flex-1 overflow-y-auto px-1 space-y-4">
             {/* Dipendente e Sede - affiancati */}
             <div className="grid grid-cols-2 gap-4">
