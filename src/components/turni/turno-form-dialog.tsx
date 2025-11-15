@@ -108,7 +108,7 @@ export function TurnoFormDialog({
 
   // Auto-compila orari e pausa pranzo quando cambia il tipo turno
   useEffect(() => {
-    if (!tipoTurnoValue || isEditing) return // Non auto-compilare in modifica
+    if (!tipoTurnoValue) return
 
     const fasciaCorrispondente = fasceOrarie.find(f => f.tipoTurno === tipoTurnoValue)
     if (fasciaCorrispondente) {
@@ -117,7 +117,7 @@ export function TurnoFormDialog({
       form.setValue('pausaPranzoInizio', fasciaCorrispondente.pausaPranzoInizio)
       form.setValue('pausaPranzoFine', fasciaCorrispondente.pausaPranzoFine)
     }
-  }, [tipoTurnoValue, fasceOrarie, isEditing, form])
+  }, [tipoTurnoValue, fasceOrarie, form])
 
   // Reset form quando il dialog si apre/chiude o quando cambia il turno
   useEffect(() => {
@@ -288,7 +288,7 @@ export function TurnoFormDialog({
             </div>
 
             {/* Info auto-compilazione */}
-            {fasceOrarie.length > 0 && !isEditing && (
+            {fasceOrarie.length > 0 && (
               <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-3">
                 <p className="text-xs text-blue-900 dark:text-blue-100">
                   💡 Gli orari si compilano automaticamente in base al tipo turno selezionato dalle fasce orarie configurate
