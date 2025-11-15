@@ -118,11 +118,13 @@ export class PresenzeFromTurniService {
     sovrascriviEsistente: boolean = false
   ): Promise<'generated' | 'updated' | 'skipped'> {
 
-    // Verifica se esiste già una presenza per questo turno/dipendente/data
+    // Verifica se esiste già una presenza per questo SPECIFICO turno
+    // Questo permette di avere multiple presenze per lo stesso dipendente nello stesso giorno
     const presenzaEsistente = await prisma.presenze.findFirst({
       where: {
         dipendenteId: turno.dipendenteId,
-        data: turno.data
+        data: turno.data,
+        turnoId: turno.id  // Aggiunto: cerca la presenza collegata a QUESTO turno specifico
       }
     })
 

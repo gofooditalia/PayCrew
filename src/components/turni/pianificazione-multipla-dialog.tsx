@@ -47,10 +47,28 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Loader2, CalendarRange, Info } from 'lucide-react'
+import { Loader2, CalendarRange, Info, AlertTriangle } from 'lucide-react'
 import { z } from 'zod'
+import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
+
+interface ConflittoTurno {
+  data: string
+  tipoTurno: string
+  oraInizio: string
+  oraFine: string
+}
 
 interface PianificazioneMultiplaDialogProps {
   open: boolean
@@ -82,6 +100,9 @@ export function PianificazioneMultiplaDialog({
   const [giorniSelezionati, setGiorniSelezionati] = useState<number[]>([1, 2, 3, 4, 5]) // Lun-Ven di default
   const [fasceOrarie, setFasceOrarie] = useState<FasciaOraria[]>([])
   const [loadingOrari, setLoadingOrari] = useState(false)
+  const [conflittiTrovati, setConflittiTrovati] = useState<ConflittoTurno[]>([])
+  const [showConflictDialog, setShowConflictDialog] = useState(false)
+  const [pendingFormData, setPendingFormData] = useState<TurniMultipliFormData | null>(null)
 
   const form = useForm<TurniMultipliFormData>({
     resolver: zodResolver(turniMultipliCreateSchema),
@@ -180,6 +201,43 @@ export function PianificazioneMultiplaDialog({
     form.setValue('giorni', nuoviGiorni)
   }
 
+  // Funzione per controllare conflitti turni esistenti
+  const checkConflitti = async (data: TurniMultipliFormData): Promise<ConflittoTurno[]> => {
+    try {
+      const response = await fetch(
+        `/api/turni?dipendenteId=${data.dipendenteId}&dataInizio=${data.dataInizio}&dataFine=${data.dataFine}`
+      )
+
+      if (!response.ok) return []
+
+      const result = await response.json()
+      const turniEsistenti = result.turni || []
+
+      // Filtra solo i turni che coincidono con i giorni selezionati
+      const conflitti: ConflittoTurno[] = []
+
+      for (const turno of turniEsistenti) {
+        const dataTurno = new Date(turno.data)
+        const giornoSettimana = dataTurno.getDay()
+
+        // Se questo turno è in un giorno selezionato, è un potenziale conflitto
+        if (data.giorni.includes(giornoSettimana)) {
+          conflitti.push({
+            data: dataTurno.toLocaleDateString('it-IT'),
+            tipoTurno: turno.tipoTurno,
+            oraInizio: turno.oraInizio,
+            oraFine: turno.oraFine
+          })
+        }
+      }
+
+      return conflitti
+    } catch (error) {
+      console.error('Errore controllo conflitti:', error)
+      return []
+    }
+  }
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -189,6 +247,18 @@ export function PianificazioneMultiplaDialog({
 
     const data = form.getValues()
 
+    // Pre-check conflitti
+    const conflitti = await checkConflitti(data)
+
+    if (conflitti.length > 0) {
+      // Mostra dialog di conferma
+      setConflittiTrovati(conflitti)
+      setPendingFormData(data)
+      setShowConflictDialog(true)
+      return
+    }
+
+    // Nessun conflitto, procedi
     try {
       await onSubmit(data)
       // Reset form solo se non ci sono errori
@@ -198,6 +268,31 @@ export function PianificazioneMultiplaDialog({
       // L'errore viene gestito dal parent e mostrato nel toast
       // Non fare nulla qui, l'errore è già stato loggato e mostrato
     }
+  }
+
+  // Funzione per procedere comunque dopo conferma
+  const handleProcediComunque = async () => {
+    if (!pendingFormData) return
+
+    setShowConflictDialog(false)
+
+    try {
+      await onSubmit(pendingFormData)
+      // Reset form solo se non ci sono errori
+      form.reset()
+      setGiorniSelezionati([1, 2, 3, 4, 5])
+      setPendingFormData(null)
+      setConflittiTrovati([])
+    } catch (error) {
+      // L'errore viene gestito dal parent
+    }
+  }
+
+  // Funzione per annullare dopo dialog conflitti
+  const handleAnnullaConflitti = () => {
+    setShowConflictDialog(false)
+    setPendingFormData(null)
+    setConflittiTrovati([])
   }
 
   const hasPausaPranzo = form.watch('pausaPranzoInizio') || form.watch('pausaPranzoFine')
@@ -471,6 +566,71 @@ export function PianificazioneMultiplaDialog({
           </form>
         </Form>
       </DialogContent>
+
+      {/* Dialog di conferma per conflitti */}
+      <AlertDialog open={showConflictDialog} onOpenChange={setShowConflictDialog}>
+        <AlertDialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
+              <AlertTriangle className="h-5 w-5" />
+              Attenzione: Turni duplicati rilevati
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              Il dipendente selezionato ha già turni assegnati per le seguenti date nel periodo selezionato:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="flex-1 overflow-y-auto my-4 space-y-2 max-h-60">
+            {conflittiTrovati.map((conflitto, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-md text-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="font-medium text-gray-900">{conflitto.data}</div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-block w-3 h-3 rounded-full ${
+                        TIPI_TURNO_CONFIG[conflitto.tipoTurno as keyof typeof TIPI_TURNO_CONFIG]?.bgColor || 'bg-gray-400'
+                      }`}
+                    />
+                    <span className="text-gray-600">
+                      {TIPI_TURNO_CONFIG[conflitto.tipoTurno as keyof typeof TIPI_TURNO_CONFIG]?.label || conflitto.tipoTurno}
+                    </span>
+                  </div>
+                </div>
+                <div className="font-mono text-gray-600 text-xs">
+                  {conflitto.oraInizio} - {conflitto.oraFine}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm">
+            <div className="flex gap-2">
+              <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-blue-800">
+                <strong>Suggerimento:</strong> Se il dipendente lavora sia pranzo che sera,
+                considera l'utilizzo di un turno <strong>SPEZZATO</strong> con pausa pranzo,
+                invece di creare turni multipli separati. Questo permette un calcolo corretto
+                degli straordinari sul totale giornaliero.
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleAnnullaConflitti}>
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleProcediComunque}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              Procedi comunque
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   )
 }

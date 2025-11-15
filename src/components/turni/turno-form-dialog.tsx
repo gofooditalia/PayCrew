@@ -39,8 +39,10 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertTriangle } from 'lucide-react'
 import { z } from 'zod'
+import { toast } from 'sonner'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 type TurnoFormData = z.infer<typeof turnoCreateSchema>
 
@@ -66,6 +68,8 @@ export function TurnoFormDialog({
   const isEditing = !!turno
   const [fasceOrarie, setFasceOrarie] = useState<FasciaOraria[]>([])
   const [loadingFasce, setLoadingFasce] = useState(false)
+  const [hasDuplicateTurno, setHasDuplicateTurno] = useState(false)
+  const [duplicateCheckDone, setDuplicateCheckDone] = useState(false)
 
   const form = useForm<TurnoFormData>({
     resolver: zodResolver(turnoCreateSchema),
@@ -83,7 +87,43 @@ export function TurnoFormDialog({
 
   const tipoTurnoValue = form.watch('tipoTurno')
   const dipendenteIdValue = form.watch('dipendenteId')
+  const dataValue = form.watch('data')
   const hasPausaPranzo = form.watch('pausaPranzoInizio') || form.watch('pausaPranzoFine')
+
+  // Controlla se esiste già un turno per questo dipendente in questa data
+  useEffect(() => {
+    const checkDuplicateTurno = async () => {
+      // Non controllare se siamo in modifica o se mancano i dati
+      if (isEditing || !dipendenteIdValue || !dataValue || !open) {
+        setHasDuplicateTurno(false)
+        setDuplicateCheckDone(false)
+        return
+      }
+
+      try {
+        const response = await fetch(
+          `/api/turni?dipendenteId=${dipendenteIdValue}&dataInizio=${dataValue}&dataFine=${dataValue}`
+        )
+
+        if (response.ok) {
+          const data = await response.json()
+          const turniEsistenti = data.turni || []
+
+          if (turniEsistenti.length > 0) {
+            setHasDuplicateTurno(true)
+          } else {
+            setHasDuplicateTurno(false)
+          }
+          setDuplicateCheckDone(true)
+        }
+      } catch (error) {
+        console.error('Errore controllo turni duplicati:', error)
+        setDuplicateCheckDone(false)
+      }
+    }
+
+    checkDuplicateTurno()
+  }, [dipendenteIdValue, dataValue, open, isEditing])
 
   // Carica fasce orarie quando si apre il dialog
   useEffect(() => {
@@ -200,6 +240,21 @@ export function TurnoFormDialog({
         <Form {...form}>
           <form onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden">
             <div className="flex-1 overflow-y-auto px-1 space-y-4">
+
+            {/* Alert per turno duplicato */}
+            {hasDuplicateTurno && duplicateCheckDone && !isEditing && (
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-sm text-orange-800">
+                  <strong>Attenzione:</strong> Questo dipendente ha già un turno assegnato per questa data.
+                  <br />
+                  <span className="text-xs mt-1 block">
+                    💡 <strong>Suggerimento:</strong> Se il dipendente lavora pranzo e sera, usa il tipo turno <strong>SPEZZATO</strong> con pausa pranzo, invece di creare due turni separati.
+                  </span>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Dipendente e Sede - affiancati */}
             <div className="grid grid-cols-2 gap-4">
               <FormField

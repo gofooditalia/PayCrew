@@ -144,7 +144,7 @@ export async function POST(request: Request) {
           return NextResponse.json(
             {
               error: 'Sovrapposizione turni',
-              message: `Il dipendente ha già un turno il ${dataFormattata} dalle ${turnoEsistente.oraInizio} alle ${turnoEsistente.oraFine}`
+              message: `Il dipendente ha già un turno il ${dataFormattata} dalle ${turnoEsistente.oraInizio} alle ${turnoEsistente.oraFine}. Se vuoi pianificare pranzo e sera, usa un turno SPEZZATO con pausa pranzo.`
             },
             { status: 409 }
           )

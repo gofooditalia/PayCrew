@@ -233,11 +233,17 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error: 'Sovrapposizione turni',
-            message: `Il dipendente ha già un turno dalle ${turnoEsistente.oraInizio} alle ${turnoEsistente.oraFine}`
+            message: `Il dipendente ha già un turno dalle ${turnoEsistente.oraInizio} alle ${turnoEsistente.oraFine} che si sovrappone con quello che stai cercando di creare. Usa un turno SPEZZATO se vuoi coprire pranzo e sera.`
           },
           { status: 409 }
         )
       }
+    }
+
+    // Se esistono turni ma non si sovrappongono, log un warning
+    // (Questo non blocca la creazione, ma è utile per analytics/monitoring)
+    if (turniEsistenti.length > 0) {
+      console.warn(`⚠️  Creazione turno multiplo per dipendente ${dipendente.nome} ${dipendente.cognome} in data ${validatedData.data}. Totale turni nella giornata: ${turniEsistenti.length + 1}`)
     }
 
     // Creazione turno

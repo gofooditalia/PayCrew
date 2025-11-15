@@ -105,7 +105,12 @@ export async function GET(request: Request) {
         (sum, p) => sum + (p.oreStraordinario ? Number(p.oreStraordinario) : 0),
         0
       );
-      const giorniLavorati = dip.presenze.length;
+      // Conta giorni UNICI lavorati (non numero di presenze)
+      // Un dipendente può avere più turni nello stesso giorno
+      const giorniUniciLavorati = new Set(
+        dip.presenze.map(p => p.data.toISOString().split('T')[0])
+      ).size;
+      const giorniLavorati = giorniUniciLavorati;
       const assenze = giorniLavorativi - giorniLavorati;
       const oreContrattualizzate =
         Number(dip.oreSettimanali) * 4.33; /* media settimane/mese */
