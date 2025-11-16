@@ -10,6 +10,7 @@ import { prisma } from '@/lib/prisma'
 import { turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
 import { AttivitaLogger } from '@/lib/attivita-logger'
 import { PresenzeFromTurniService } from '@/lib/services/presenze-from-turni.service'
+import { analizzaStraordinariDaTurni, type TurnoBase } from '@/lib/utils/ore-calculator'
 
 /**
  * POST /api/turni/multipli
@@ -115,6 +116,44 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    // ========================================
+    // ANALISI STRAORDINARI PREVISTI
+    // ========================================
+
+    // Recupera i turni esistenti del dipendente nel periodo
+    const turniEsistentiPeriodo = await prisma.turni.findMany({
+      where: {
+        dipendenteId: validatedData.dipendenteId,
+        data: {
+          gte: dataInizio,
+          lte: dataFine
+        }
+      }
+    })
+
+    // Combina turni esistenti con turni da creare per analisi completa
+    const tuttiTurniPeriodo: TurnoBase[] = [
+      ...turniEsistentiPeriodo.map(t => ({
+        data: t.data,
+        oraInizio: t.oraInizio,
+        oraFine: t.oraFine,
+        pausaPranzoInizio: t.pausaPranzoInizio,
+        pausaPranzoFine: t.pausaPranzoFine
+      })),
+      ...turniDaCreare.map(t => ({
+        data: t.data,
+        oraInizio: t.oraInizio,
+        oraFine: t.oraFine,
+        pausaPranzoInizio: t.pausaPranzoInizio,
+        pausaPranzoFine: t.pausaPranzoFine
+      }))
+    ]
+
+    const analisiStraordinari = analizzaStraordinariDaTurni(
+      tuttiTurniPeriodo,
+      dipendente.oreSettimanali
+    )
 
     // Verifica sovrapposizioni per ogni turno da creare
     for (const nuovoTurno of turniDaCreare) {
@@ -225,7 +264,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: `${turniCreati.count} turni creati con successo`,
-      count: turniCreati.count
+      count: turniCreati.count,
+      analisiStraordinari
     }, { status: 201 })
 
   } catch (error: any) {

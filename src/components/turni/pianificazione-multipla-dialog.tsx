@@ -47,7 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Loader2, CalendarRange, Info, AlertTriangle } from 'lucide-react'
+import { Loader2, CalendarRange, Info, AlertTriangle, Clock, Calendar } from 'lucide-react'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import {
@@ -60,6 +60,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { analizzaStraordinariDaTurni, type AnalisiStraordinari, type TurnoBase, getUpcomingWeeks, type WeekInfo } from '@/lib/utils/ore-calculator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
 
@@ -102,7 +104,12 @@ export function PianificazioneMultiplaDialog({
   const [loadingOrari, setLoadingOrari] = useState(false)
   const [conflittiTrovati, setConflittiTrovati] = useState<ConflittoTurno[]>([])
   const [showConflictDialog, setShowConflictDialog] = useState(false)
+  const [showStraordinariDialog, setShowStraordinariDialog] = useState(false)
+  const [analisiStraordinari, setAnalisiStraordinari] = useState<AnalisiStraordinari | null>(null)
   const [pendingFormData, setPendingFormData] = useState<TurniMultipliFormData | null>(null)
+  const [modalitaPianificazione, setModalitaPianificazione] = useState<'date' | 'settimane'>('date')
+  const [settimaneDisponibili, setSettimaneDisponibili] = useState<WeekInfo[]>([])
+  const [settimaneSelezionate, setSettimaneSelezionate] = useState<string[]>([])
 
   const form = useForm<TurniMultipliFormData>({
     resolver: zodResolver(turniMultipliCreateSchema),
@@ -120,7 +127,7 @@ export function PianificazioneMultiplaDialog({
     }
   })
 
-  // Carica fasce orarie quando si apre il dialog
+  // Carica fasce orarie e settimane quando si apre il dialog
   useEffect(() => {
     if (open) {
       const fetchFasceOrarie = async () => {
@@ -138,6 +145,10 @@ export function PianificazioneMultiplaDialog({
         }
       }
       fetchFasceOrarie()
+
+      // Carica settimane disponibili (prossime 12 settimane)
+      const weeks = getUpcomingWeeks(12)
+      setSettimaneDisponibili(weeks)
     }
   }, [open])
 
@@ -163,6 +174,8 @@ export function PianificazioneMultiplaDialog({
         sedeId: 'none'
       })
       setGiorniSelezionati([1, 2, 3, 4, 5])
+      setSettimaneSelezionate([])
+      setModalitaPianificazione('date')
     }
   }, [open, form])
 
@@ -201,14 +214,17 @@ export function PianificazioneMultiplaDialog({
     form.setValue('giorni', nuoviGiorni)
   }
 
-  // Funzione per controllare conflitti turni esistenti
-  const checkConflitti = async (data: TurniMultipliFormData): Promise<ConflittoTurno[]> => {
+  // Funzione per controllare conflitti e straordinari
+  const checkConflittiEStraordinari = async (data: TurniMultipliFormData): Promise<{
+    conflitti: ConflittoTurno[]
+    analisiStraordinari: AnalisiStraordinari | null
+  }> => {
     try {
       const response = await fetch(
         `/api/turni?dipendenteId=${data.dipendenteId}&dataInizio=${data.dataInizio}&dataFine=${data.dataFine}`
       )
 
-      if (!response.ok) return []
+      if (!response.ok) return { conflitti: [], analisiStraordinari: null }
 
       const result = await response.json()
       const turniEsistenti = result.turni || []
@@ -231,11 +247,63 @@ export function PianificazioneMultiplaDialog({
         }
       }
 
-      return conflitti
+      // Calcola straordinari previsti
+      const dipendenteSelezionato = dipendenti.find(d => d.id === data.dipendenteId)
+      if (!dipendenteSelezionato) return { conflitti, analisiStraordinari: null }
+
+      // Trova il dipendente completo per ottenere oreSettimanali
+      const responseDipendente = await fetch(`/api/dipendenti/${data.dipendenteId}`)
+      if (!responseDipendente.ok) return { conflitti, analisiStraordinari: null }
+
+      const dipendenteFull = await responseDipendente.json()
+
+      // Genera turni da creare
+      const dataInizio = new Date(data.dataInizio)
+      const dataFine = new Date(data.dataFine)
+      const turniDaCreare: TurnoBase[] = []
+
+      for (let d = new Date(dataInizio); d <= dataFine; d.setDate(d.getDate() + 1)) {
+        const giornoSettimana = d.getDay()
+        if (data.giorni.includes(giornoSettimana)) {
+          turniDaCreare.push({
+            data: new Date(d),
+            oraInizio: data.oraInizio,
+            oraFine: data.oraFine,
+            pausaPranzoInizio: data.pausaPranzoInizio || null,
+            pausaPranzoFine: data.pausaPranzoFine || null
+          })
+        }
+      }
+
+      // Combina turni esistenti + turni da creare
+      const tuttiTurni: TurnoBase[] = [
+        ...turniEsistenti.map((t: any) => ({
+          data: new Date(t.data),
+          oraInizio: t.oraInizio,
+          oraFine: t.oraFine,
+          pausaPranzoInizio: t.pausaPranzoInizio,
+          pausaPranzoFine: t.pausaPranzoFine
+        })),
+        ...turniDaCreare
+      ]
+
+      const analisi = analizzaStraordinariDaTurni(tuttiTurni, dipendenteFull.oreSettimanali || 40)
+
+      return { conflitti, analisiStraordinari: analisi }
     } catch (error) {
-      console.error('Errore controllo conflitti:', error)
-      return []
+      console.error('Errore controllo conflitti e straordinari:', error)
+      return { conflitti: [], analisiStraordinari: null }
     }
+  }
+
+  const handleSettimanaToggle = (weekKey: string) => {
+    setSettimaneSelezionate(prev => {
+      if (prev.includes(weekKey)) {
+        return prev.filter(w => w !== weekKey)
+      } else {
+        return [...prev, weekKey].sort()
+      }
+    })
   }
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -245,20 +313,56 @@ export function PianificazioneMultiplaDialog({
     const isValid = await form.trigger()
     if (!isValid) return
 
-    const data = form.getValues()
+    let data = form.getValues()
 
-    // Pre-check conflitti
-    const conflitti = await checkConflitti(data)
+    // Se modalità settimane, calcola le date di inizio/fine dalle settimane selezionate
+    if (modalitaPianificazione === 'settimane') {
+      if (settimaneSelezionate.length === 0) {
+        toast.error('Seleziona almeno una settimana')
+        return
+      }
+
+      // Trova la settimana più bassa e quella più alta
+      const settimane = settimaneSelezionate.map(key =>
+        settimaneDisponibili.find(w => w.weekKey === key)!
+      ).filter(Boolean)
+
+      const primaSettimana = settimane.reduce((min, w) =>
+        w.weekKey < min.weekKey ? w : min
+      )
+      const ultimaSettimana = settimane.reduce((max, w) =>
+        w.weekKey > max.weekKey ? w : max
+      )
+
+      // Aggiorna le date nel form data
+      data = {
+        ...data,
+        dataInizio: primaSettimana.startDate.toISOString().split('T')[0],
+        dataFine: ultimaSettimana.endDate.toISOString().split('T')[0]
+      }
+    }
+
+    // Pre-check conflitti e straordinari
+    const { conflitti, analisiStraordinari: analisi } = await checkConflittiEStraordinari(data)
 
     if (conflitti.length > 0) {
-      // Mostra dialog di conferma
+      // Mostra dialog di conferma per conflitti (priorità massima)
       setConflittiTrovati(conflitti)
       setPendingFormData(data)
+      setAnalisiStraordinari(analisi)
       setShowConflictDialog(true)
       return
     }
 
-    // Nessun conflitto, procedi
+    // Se ci sono straordinari previsti, mostra warning
+    if (analisi && analisi.oreStraordinarioPreviste > 0) {
+      setAnalisiStraordinari(analisi)
+      setPendingFormData(data)
+      setShowStraordinariDialog(true)
+      return
+    }
+
+    // Nessun conflitto o straordinario, procedi
     try {
       await onSubmit(data)
       // Reset form solo se non ci sono errori
@@ -270,11 +374,37 @@ export function PianificazioneMultiplaDialog({
     }
   }
 
-  // Funzione per procedere comunque dopo conferma
-  const handleProcediComunque = async () => {
+  // Funzione per procedere comunque dopo conferma conflitti
+  const handleProcediComunqueDaConflitti = async () => {
     if (!pendingFormData) return
 
     setShowConflictDialog(false)
+
+    // Se ci sono anche straordinari, mostra il dialog straordinari
+    if (analisiStraordinari && analisiStraordinari.oreStraordinarioPreviste > 0) {
+      setShowStraordinariDialog(true)
+      return
+    }
+
+    // Nessun straordinario, procedi direttamente
+    try {
+      await onSubmit(pendingFormData)
+      // Reset form solo se non ci sono errori
+      form.reset()
+      setGiorniSelezionati([1, 2, 3, 4, 5])
+      setPendingFormData(null)
+      setConflittiTrovati([])
+      setAnalisiStraordinari(null)
+    } catch (error) {
+      // L'errore viene gestito dal parent
+    }
+  }
+
+  // Funzione per procedere con straordinari
+  const handleProcediConStraordinari = async () => {
+    if (!pendingFormData) return
+
+    setShowStraordinariDialog(false)
 
     try {
       await onSubmit(pendingFormData)
@@ -283,6 +413,7 @@ export function PianificazioneMultiplaDialog({
       setGiorniSelezionati([1, 2, 3, 4, 5])
       setPendingFormData(null)
       setConflittiTrovati([])
+      setAnalisiStraordinari(null)
     } catch (error) {
       // L'errore viene gestito dal parent
     }
@@ -293,6 +424,14 @@ export function PianificazioneMultiplaDialog({
     setShowConflictDialog(false)
     setPendingFormData(null)
     setConflittiTrovati([])
+    setAnalisiStraordinari(null)
+  }
+
+  // Funzione per annullare dopo dialog straordinari
+  const handleAnnullaStraordinari = () => {
+    setShowStraordinariDialog(false)
+    setPendingFormData(null)
+    setAnalisiStraordinari(null)
   }
 
   const hasPausaPranzo = form.watch('pausaPranzoInizio') || form.watch('pausaPranzoFine')
@@ -442,36 +581,95 @@ export function PianificazioneMultiplaDialog({
               />
             </div>
 
-            {/* Riga 4: Range Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="dataInizio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data Inizio *</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Riga 4: Range Date o Settimane */}
+            <Tabs value={modalitaPianificazione} onValueChange={(v) => setModalitaPianificazione(v as 'date' | 'settimane')}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="date" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Per Date
+                </TabsTrigger>
+                <TabsTrigger value="settimane" className="flex items-center gap-2">
+                  <CalendarRange className="h-4 w-4" />
+                  Per Settimane
+                </TabsTrigger>
+              </TabsList>
 
-              <FormField
-                control={form.control}
-                name="dataFine"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data Fine *</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <TabsContent value="date" className="mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="dataInizio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data Inizio *</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dataFine"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data Fine *</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="settimane" className="mt-4 space-y-3">
+                <div>
+                  <Label>Seleziona Settimane *</Label>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Seleziona una o più settimane (ISO 8601: lunedì-domenica)
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto border rounded-md p-3">
+                  {settimaneDisponibili.map((week) => (
+                    <label
+                      key={week.weekKey}
+                      className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer transition-colors ${
+                        settimaneSelezionate.includes(week.weekKey)
+                          ? 'bg-primary/10 border-primary'
+                          : 'hover:bg-accent'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <input
+                          type="checkbox"
+                          checked={settimaneSelezionate.includes(week.weekKey)}
+                          onChange={() => handleSettimanaToggle(week.weekKey)}
+                          className="h-4 w-4 rounded border-primary text-primary focus:ring-2 focus:ring-primary cursor-pointer"
+                        />
+                        <div>
+                          <div className="font-medium text-sm">{week.label}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {week.startDate.toLocaleDateString('it-IT')} - {week.endDate.toLocaleDateString('it-IT')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-xs font-mono text-muted-foreground">
+                        {week.weekKey}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {settimaneSelezionate.length > 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    {settimaneSelezionate.length} settimana{settimaneSelezionate.length > 1 ? 'e' : ''} selezionata{settimaneSelezionate.length > 1 ? 'e' : ''}
+                  </div>
                 )}
-              />
-            </div>
+              </TabsContent>
+            </Tabs>
 
             {/* Giorni Settimana */}
             <FormField
@@ -558,7 +756,14 @@ export function PianificazioneMultiplaDialog({
               >
                 Annulla
               </Button>
-              <Button type="submit" disabled={isSubmitting || giorniSelezionati.length === 0}>
+              <Button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  giorniSelezionati.length === 0 ||
+                  (modalitaPianificazione === 'settimane' && settimaneSelezionate.length === 0)
+                }
+              >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Crea Turni
               </Button>
@@ -623,10 +828,111 @@ export function PianificazioneMultiplaDialog({
               Annulla
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleProcediComunque}
+              onClick={handleProcediComunqueDaConflitti}
               className="bg-orange-600 hover:bg-orange-700"
             >
               Procedi comunque
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog di warning per straordinari previsti */}
+      <AlertDialog open={showStraordinariDialog} onOpenChange={setShowStraordinariDialog}>
+        <AlertDialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
+              <Clock className="h-5 w-5" />
+              Straordinari previsti rilevati
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              La pianificazione che stai per creare comporterà ore straordinarie rispetto al contratto del dipendente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {analisiStraordinari && (
+            <div className="flex-1 overflow-y-auto my-4 space-y-4">
+              {/* Riepilogo generale */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <div className="text-xs text-blue-600 font-medium mb-1">Ore Pianificate</div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    {analisiStraordinari.oreTotaliPianificate}h
+                  </div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                  <div className="text-xs text-green-600 font-medium mb-1">Ore Contrattuali</div>
+                  <div className="text-2xl font-bold text-green-900">
+                    {analisiStraordinari.oreContrattuali}h
+                  </div>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                  <div className="text-xs text-amber-600 font-medium mb-1">Straordinari</div>
+                  <div className="text-2xl font-bold text-amber-900">
+                    {analisiStraordinari.oreStraordinarioPreviste}h
+                  </div>
+                  <div className="text-xs text-amber-600 mt-1">
+                    +{analisiStraordinari.percentualeStraordinari.toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Dettaglio per settimana */}
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-gray-700">
+                  Dettaglio per settimana ({analisiStraordinari.settimaneAnalizzate} {analisiStraordinari.settimaneAnalizzate === 1 ? 'settimana' : 'settimane'}):
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {analisiStraordinari.dettaglioSettimane.map((settimana, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-between p-3 rounded-md text-sm border ${
+                        settimana.straordinari > 0
+                          ? 'bg-amber-50 border-amber-200'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="font-medium text-gray-900 min-w-[80px]">
+                          {settimana.settimana}
+                        </div>
+                        <div className="text-gray-600">
+                          <span className="font-medium">{settimana.orePianificate}h</span> pianificate
+                          {' / '}
+                          <span className="text-gray-500">{settimana.oreContrattuali}h</span> contrattuali
+                        </div>
+                      </div>
+                      {settimana.straordinari > 0 && (
+                        <div className="font-medium text-amber-700">
+                          +{settimana.straordinari}h straordinari
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm">
+            <div className="flex gap-2">
+              <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-blue-800">
+                <strong>Nota:</strong> Gli straordinari verranno calcolati automaticamente nelle presenze
+                e nei cedolini. Assicurati che il dipendente sia consapevole del carico di lavoro extra.
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleAnnullaStraordinari}>
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleProcediConStraordinari}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              Procedi con straordinari
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
