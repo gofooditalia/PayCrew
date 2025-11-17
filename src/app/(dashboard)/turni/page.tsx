@@ -32,7 +32,14 @@ import { z } from 'zod'
 import { turnoCreateSchema, turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { CalendarRange } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { CalendarRange, Building2 } from 'lucide-react'
 
 type TurnoFormData = z.infer<typeof turnoCreateSchema>
 type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
@@ -69,6 +76,7 @@ export default function TurniPage() {
   const [sedi, setSedi] = useState<Sede[]>([])
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [sedeSelezionata, setSedeSelezionata] = useState<string>('tutte')
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -91,6 +99,17 @@ export default function TurniPage() {
       return eachDayOfInterval({ start: inizio, end: fine })
     }
   }, [currentDate, vistaAttiva])
+
+  // Filtra dipendenti in base alla sede selezionata
+  const dipendentiFiltrati = useMemo(() => {
+    if (sedeSelezionata === 'tutte') {
+      return dipendenti
+    }
+    if (sedeSelezionata === 'nessuna') {
+      return dipendenti.filter(d => !d.sedeId)
+    }
+    return dipendenti.filter(d => d.sedeId === sedeSelezionata)
+  }, [dipendenti, sedeSelezionata])
 
   // Carica dipendenti
   const caricaDipendenti = async () => {
@@ -355,28 +374,56 @@ export default function TurniPage() {
         onVistaChange={setVistaAttiva}
       />
 
-      {/* Legenda colori */}
-      <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
-        <div className="text-sm font-medium text-muted-foreground">Legenda:</div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300"></div>
-          <span className="text-sm">Mattina</span>
+      {/* Filtri e Legenda */}
+      <div className="space-y-4">
+        {/* Filtro Sede */}
+        <div className="flex items-center gap-3">
+          <Building2 className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-muted-foreground">Filtra per sede:</span>
+          <Select value={sedeSelezionata} onValueChange={setSedeSelezionata}>
+            <SelectTrigger className="w-[240px]">
+              <SelectValue placeholder="Tutte le sedi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="tutte">Tutte le sedi</SelectItem>
+              <SelectItem value="nessuna">Senza sede assegnata</SelectItem>
+              {sedi.map((sede) => (
+                <SelectItem key={sede.id} value={sede.id}>
+                  {sede.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {sedeSelezionata !== 'tutte' && (
+            <span className="text-xs text-muted-foreground">
+              ({dipendentiFiltrati.length} dipendent{dipendentiFiltrati.length === 1 ? 'e' : 'i'})
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-300"></div>
-          <span className="text-sm">Pranzo</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300"></div>
-          <span className="text-sm">Sera</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-300"></div>
-          <span className="text-sm">Spezzato</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-indigo-100 border-2 border-indigo-300"></div>
-          <span className="text-sm">Notte</span>
+
+        {/* Legenda colori */}
+        <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
+          <div className="text-sm font-medium text-muted-foreground">Legenda:</div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300"></div>
+            <span className="text-sm">Mattina</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-300"></div>
+            <span className="text-sm">Pranzo</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300"></div>
+            <span className="text-sm">Sera</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-300"></div>
+            <span className="text-sm">Spezzato</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-indigo-100 border-2 border-indigo-300"></div>
+            <span className="text-sm">Notte</span>
+          </div>
         </div>
       </div>
 
@@ -391,7 +438,7 @@ export default function TurniPage() {
       ) : (
         <CalendarioGrid
           giorni={giorni}
-          dipendenti={dipendenti}
+          dipendenti={dipendentiFiltrati}
           turni={turni}
           onTurnoClick={handleTurnoClick}
           onCellaVuotaClick={handleCellaVuotaClick}

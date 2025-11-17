@@ -39,7 +39,13 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, AlertTriangle, Trash2 } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { Loader2, AlertTriangle, Trash2, Info } from 'lucide-react'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -166,16 +172,6 @@ export function TurnoFormDialog({
     }
   }, [tipoTurnoValue, fasceOrarie, form])
 
-  // Auto-compila sede quando cambia il dipendente selezionato
-  useEffect(() => {
-    if (!dipendenteIdValue || !open) return
-
-    const dipendenteSelezionato = dipendenti.find(d => d.id === dipendenteIdValue)
-    if (dipendenteSelezionato?.sedeId) {
-      form.setValue('sedeId', dipendenteSelezionato.sedeId)
-    }
-  }, [dipendenteIdValue, dipendenti, open, form])
-
   // Reset form quando il dialog si apre/chiude o quando cambia il turno
   useEffect(() => {
     if (open && turno) {
@@ -197,6 +193,16 @@ export function TurnoFormDialog({
     } else if (open) {
       // Modalità creazione - usa valori pre-fill se disponibili, altrimenti usa oggi
       const dataDefault = preFillData || new Date().toISOString().split('T')[0]
+
+      // Trova la sede del dipendente pre-selezionato
+      let sedeIdDefault = 'none'
+      if (preFillDipendenteId) {
+        const dipendenteSelezionato = dipendenti.find(d => d.id === preFillDipendenteId)
+        if (dipendenteSelezionato?.sedeId) {
+          sedeIdDefault = dipendenteSelezionato.sedeId
+        }
+      }
+
       form.reset({
         dipendenteId: preFillDipendenteId || '',
         data: dataDefault,
@@ -205,10 +211,20 @@ export function TurnoFormDialog({
         pausaPranzoInizio: null,
         pausaPranzoFine: null,
         tipoTurno: 'MATTINA' as tipo_turno,
-        sedeId: 'none'
+        sedeId: sedeIdDefault
       })
     }
-  }, [open, turno, form, preFillDipendenteId, preFillData])
+  }, [open, turno, form, preFillDipendenteId, preFillData, dipendenti])
+
+  // Auto-compila sede quando cambia il dipendente selezionato DOPO l'apertura
+  useEffect(() => {
+    if (!dipendenteIdValue || !open || isEditing) return
+
+    const dipendenteSelezionato = dipendenti.find(d => d.id === dipendenteIdValue)
+    if (dipendenteSelezionato?.sedeId) {
+      form.setValue('sedeId', dipendenteSelezionato.sedeId)
+    }
+  }, [dipendenteIdValue, dipendenti, open, isEditing, form])
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -274,7 +290,7 @@ export function TurnoFormDialog({
               </Alert>
             )}
 
-            {/* Dipendente e Sede - affiancati */}
+            {/* Riga 1: Dipendente e Sede */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -335,63 +351,54 @@ export function TurnoFormDialog({
               />
             </div>
 
-            {/* Data e Tipo Turno - affiancati */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="data"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data *</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tipoTurno"
-                render={({ field }) => (
-                  <FormItem>
+            {/* Riga 2: Tipo Turno */}
+            <FormField
+              control={form.control}
+              name="tipoTurno"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-1">
                     <FormLabel>Tipo Turno *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleziona tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.values(TIPI_TURNO_CONFIG).map((config) => (
-                          <SelectItem key={config.value} value={config.value}>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`inline-block w-3 h-3 rounded-full ${config.bgColor}`}
-                              />
-                              {config.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    {fasceOrarie.length > 0 && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[250px]">
+                            <p className="text-xs">
+                              Gli orari si compilano automaticamente in base al tipo turno selezionato dalle fasce orarie configurate
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona tipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(TIPI_TURNO_CONFIG).map((config) => (
+                        <SelectItem key={config.value} value={config.value}>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-block w-3 h-3 rounded-full ${config.bgColor}`}
+                            />
+                            {config.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            {/* Info auto-compilazione */}
-            {fasceOrarie.length > 0 && (
-              <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-3">
-                <p className="text-xs text-blue-900 dark:text-blue-100">
-                  💡 Gli orari si compilano automaticamente in base al tipo turno selezionato dalle fasce orarie configurate
-                </p>
-              </div>
-            )}
-
-            {/* Orari */}
+            {/* Riga 3: Orari */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -421,6 +428,21 @@ export function TurnoFormDialog({
                 )}
               />
             </div>
+
+            {/* Riga 4: Data */}
+            <FormField
+              control={form.control}
+              name="data"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data *</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Pausa Pranzo - mostrata solo se presente */}
             {hasPausaPranzo && (
