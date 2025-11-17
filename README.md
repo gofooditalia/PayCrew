@@ -5,7 +5,8 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 ## 🚀 Caratteristiche Principali
 
 - **Gestione Dipendenti**: Anagrafica completa con documenti e dati contrattuali
-- **Fasce Orarie**: Configurazione fasce orarie con pause pranzo per turni spezzati ⏰ NEW!
+- **Fasce Orarie**: Configurazione fasce orarie con pause pranzo per turni spezzati
+- **Vista Calendario Turni**: Griglia settimanale dipendente × giorno ispirata a Factorial 📅 NEW!
 - **Turni**: Pianificazione turni singoli e multipli con auto-compilazione orari
 - **Presenze**: Auto-generazione da turni con stati e conferma
 - **Workflow Integrato**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
@@ -81,9 +82,24 @@ Applicazione web moderna per la gestione completa dei dipendenti e l'elaborazion
 - [x] **Test automatizzati** (11/12 passati - 91.7%)
 - [x] **Workflow completo**: Turno → Presenza (DA_CONFERMARE) → Conferma/Modifica/Assente
 
-## 🚀 Release v0.7.0 - Gestione Pagamenti Mensili e UX Dipendenti 💰
+## 🚀 Release v0.8.0 - Vista Calendario Turni 📅
 
-PayCrew v0.7.0 introduce il sistema completo di gestione pagamenti mensili organizzati per sede, con focus su tracking bonus e bonifici, plus miglioramenti sostanziali all'UX dipendenti!
+PayCrew v0.8.0 introduce la nuova **Vista Calendario Turni** ispirata a Factorial, con griglia settimanale dipendente × giorno per una gestione visuale e intuitiva dei turni!
+
+### 🎯 Novità v0.8.0
+
+#### 📅 Vista Calendario Turni (NEW!)
+- **Griglia Dipendente × Giorno**: Layout ispirato a Factorial per vista d'insieme immediata
+- **Navigazione Settimanale/Mensile**: Frecce prev/next e bottone "Oggi" per navigazione rapida
+- **Turni Colorati**: Celle colorate per tipo turno (Mattina, Pranzo, Sera, Full Time, Spezzato, Notte)
+- **Click Cella Vuota**: Crea turno con dipendente e data pre-compilati
+- **Click Turno Esistente**: Modifica turno con dialog pre-popolato
+- **Tooltip Dettagli**: Hover su turno mostra orari, pausa pranzo, ore totali calcolate
+- **Legenda Colori**: Identificazione rapida tipo turno con legenda sempre visibile
+- **Avatar Dipendenti**: Iniziali in avatar per identificazione visiva
+- **Evidenziazione Contesto**: Giorno corrente e weekend evidenziati
+- **Turni Multipli**: Supporto per più turni stesso giorno stesso dipendente
+- **Integrazione Bidirezionale**: Link a/da vista lista per massima flessibilità
 
 ### 🎯 Novità v0.7.0
 
@@ -124,6 +140,7 @@ PayCrew v0.7.0 introduce il sistema completo di gestione pagamenti mensili organ
 - **Activity Logger**: Sistema audit trail per tutte le operazioni critiche
 
 #### Gestione Turni Avanzata
+- **Vista Calendario**: Griglia settimanale dipendente × giorno ispirata a Factorial 📅 NEW!
 - **Fasce Orarie**: Configurazione fasce orarie standard in Impostazioni
 - **Pause Pranzo**: Gestione pause pranzo per turni spezzati
 - **Pianificazione Turni**: CRUD completo con filtri avanzati e auto-compilazione
