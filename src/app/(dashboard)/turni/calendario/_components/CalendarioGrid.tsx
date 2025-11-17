@@ -1,0 +1,115 @@
+'use client'
+
+/**
+ * CalendarioGrid - Griglia principale calendario turni
+ *
+ * Visualizza header giorni e righe dipendenti con turni
+ */
+
+import { tipo_turno } from '@prisma/client'
+import { DipendenteRow } from './DipendenteRow'
+import { format, isToday, isWeekend } from 'date-fns'
+import { it } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
+
+interface Turno {
+  id: string
+  data: Date
+  oraInizio: string
+  oraFine: string
+  pausaPranzoInizio?: string | null
+  pausaPranzoFine?: string | null
+  tipoTurno: tipo_turno
+  dipendenteId: string
+}
+
+interface Dipendente {
+  id: string
+  nome: string
+  cognome: string
+}
+
+interface CalendarioGridProps {
+  giorni: Date[]
+  dipendenti: Dipendente[]
+  turni: Turno[]
+  onTurnoClick: (turno: Turno) => void
+  onCellaVuotaClick: (dipendenteId: string, data: Date) => void
+}
+
+export function CalendarioGrid({
+  giorni,
+  dipendenti,
+  turni,
+  onTurnoClick,
+  onCellaVuotaClick
+}: CalendarioGridProps) {
+  // Raggruppa turni per dipendente
+  const turniPerDipendente = turni.reduce((acc, turno) => {
+    if (!acc[turno.dipendenteId]) {
+      acc[turno.dipendenteId] = []
+    }
+    acc[turno.dipendenteId].push(turno)
+    return acc
+  }, {} as Record<string, Turno[]>)
+
+  if (dipendenti.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <p>Nessun dipendente attivo trovato.</p>
+        <p className="text-sm mt-2">Aggiungi dipendenti per iniziare a pianificare i turni.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col border rounded-lg overflow-hidden bg-white">
+      {/* Header giorni */}
+      <div className="grid grid-cols-[200px_repeat(7,1fr)] bg-gray-50 border-b sticky top-0 z-10">
+        <div className="p-3 border-r font-semibold text-sm">
+          Dipendente
+        </div>
+        {giorni.map((giorno) => {
+          const oggi = isToday(giorno)
+          const weekend = isWeekend(giorno)
+
+          return (
+            <div
+              key={giorno.toISOString()}
+              className={cn(
+                "p-3 border-r text-center",
+                oggi && "bg-blue-50",
+                weekend && "bg-gray-100"
+              )}
+            >
+              <div className={cn(
+                "text-xs font-medium uppercase text-muted-foreground",
+                oggi && "text-blue-600"
+              )}>
+                {format(giorno, 'EEE', { locale: it })}
+              </div>
+              <div className={cn(
+                "text-lg font-semibold mt-1",
+                oggi && "text-blue-600"
+              )}>
+                {format(giorno, 'd')}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Righe dipendenti */}
+      {dipendenti.map((dipendente) => (
+        <DipendenteRow
+          key={dipendente.id}
+          dipendente={dipendente}
+          giorni={giorni}
+          turni={turniPerDipendente[dipendente.id] || []}
+          onTurnoClick={onTurnoClick}
+          onCellaVuotaClick={onCellaVuotaClick}
+        />
+      ))}
+    </div>
+  )
+}

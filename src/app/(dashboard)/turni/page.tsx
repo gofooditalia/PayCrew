@@ -284,6 +284,15 @@ export default function TurniPage() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Link href="/turni/calendario">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Vista Calendario
+            </Button>
+          </Link>
           <Button
             variant="outline"
             onClick={() => setPianificazioneDialogOpen(true)}

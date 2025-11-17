@@ -1,0 +1,95 @@
+'use client'
+
+/**
+ * DipendenteRow - Riga dipendente nel calendario
+ *
+ * Mostra il nome del dipendente e le celle turni per ogni giorno
+ */
+
+import { tipo_turno } from '@prisma/client'
+import { TurnoCell, CellaVuota } from './TurnoCell'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+
+interface Turno {
+  id: string
+  data: Date
+  oraInizio: string
+  oraFine: string
+  pausaPranzoInizio?: string | null
+  pausaPranzoFine?: string | null
+  tipoTurno: tipo_turno
+  dipendenteId: string
+}
+
+interface DipendenteRowProps {
+  dipendente: {
+    id: string
+    nome: string
+    cognome: string
+  }
+  giorni: Date[]
+  turni: Turno[]
+  onTurnoClick: (turno: Turno) => void
+  onCellaVuotaClick: (dipendenteId: string, data: Date) => void
+}
+
+export function DipendenteRow({
+  dipendente,
+  giorni,
+  turni,
+  onTurnoClick,
+  onCellaVuotaClick
+}: DipendenteRowProps) {
+  // Crea una mappa turni per data per accesso veloce
+  const turniPerData = turni.reduce((acc, turno) => {
+    const dataKey = new Date(turno.data).toISOString().split('T')[0]
+    if (!acc[dataKey]) {
+      acc[dataKey] = []
+    }
+    acc[dataKey].push(turno)
+    return acc
+  }, {} as Record<string, Turno[]>)
+
+  // Iniziali per avatar
+  const iniziali = `${dipendente.nome[0]}${dipendente.cognome[0]}`.toUpperCase()
+
+  return (
+    <div className="grid grid-cols-[200px_repeat(7,1fr)] border-b hover:bg-gray-50/50 transition-colors">
+      {/* Nome dipendente */}
+      <div className="flex items-center gap-3 p-3 sticky left-0 bg-white border-r font-medium">
+        <Avatar className="h-8 w-8">
+          <AvatarFallback className="text-xs">{iniziali}</AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <div className="text-sm font-medium truncate">
+            {dipendente.nome} {dipendente.cognome}
+          </div>
+        </div>
+      </div>
+
+      {/* Celle turni */}
+      {giorni.map((giorno) => {
+        const dataKey = giorno.toISOString().split('T')[0]
+        const turniGiorno = turniPerData[dataKey] || []
+
+        return (
+          <div key={dataKey} className="p-2 border-r">
+            {turniGiorno.length > 0 ? (
+              <div className="space-y-1">
+                {turniGiorno.map((turno) => (
+                  <TurnoCell
+                    key={turno.id}
+                    turno={turno}
+                    onClick={() => onTurnoClick(turno)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <CellaVuota onClick={() => onCellaVuotaClick(dipendente.id, giorno)} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}

@@ -54,6 +54,8 @@ interface TurnoFormDialogProps {
   dipendenti: Array<{ id: string; nome: string; cognome: string; sedeId: string | null }>
   sedi: Array<{ id: string; nome: string }>
   isSubmitting?: boolean
+  preFillDipendenteId?: string
+  preFillData?: string
 }
 
 export function TurnoFormDialog({
@@ -63,7 +65,9 @@ export function TurnoFormDialog({
   turno,
   dipendenti,
   sedi,
-  isSubmitting = false
+  isSubmitting = false,
+  preFillDipendenteId,
+  preFillData
 }: TurnoFormDialogProps) {
   const isEditing = !!turno
   const [fasceOrarie, setFasceOrarie] = useState<FasciaOraria[]>([])
@@ -189,11 +193,11 @@ export function TurnoFormDialog({
         sedeId: turno.sedeId || 'none'
       })
     } else if (open) {
-      // Modalità creazione - setta la data di oggi
-      const oggi = new Date().toISOString().split('T')[0]
+      // Modalità creazione - usa valori pre-fill se disponibili, altrimenti usa oggi
+      const dataDefault = preFillData || new Date().toISOString().split('T')[0]
       form.reset({
-        dipendenteId: '',
-        data: oggi,
+        dipendenteId: preFillDipendenteId || '',
+        data: dataDefault,
         oraInizio: '',
         oraFine: '',
         pausaPranzoInizio: null,
@@ -202,7 +206,7 @@ export function TurnoFormDialog({
         sedeId: 'none'
       })
     }
-  }, [open, turno, form])
+  }, [open, turno, form, preFillDipendenteId, preFillData])
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
