@@ -34,7 +34,6 @@ const colorMap: Record<tipo_turno, string> = {
   MATTINA: "bg-yellow-100 border-yellow-300 text-yellow-900 hover:bg-yellow-200",
   PRANZO: "bg-orange-100 border-orange-300 text-orange-900 hover:bg-orange-200",
   SERA: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200",
-  FULL_TIME: "bg-purple-100 border-purple-300 text-purple-900 hover:bg-purple-200",
   SPEZZATO: "bg-pink-100 border-pink-300 text-pink-900 hover:bg-pink-200",
   NOTTE: "bg-indigo-100 border-indigo-300 text-indigo-900 hover:bg-indigo-200",
 }
@@ -44,7 +43,6 @@ const tipoTurnoLabels: Record<tipo_turno, string> = {
   MATTINA: "Mattina",
   PRANZO: "Pranzo",
   SERA: "Sera",
-  FULL_TIME: "Full Time",
   SPEZZATO: "Spezzato",
   NOTTE: "Notte",
 }

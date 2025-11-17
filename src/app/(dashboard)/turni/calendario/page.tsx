@@ -313,10 +313,6 @@ export default function CalendarioPage() {
           <span className="text-sm">Sera</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-purple-100 border-2 border-purple-300"></div>
-          <span className="text-sm">Full Time</span>
-        </div>
-        <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-300"></div>
           <span className="text-sm">Spezzato</span>
         </div>

@@ -55,7 +55,7 @@ export default function TurniPage() {
 
   // Controlla se il banner è stato già dismisso
   useEffect(() => {
-    const dismissed = localStorage.getItem('turni-fasce-orarie-banner-dismissed')
+    const dismissed = localStorage.getItem('turni-vista-calendario-banner-dismissed')
     if (dismissed === 'true') {
       setShowBanner(false)
     }
@@ -63,7 +63,7 @@ export default function TurniPage() {
 
   // Funzione per dismissare il banner
   const dismissBanner = () => {
-    localStorage.setItem('turni-fasce-orarie-banner-dismissed', 'true')
+    localStorage.setItem('turni-vista-calendario-banner-dismissed', 'true')
     setShowBanner(false)
   }
 
@@ -287,10 +287,13 @@ export default function TurniPage() {
           <Link href="/turni/calendario">
             <Button
               variant="outline"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto relative"
             >
               <CalendarDays className="mr-2 h-4 w-4" />
               Vista Calendario
+              <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                NOVITÀ
+              </span>
             </Button>
           </Link>
           <Button
@@ -311,7 +314,7 @@ export default function TurniPage() {
         </div>
       </div>
 
-      {/* Banner Novità Fasce Orarie */}
+      {/* Banner Novità Vista Calendario */}
       {showBanner && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800 p-4">
           <div className="flex items-start gap-3">
@@ -320,11 +323,11 @@ export default function TurniPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="font-semibold text-blue-900 dark:text-blue-100">
-                    Novità: Gestione Fasce Orarie e Pause Pranzo
+                    Novità: Vista Calendario Turni
                   </h3>
                   <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                    Configura fasce orarie personalizzate e pause pranzo per velocizzare la creazione dei turni.
-                    Gli orari si compileranno automaticamente in base al tipo turno selezionato!
+                    Scopri la nuova vista calendario con griglia settimanale dipendente × giorno!
+                    Gestisci i turni in modo visuale e intuitivo, con navigazione rapida e colori per ogni tipo di turno.
                   </p>
                 </div>
                 <Button
@@ -337,12 +340,12 @@ export default function TurniPage() {
                 </Button>
               </div>
               <div className="flex gap-2">
-                <Link href="/impostazioni">
+                <Link href="/turni/calendario">
                   <Button
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    Vai alle Impostazioni
+                    Prova la Vista Calendario
                   </Button>
                 </Link>
                 <Button

@@ -7,6 +7,81 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/spec/v2.0
 
 ## [Unreleased]
 
+### 📅 [0.8.0] - 2025-11-17 - Vista Calendario Turni
+
+#### 🎯 Highlights
+Implementazione completa della **Vista Calendario Turni** ispirata a Factorial, con griglia settimanale dipendente × giorno per gestione visuale e intuitiva dei turni.
+
+#### Added
+- **Vista Calendario Turni**: Nuova interfaccia `/turni/calendario`
+  - Griglia dipendente × giorno con layout ispirato a Factorial
+  - Navigazione settimanale/mensile con frecce prev/next
+  - Bottone "Oggi" per tornare rapidamente alla settimana corrente
+  - Switching tra vista settimana e vista mese (tabs)
+- **Celle Turno Colorate**: Sistema di color-coding per tipo turno
+  - Mattina: giallo (yellow-100/300)
+  - Pranzo: arancione (orange-100/300)
+  - Sera: blu (blue-100/300)
+  - Full Time: viola (purple-100/300)
+  - Spezzato: rosa (pink-100/300)
+  - Notte: indigo (indigo-100/300)
+- **Interattività Celle**:
+  - Click su cella vuota: apre dialog creazione turno con dipendente e data pre-compilati
+  - Click su turno esistente: apre dialog modifica con tutti i dati
+  - Hover su turno: tooltip con dettagli (orari, pausa pranzo, ore totali calcolate)
+- **Componenti Calendario**:
+  - `CalendarioHeader`: navigazione mese, bottone oggi, tabs vista, link lista
+  - `CalendarioGrid`: griglia principale con header giorni della settimana
+  - `DipendenteRow`: riga dipendente con avatar iniziali e celle turni
+  - `TurnoCell`: cella turno con colori, orari, tooltip dettagli
+  - `CellaVuota`: cella cliccabile con simbolo "+" per nuovo turno
+- **UX Enhancements**:
+  - Avatar con iniziali dipendente per identificazione rapida
+  - Evidenziazione giorno corrente (sfondo blu)
+  - Evidenziazione weekend (sfondo grigio)
+  - Legenda colori sempre visibile sopra griglia
+  - Supporto turni multipli per stesso giorno/dipendente
+  - Tooltip con calcolo ore totali automatico
+- **Integrazione Form Turni**:
+  - `TurnoFormDialog`: supporto pre-fill dipendente e data
+  - Props `preFillDipendenteId` e `preFillData` per auto-compilazione
+  - Auto-selezione sede dipendente quando pre-compilato
+- **Link Bidirezionali**:
+  - `/turni`: bottone "Vista Calendario" (CalendarDays icon)
+  - `/turni/calendario`: bottone "Vista Lista" (List icon)
+
+#### Changed
+- **Calendario Page**:
+  - Utilizzo `useMemo` per `giorni` per evitare re-render infiniti
+  - Calcolo date inizio/fine interno a `caricaTurni` per stabilità dependencies
+  - useEffect ottimizzato con dependencies corrette
+- **Data Management**:
+  - Calcolo range date basato su `currentDate` e `vistaAttiva`
+  - Conversione date API in oggetti Date per consistenza
+  - Mapping turni per data con chiave ISO string per performance
+- **TurnoFormDialog**:
+  - Reset form con valori pre-fill quando disponibili
+  - Fallback a data corrente se nessun pre-fill
+  - Gestione stato pre-fill separata da stato modifica
+
+#### Technical Details
+- **Performance**: Memoizzazione giorni con `useMemo` per evitare loop
+- **Date Management**: Utilizzo date-fns per calcoli settimana/mese
+- **Locale**: Formato italiano (it) per nomi giorni e mesi
+- **Responsive**: Grid layout con colonna fissa dipendente (200px) + 7 colonne giorni
+- **Tooltip**: shadcn/ui Tooltip component per dettagli turno
+- **Avatar**: shadcn/ui Avatar component con fallback iniziali
+- **Accessibility**: Click handlers su celle, hover states, cursor pointer
+
+#### Files Changed
+- NEW: `src/app/(dashboard)/turni/calendario/page.tsx` (354 righe)
+- NEW: `src/app/(dashboard)/turni/calendario/_components/CalendarioHeader.tsx` (93 righe)
+- NEW: `src/app/(dashboard)/turni/calendario/_components/CalendarioGrid.tsx` (116 righe)
+- NEW: `src/app/(dashboard)/turni/calendario/_components/DipendenteRow.tsx` (96 righe)
+- NEW: `src/app/(dashboard)/turni/calendario/_components/TurnoCell.tsx` (139 righe)
+- MODIFIED: `src/app/(dashboard)/turni/page.tsx` (link vista calendario)
+- MODIFIED: `src/components/turni/turno-form-dialog.tsx` (supporto pre-fill)
+
 ### 💰 [0.7.0] - 2025-11-13 - Gestione Pagamenti Mensili e UX Dipendenti
 
 #### 🎯 Highlights

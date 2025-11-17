@@ -9,6 +9,7 @@
 import { tipo_turno } from '@prisma/client'
 import { TurnoCell, CellaVuota } from './TurnoCell'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { format } from 'date-fns'
 
 interface Turno {
   id: string
@@ -42,7 +43,8 @@ export function DipendenteRow({
 }: DipendenteRowProps) {
   // Crea una mappa turni per data per accesso veloce
   const turniPerData = turni.reduce((acc, turno) => {
-    const dataKey = new Date(turno.data).toISOString().split('T')[0]
+    // Usa format per evitare problemi di timezone
+    const dataKey = format(new Date(turno.data), 'yyyy-MM-dd')
     if (!acc[dataKey]) {
       acc[dataKey] = []
     }
@@ -69,7 +71,8 @@ export function DipendenteRow({
 
       {/* Celle turni */}
       {giorni.map((giorno) => {
-        const dataKey = giorno.toISOString().split('T')[0]
+        // Usa format per evitare problemi di timezone
+        const dataKey = format(giorno, 'yyyy-MM-dd')
         const turniGiorno = turniPerData[dataKey] || []
 
         return (
