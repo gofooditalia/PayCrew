@@ -10,6 +10,17 @@ import { prisma } from '@/lib/prisma'
 import { turnoUpdateSchema } from '@/lib/validation/turni-validator'
 import { AttivitaLogger } from '@/lib/attivita-logger'
 
+/**
+ * Helper per parsare una data string in formato YYYY-MM-DD come data locale
+ * Evita problemi di timezone che causerebbero uno shift del giorno
+ * Crea una data UTC a mezzanotte per evitare conversioni di fuso orario
+ */
+function parseLocalDate(dateString: string): Date {
+  const [year, month, day] = dateString.split('-').map(Number)
+  // Usa Date.UTC per creare una data UTC a mezzanotte, evitando shift timezone
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
+}
+
 interface RouteParams {
   params: Promise<{
     id: string
@@ -167,7 +178,7 @@ export async function PATCH(
 
     // Verifica sovrapposizioni se data o orari sono modificati
     if (validatedData.data || validatedData.oraInizio || validatedData.oraFine) {
-      const dataControllo = validatedData.data ? new Date(validatedData.data) : turnoEsistente.data
+      const dataControllo = validatedData.data ? parseLocalDate(validatedData.data) : turnoEsistente.data
       const oraInizioControllo = validatedData.oraInizio || turnoEsistente.oraInizio
       const oraFineControllo = validatedData.oraFine || turnoEsistente.oraFine
 
@@ -201,7 +212,7 @@ export async function PATCH(
 
     // Preparazione dati per update
     const updateData: any = {}
-    if (validatedData.data) updateData.data = new Date(validatedData.data)
+    if (validatedData.data) updateData.data = parseLocalDate(validatedData.data)
     if (validatedData.oraInizio) updateData.oraInizio = validatedData.oraInizio
     if (validatedData.oraFine) updateData.oraFine = validatedData.oraFine
     if (validatedData.pausaPranzoInizio !== undefined) updateData.pausaPranzoInizio = validatedData.pausaPranzoInizio

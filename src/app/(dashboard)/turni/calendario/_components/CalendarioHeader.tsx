@@ -11,10 +11,9 @@
 
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChevronLeft, ChevronRight, List } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import Link from 'next/link'
 
 interface CalendarioHeaderProps {
   currentDate: Date
@@ -69,21 +68,12 @@ export function CalendarioHeader({
       </div>
 
       {/* Controlli vista */}
-      <div className="flex items-center gap-2">
-        <Tabs value={vistaAttiva} onValueChange={(v) => onVistaChange(v as 'settimana' | 'mese')}>
-          <TabsList>
-            <TabsTrigger value="settimana">Settimana</TabsTrigger>
-            <TabsTrigger value="mese">Mese</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <Link href="/turni">
-          <Button variant="outline" size="sm">
-            <List className="mr-2 h-4 w-4" />
-            Vista Lista
-          </Button>
-        </Link>
-      </div>
+      <Tabs value={vistaAttiva} onValueChange={(v) => onVistaChange(v as 'settimana' | 'mese')}>
+        <TabsList>
+          <TabsTrigger value="settimana">Settimana</TabsTrigger>
+          <TabsTrigger value="mese">Mese</TabsTrigger>
+        </TabsList>
+      </Tabs>
     </div>
   )
 }

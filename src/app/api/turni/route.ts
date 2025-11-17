@@ -13,6 +13,17 @@ import { AttivitaLogger } from '@/lib/attivita-logger'
 import { PresenzeFromTurniService } from '@/lib/services/presenze-from-turni.service'
 
 /**
+ * Helper per parsare una data string in formato YYYY-MM-DD come data locale
+ * Evita problemi di timezone che causerebbero uno shift del giorno
+ * Crea una data UTC a mezzanotte per evitare conversioni di fuso orario
+ */
+function parseLocalDate(dateString: string): Date {
+  const [year, month, day] = dateString.split('-').map(Number)
+  // Usa Date.UTC per creare una data UTC a mezzanotte, evitando shift timezone
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
+}
+
+/**
  * GET /api/turni
  * Ottiene la lista dei turni con filtri opzionali
  */
@@ -84,10 +95,10 @@ export async function GET(request: Request) {
     if (filtriValidati.dataInizio || filtriValidati.dataFine) {
       where.data = {}
       if (filtriValidati.dataInizio) {
-        where.data.gte = new Date(filtriValidati.dataInizio)
+        where.data.gte = parseLocalDate(filtriValidati.dataInizio)
       }
       if (filtriValidati.dataFine) {
-        where.data.lte = new Date(filtriValidati.dataFine)
+        where.data.lte = parseLocalDate(filtriValidati.dataFine)
       }
     }
 
@@ -216,7 +227,7 @@ export async function POST(request: Request) {
     const turniEsistenti = await prisma.turni.findMany({
       where: {
         dipendenteId: validatedData.dipendenteId,
-        data: new Date(validatedData.data)
+        data: parseLocalDate(validatedData.data)
       }
     })
 
@@ -249,7 +260,7 @@ export async function POST(request: Request) {
     // Creazione turno
     const nuovoTurno = await prisma.turni.create({
       data: {
-        data: new Date(validatedData.data),
+        data: parseLocalDate(validatedData.data),
         oraInizio: validatedData.oraInizio,
         oraFine: validatedData.oraFine,
         pausaPranzoInizio: validatedData.pausaPranzoInizio || null,

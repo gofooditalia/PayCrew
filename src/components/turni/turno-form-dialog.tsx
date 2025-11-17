@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, AlertTriangle } from 'lucide-react'
+import { Loader2, AlertTriangle, Trash2 } from 'lucide-react'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -50,6 +50,7 @@ interface TurnoFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (data: TurnoFormData) => Promise<void>
+  onDelete?: (id: string) => Promise<void>
   turno?: Turno | null
   dipendenti: Array<{ id: string; nome: string; cognome: string; sedeId: string | null }>
   sedi: Array<{ id: string; nome: string }>
@@ -62,6 +63,7 @@ export function TurnoFormDialog({
   open,
   onOpenChange,
   onSubmit,
+  onDelete,
   turno,
   dipendenti,
   sedi,
@@ -224,6 +226,19 @@ export function TurnoFormDialog({
     } catch (error) {
       // L'errore viene gestito dal parent e mostrato nel toast
       // Non fare nulla qui, l'errore è già stato loggato e mostrato
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!turno?.id || !onDelete) return
+
+    if (!confirm('Sei sicuro di voler eliminare questo turno?')) return
+
+    try {
+      await onDelete(turno.id)
+      onOpenChange(false)
+    } catch (error) {
+      // L'errore viene gestito dal parent
     }
   }
 
@@ -459,18 +474,36 @@ export function TurnoFormDialog({
 
             {/* Footer Sticky */}
             <DialogFooter className="mt-4 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Annulla
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? 'Salva Modifiche' : 'Crea Turno'}
-              </Button>
+              <div className="flex w-full items-center justify-between">
+                <div>
+                  {isEditing && onDelete && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleDelete}
+                      disabled={isSubmitting}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Elimina
+                    </Button>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onOpenChange(false)}
+                    disabled={isSubmitting}
+                  >
+                    Annulla
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEditing ? 'Salva Modifiche' : 'Crea Turno'}
+                  </Button>
+                </div>
+              </div>
             </DialogFooter>
           </form>
         </Form>

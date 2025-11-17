@@ -1,109 +1,96 @@
 'use client'
 
 /**
- * Pagina Turni
+ * Pagina Turni - Vista Calendario
  *
- * Gestione completa dei turni con filtri, CRUD e visualizzazione lista
+ * Vista calendario settimanale/mensile per gestione turni
+ * Ispirato a Factorial - griglia dipendente × giorno
+ * Include pianificazione multipla per creazione batch turni
  */
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { Turno } from '@/types/turni'
-import { tipo_turno } from '@prisma/client'
-import { TurniList } from '@/components/turni/turni-list'
-import { TurniListSkeleton } from '@/components/turni/turni-list-skeleton'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { CalendarioHeader } from './calendario/_components/CalendarioHeader'
+import { CalendarioGrid } from './calendario/_components/CalendarioGrid'
 import { TurnoFormDialog } from '@/components/turni/turno-form-dialog'
-import { TurniFiltri } from '@/components/turni/turni-filters'
 import { PianificazioneMultiplaDialog } from '@/components/turni/pianificazione-multipla-dialog'
-import { Button } from '@/components/ui/button'
+import { tipo_turno } from '@prisma/client'
 import { toast } from 'sonner'
-import { Plus, Loader2, CalendarDays, CalendarRange, Sparkles, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  addWeeks,
+  addMonths,
+  subWeeks,
+  subMonths,
+  format
+} from 'date-fns'
+import { it } from 'date-fns/locale'
 import { z } from 'zod'
 import { turnoCreateSchema, turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
-import Link from 'next/link'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { CalendarRange } from 'lucide-react'
 
 type TurnoFormData = z.infer<typeof turnoCreateSchema>
 type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
 
-export default function TurniPage() {
-  const router = useRouter()
+interface Turno {
+  id: string
+  data: Date
+  oraInizio: string
+  oraFine: string
+  pausaPranzoInizio?: string | null
+  pausaPranzoFine?: string | null
+  tipoTurno: tipo_turno
+  dipendenteId: string
+}
 
+interface Dipendente {
+  id: string
+  nome: string
+  cognome: string
+  sedeId: string | null
+}
+
+interface Sede {
+  id: string
+  nome: string
+}
+
+export default function TurniPage() {
+  // Stato
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [vistaAttiva, setVistaAttiva] = useState<'settimana' | 'mese'>('settimana')
   const [turni, setTurni] = useState<Turno[]>([])
-  const [dipendenti, setDipendenti] = useState<Array<{ id: string; nome: string; cognome: string; sedeId: string | null }>>([])
-  const [sedi, setSedi] = useState<Array<{ id: string; nome: string }>>([])
+  const [dipendenti, setDipendenti] = useState<Dipendente[]>([])
+  const [sedi, setSedi] = useState<Sede[]>([])
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
   const [pianificazioneDialogOpen, setPianificazioneDialogOpen] = useState(false)
-  const [turnoInModifica, setTurnoInModifica] = useState<Turno | null>(null)
-  const [showBanner, setShowBanner] = useState(true)
+  const [turnoInModifica, setTurnoInModifica] = useState<any>(null)
+  const [preFillData, setPreFillData] = useState<{ dipendenteId?: string; data?: Date } | null>(null)
 
-  // Paginazione
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalTurni, setTotalTurni] = useState(0)
-  const pageSize = 50
-
-  const [filtri, setFiltri] = useState<{
-    dipendenteId?: string
-    sedeId?: string
-    tipoTurno?: tipo_turno
-    dataInizio?: string
-    dataFine?: string
-  }>({})
-
-  // Controlla se il banner è stato già dismisso
-  useEffect(() => {
-    const dismissed = localStorage.getItem('turni-vista-calendario-banner-dismissed')
-    if (dismissed === 'true') {
-      setShowBanner(false)
+  // Calcola giorni da mostrare in base alla vista - MEMOIZZATO per evitare re-render infiniti
+  const giorni = useMemo(() => {
+    if (vistaAttiva === 'settimana') {
+      const inizio = startOfWeek(currentDate, { weekStartsOn: 1 }) // Lunedì
+      const fine = endOfWeek(currentDate, { weekStartsOn: 1 })
+      return eachDayOfInterval({ start: inizio, end: fine })
+    } else {
+      // Vista mese: mostra solo i primi 7 giorni per ora
+      // TODO: implementare vista mese completa con scroll orizzontale
+      const inizio = startOfMonth(currentDate)
+      const fine = new Date(inizio)
+      fine.setDate(fine.getDate() + 6)
+      return eachDayOfInterval({ start: inizio, end: fine })
     }
-  }, [])
-
-  // Funzione per dismissare il banner
-  const dismissBanner = () => {
-    localStorage.setItem('turni-vista-calendario-banner-dismissed', 'true')
-    setShowBanner(false)
-  }
-
-  // Carica turni
-  const caricaTurni = useCallback(async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams()
-
-      if (filtri.dipendenteId) params.append('dipendenteId', filtri.dipendenteId)
-      if (filtri.sedeId) params.append('sedeId', filtri.sedeId)
-      if (filtri.tipoTurno) params.append('tipoTurno', filtri.tipoTurno)
-      if (filtri.dataInizio) params.append('dataInizio', filtri.dataInizio)
-      if (filtri.dataFine) params.append('dataFine', filtri.dataFine)
-
-      // Aggiungi parametri paginazione
-      params.append('page', currentPage.toString())
-      params.append('limit', pageSize.toString())
-
-      const response = await fetch(`/api/turni?${params.toString()}`)
-
-      if (!response.ok) {
-        throw new Error('Errore nel caricamento dei turni')
-      }
-
-      const data = await response.json()
-      setTurni(data.turni || [])
-
-      // Aggiorna info paginazione
-      if (data.pagination) {
-        setTotalPages(data.pagination.pages)
-        setTotalTurni(data.pagination.total)
-      }
-    } catch (error) {
-      console.error('Errore caricamento turni:', error)
-      toast.error('Impossibile caricare i turni')
-    } finally {
-      setLoading(false)
-    }
-  }, [filtri, currentPage, pageSize])
+  }, [currentDate, vistaAttiva])
 
   // Carica dipendenti
   const caricaDipendenti = async () => {
@@ -115,6 +102,7 @@ export default function TurniPage() {
       setDipendenti(data.dipendenti || [])
     } catch (error) {
       console.error('Errore caricamento dipendenti:', error)
+      toast.error('Impossibile caricare i dipendenti')
     }
   }
 
@@ -131,51 +119,112 @@ export default function TurniPage() {
     }
   }
 
+  // Carica turni per il periodo visualizzato
+  const caricaTurni = useCallback(async () => {
+    try {
+      setLoading(true)
+
+      // Calcola date inizio/fine basate su currentDate e vistaAttiva
+      let dataInizio: Date
+      let dataFine: Date
+
+      if (vistaAttiva === 'settimana') {
+        dataInizio = startOfWeek(currentDate, { weekStartsOn: 1 })
+        dataFine = endOfWeek(currentDate, { weekStartsOn: 1 })
+      } else {
+        dataInizio = startOfMonth(currentDate)
+        dataFine = new Date(dataInizio)
+        dataFine.setDate(dataFine.getDate() + 6)
+      }
+
+      const params = new URLSearchParams({
+        dataInizio: dataInizio.toISOString().split('T')[0],
+        dataFine: dataFine.toISOString().split('T')[0],
+        limit: '100' // Limite massimo API
+      })
+
+      const response = await fetch(`/api/turni?${params.toString()}`)
+      if (!response.ok) throw new Error('Errore caricamento turni')
+
+      const data = await response.json()
+
+      // Converti le date stringa in oggetti Date
+      const turniConDate = (data.turni || []).map((t: any) => ({
+        ...t,
+        data: new Date(t.data)
+      }))
+
+      setTurni(turniConDate)
+    } catch (error) {
+      console.error('Errore caricamento turni:', error)
+      toast.error('Impossibile caricare i turni')
+    } finally {
+      setLoading(false)
+    }
+  }, [currentDate, vistaAttiva])
+
   // Caricamento iniziale
   useEffect(() => {
     caricaDipendenti()
     caricaSedi()
   }, [])
 
-  // Reset pagina quando cambiano i filtri
+  // Ricarica turni quando cambiano la data o la vista
   useEffect(() => {
-    setCurrentPage(1)
-  }, [filtri])
+    if (dipendenti.length > 0) {
+      caricaTurni()
+    }
+  }, [dipendenti.length, caricaTurni])
 
-  // Ricarica turni quando cambiano i filtri o la pagina
-  useEffect(() => {
-    caricaTurni()
-  }, [caricaTurni])
+  // Navigazione
+  const handlePreviousMonth = () => {
+    if (vistaAttiva === 'settimana') {
+      setCurrentDate(prev => subWeeks(prev, 1))
+    } else {
+      setCurrentDate(prev => subMonths(prev, 1))
+    }
+  }
 
-  const handleCreate = () => {
+  const handleNextMonth = () => {
+    if (vistaAttiva === 'settimana') {
+      setCurrentDate(prev => addWeeks(prev, 1))
+    } else {
+      setCurrentDate(prev => addMonths(prev, 1))
+    }
+  }
+
+  const handleToday = () => {
+    setCurrentDate(new Date())
+  }
+
+  // Gestione turno click
+  const handleTurnoClick = (turno: Turno) => {
+    // Trova il turno completo con tutti i dati
+    const turnoCompleto = {
+      id: turno.id,
+      data: format(turno.data, 'yyyy-MM-dd'),
+      oraInizio: turno.oraInizio,
+      oraFine: turno.oraFine,
+      pausaPranzoInizio: turno.pausaPranzoInizio || undefined,
+      pausaPranzoFine: turno.pausaPranzoFine || undefined,
+      tipoTurno: turno.tipoTurno,
+      dipendenteId: turno.dipendenteId,
+      sedeId: dipendenti.find(d => d.id === turno.dipendenteId)?.sedeId || undefined
+    }
+
+    setTurnoInModifica(turnoCompleto)
+    setPreFillData(null)
+    setDialogOpen(true)
+  }
+
+  // Gestione cella vuota click
+  const handleCellaVuotaClick = (dipendenteId: string, data: Date) => {
     setTurnoInModifica(null)
+    setPreFillData({ dipendenteId, data })
     setDialogOpen(true)
   }
 
-  // Funzioni paginazione
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1)
-    }
-  }
-
-  const goToPrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1)
-    }
-  }
-
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-    }
-  }
-
-  const handleEdit = (turno: Turno) => {
-    setTurnoInModifica(turno)
-    setDialogOpen(true)
-  }
-
+  // Submit form
   const handleSubmit = async (data: TurnoFormData) => {
     setIsSubmitting(true)
     try {
@@ -202,17 +251,18 @@ export default function TurniPage() {
 
       setDialogOpen(false)
       setTurnoInModifica(null)
+      setPreFillData(null)
       await caricaTurni()
     } catch (error: any) {
       console.error('Errore salvataggio turno:', error)
       toast.error(error.message || 'Impossibile salvare il turno')
-      // Rilancia l'errore per impedire il reset del form nel dialog
       throw error
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  // Delete turno
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`/api/turni/${id}`, {
@@ -224,7 +274,6 @@ export default function TurniPage() {
       }
 
       toast.success('Turno eliminato con successo')
-
       await caricaTurni()
     } catch (error) {
       console.error('Errore eliminazione turno:', error)
@@ -233,6 +282,7 @@ export default function TurniPage() {
     }
   }
 
+  // Pianificazione multipla
   const handlePianificazioneMultipla = async (data: TurniMultipliFormData) => {
     setIsSubmitting(true)
 
@@ -275,7 +325,7 @@ export default function TurniPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header principale */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Turni</h1>
@@ -283,19 +333,7 @@ export default function TurniPage() {
             Gestisci i turni e la pianificazione del personale
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Link href="/turni/calendario">
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto relative"
-            >
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Vista Calendario
-              <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                NOVITÀ
-              </span>
-            </Button>
-          </Link>
+        <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={() => setPianificazioneDialogOpen(true)}
@@ -304,168 +342,74 @@ export default function TurniPage() {
             <CalendarRange className="mr-2 h-4 w-4" />
             Pianificazione Multipla
           </Button>
-          <Button
-            onClick={handleCreate}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nuovo Turno
-          </Button>
         </div>
       </div>
 
-      {/* Banner Novità Vista Calendario */}
-      {showBanner && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800 p-4">
-          <div className="flex items-start gap-3">
-            <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1 space-y-2">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">
-                    Novità: Vista Calendario Turni
-                  </h3>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                    Scopri la nuova vista calendario con griglia settimanale dipendente × giorno!
-                    Gestisci i turni in modo visuale e intuitivo, con navigazione rapida e colori per ogni tipo di turno.
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900"
-                  onClick={dismissBanner}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Link href="/turni/calendario">
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Prova la Vista Calendario
-                  </Button>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900"
-                  onClick={dismissBanner}
-                >
-                  Ho capito
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Filtri */}
-      <TurniFiltri
-        dipendenti={dipendenti}
-        sedi={sedi}
-        onFilterChange={setFiltri}
+      {/* Header calendario */}
+      <CalendarioHeader
+        currentDate={currentDate}
+        onPreviousMonth={handlePreviousMonth}
+        onNextMonth={handleNextMonth}
+        onToday={handleToday}
+        vistaAttiva={vistaAttiva}
+        onVistaChange={setVistaAttiva}
       />
 
-      {/* Contenuto */}
-      {loading ? (
-        <TurniListSkeleton rows={8} />
-      ) : (
-        <div className="space-y-4">
-          {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-lg border bg-card p-4">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  Totale Turni
-                </span>
-              </div>
-              <p className="mt-2 text-2xl font-bold">{totalTurni}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {turni.length} in questa pagina
-              </p>
-            </div>
-          </div>
-
-          {/* Lista turni */}
-          <TurniList
-            turni={turni}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-
-          {/* Paginazione */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-2 py-4 border-t">
-              <div className="text-sm text-muted-foreground">
-                Pagina {currentPage} di {totalPages} • {totalTurni} turni totali
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goToPrevPage}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Precedente
-                </Button>
-
-                {/* Numeri pagina */}
-                <div className="flex gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum
-                    if (totalPages <= 5) {
-                      pageNum = i + 1
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i
-                    } else {
-                      pageNum = currentPage - 2 + i
-                    }
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => goToPage(pageNum)}
-                        className="w-9"
-                      >
-                        {pageNum}
-                      </Button>
-                    )
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goToNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Successivo
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          )}
+      {/* Legenda colori */}
+      <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
+        <div className="text-sm font-medium text-muted-foreground">Legenda:</div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300"></div>
+          <span className="text-sm">Mattina</span>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-300"></div>
+          <span className="text-sm">Pranzo</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300"></div>
+          <span className="text-sm">Sera</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-300"></div>
+          <span className="text-sm">Spezzato</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-indigo-100 border-2 border-indigo-300"></div>
+          <span className="text-sm">Notte</span>
+        </div>
+      </div>
+
+      {/* Griglia calendario */}
+      {loading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      ) : (
+        <CalendarioGrid
+          giorni={giorni}
+          dipendenti={dipendenti}
+          turni={turni}
+          onTurnoClick={handleTurnoClick}
+          onCellaVuotaClick={handleCellaVuotaClick}
+        />
       )}
 
-      {/* Dialog Form */}
+      {/* Dialog Form Turno Singolo */}
       <TurnoFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
+        onDelete={handleDelete}
         turno={turnoInModifica}
         dipendenti={dipendenti}
         sedi={sedi}
         isSubmitting={isSubmitting}
+        preFillDipendenteId={preFillData?.dipendenteId}
+        preFillData={preFillData?.data ? format(preFillData.data, 'yyyy-MM-dd') : undefined}
       />
 
       {/* Dialog Pianificazione Multipla */}
