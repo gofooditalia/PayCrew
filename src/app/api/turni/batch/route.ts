@@ -97,7 +97,7 @@ export async function POST(request: Request) {
           where: {
             id: spostamento.turnoId,
             dipendenti: {
-              aziendaId: dbUser.aziendaId
+              aziendaId: dbUser.aziendaId!
             }
           }
         })
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
             where: {
               id: turnoOriginale.id,
               dipendenti: {
-                aziendaId: dbUser.aziendaId
+                aziendaId: dbUser.aziendaId!
               }
             }
           })
