@@ -104,38 +104,46 @@ export function TurnoFormDialog({
 
   // Controlla se esiste già un turno per questo dipendente in questa data
   useEffect(() => {
-    const checkDuplicateTurno = async () => {
-      // Non controllare se siamo in modifica o se mancano i dati
-      if (isEditing || !dipendenteIdValue || !dataValue || !open) {
-        setHasDuplicateTurno(false)
-        setDuplicateCheckDone(false)
-        return
-      }
-
-      try {
-        const response = await fetch(
-          `/api/turni?dipendenteId=${dipendenteIdValue}&dataInizio=${dataValue}&dataFine=${dataValue}`
-        )
-
-        if (response.ok) {
-          const data = await response.json()
-          const turniEsistenti = data.turni || []
-
-          if (turniEsistenti.length > 0) {
-            setHasDuplicateTurno(true)
-          } else {
-            setHasDuplicateTurno(false)
-          }
-          setDuplicateCheckDone(true)
-        }
-      } catch (error) {
-        console.error('Errore controllo turni duplicati:', error)
-        setDuplicateCheckDone(false)
-      }
+    // Reset immediato quando cambia lo stato
+    if (isEditing || !dipendenteIdValue || !dataValue || !open) {
+      setHasDuplicateTurno(false)
+      setDuplicateCheckDone(false)
+      return
     }
 
-    checkDuplicateTurno()
-  }, [dipendenteIdValue, dataValue, open, isEditing])
+    // Debounce per evitare chiamate multiple ravvicinate durante il reset del form
+    const timeoutId = setTimeout(() => {
+      const checkDuplicateTurno = async () => {
+        try {
+          const response = await fetch(
+            `/api/turni?dipendenteId=${dipendenteIdValue}&dataInizio=${dataValue}&dataFine=${dataValue}`
+          )
+
+          if (response.ok) {
+            const data = await response.json()
+            const turniEsistenti = data.turni || []
+
+            // Doppio controllo: solo se il dialog è ancora aperto e i valori sono ancora gli stessi
+            if (open && form.getValues('dipendenteId') === dipendenteIdValue && form.getValues('data') === dataValue) {
+              if (turniEsistenti.length > 0) {
+                setHasDuplicateTurno(true)
+              } else {
+                setHasDuplicateTurno(false)
+              }
+              setDuplicateCheckDone(true)
+            }
+          }
+        } catch (error) {
+          console.error('Errore controllo turni duplicati:', error)
+          setDuplicateCheckDone(false)
+        }
+      }
+
+      checkDuplicateTurno()
+    }, 300) // Debounce di 300ms
+
+    return () => clearTimeout(timeoutId)
+  }, [dipendenteIdValue, dataValue, open, isEditing, form])
 
   // Carica fasce orarie quando si apre il dialog
   useEffect(() => {
