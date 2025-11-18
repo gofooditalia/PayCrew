@@ -9,7 +9,8 @@
 import { tipo_turno } from '@prisma/client'
 import { TurnoCell, CellaVuota } from './TurnoCell'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { format } from 'date-fns'
+import { format, isToday } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 interface Turno {
   id: string
@@ -84,9 +85,16 @@ export function DipendenteRow({
         // Usa format per evitare problemi di timezone
         const dataKey = format(giorno, 'yyyy-MM-dd')
         const turniGiorno = turniPerData[dataKey] || []
+        const oggi = isToday(giorno)
 
         return (
-          <div key={dataKey} className="p-2 border-r">
+          <div
+            key={dataKey}
+            className={cn(
+              "p-2 border-r",
+              oggi && "bg-blue-50 border-blue-400 border-x-2"
+            )}
+          >
             {turniGiorno.length > 0 ? (
               <div className="space-y-1">
                 {turniGiorno.map((turno) => (

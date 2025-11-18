@@ -29,7 +29,9 @@ const presenzaEditSchema = z.object({
   data: z.string().min(1, 'La data è obbligatoria'),
   entrata: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato orario non valido (HH:mm)').optional().or(z.literal('')),
   uscita: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato orario non valido (HH:mm)').optional().or(z.literal('')),
-  nota: z.string().max(500, 'La nota non può superare i 500 caratteri').optional()
+  nota: z.string()
+    .min(1, 'La nota è obbligatoria per registrare le modifiche')
+    .max(500, 'La nota non può superare i 500 caratteri')
 }).refine((data) => {
   // Verifica che l'orario di uscita sia successivo a quello di entrata
   if (data.entrata && data.uscita && data.entrata !== '' && data.uscita !== '') {
@@ -227,10 +229,12 @@ export function PresenzaEditDialog({ open, onOpenChange, presenza, onSave }: Pre
               name="nota"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Note</FormLabel>
+                  <FormLabel>
+                    Note <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Es: ritardo 2 ore, straordinario concordato..."
+                      placeholder="Es: ritardo 2 ore, straordinario concordato, ferie..."
                       className="resize-none"
                       rows={3}
                       {...field}
@@ -240,6 +244,11 @@ export function PresenzaEditDialog({ open, onOpenChange, presenza, onSave }: Pre
                 </FormItem>
               )}
             />
+
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800">
+              <p className="font-medium mb-1">📝 Nota Obbligatoria</p>
+              <p>Lascia sempre una nota quando modifichi una presenza per tenere traccia delle motivazioni.</p>
+            </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-800">
               <p className="font-medium mb-1">ℹ️ Calcolo Automatico</p>

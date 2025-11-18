@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { calcolaOreTraOrari } from '@/lib/utils/ore-calculator'
+import { createRomeDateTime, extractRomeDate } from '@/lib/utils/timezone'
 import type { Prisma } from '@prisma/client'
 
 export interface GenerazioneOptions {
@@ -142,10 +143,10 @@ export class PresenzeFromTurniService {
       turno.dipendenti.oreSettimanali
     )
 
-    // Crea DateTime completi per entrata e uscita
-    const dataString = turno.data.toISOString().split('T')[0]
-    const entrata = new Date(`${dataString}T${turno.oraInizio}:00`)
-    const uscita = new Date(`${dataString}T${turno.oraFine}:00`)
+    // Crea DateTime completi per entrata e uscita in timezone Europe/Rome
+    const dataString = extractRomeDate(turno.data)
+    const entrata = createRomeDateTime(dataString, turno.oraInizio)
+    const uscita = createRomeDateTime(dataString, turno.oraFine)
 
     // Dati presenza
     const presenzaData: Prisma.presenzeCreateInput = {
@@ -258,12 +259,12 @@ export class PresenzeFromTurniService {
     }
 
     if (modifiche?.entrata || modifiche?.uscita) {
-      const dataString = presenza.data.toISOString().split('T')[0]
+      const dataString = extractRomeDate(presenza.data)
       const nuovaEntrata = modifiche.entrata
-        ? new Date(`${dataString}T${modifiche.entrata}:00`)
+        ? createRomeDateTime(dataString, modifiche.entrata)
         : presenza.entrata
       const nuovaUscita = modifiche.uscita
-        ? new Date(`${dataString}T${modifiche.uscita}:00`)
+        ? createRomeDateTime(dataString, modifiche.uscita)
         : presenza.uscita
 
       if (nuovaEntrata && nuovaUscita) {

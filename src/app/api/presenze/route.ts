@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { presenzaSchema, presenzeFilterSchema } from '@/lib/validation/presenze-validator'
 import { AttivitaLogger } from '@/lib/attivita-logger'
 import { calcolaOreTraOrari } from '@/lib/utils/ore-calculator'
+import { createRomeDateTime } from '@/lib/utils/timezone'
 
 /**
  * GET /api/presenze
@@ -101,6 +102,8 @@ export async function GET(request: NextRequest) {
           turni: {
             select: {
               tipoTurno: true,
+              pausaPranzoInizio: true,
+              pausaPranzoFine: true,
               sedi: {
                 select: {
                   id: true,
@@ -228,13 +231,13 @@ export async function POST(request: NextRequest) {
       oreStraordinario = Math.max(0, oreLavorateNette - oreGiornaliereStandard)
     }
 
-    // Crea la presenza
+    // Crea la presenza con timezone Europe/Rome
     const presenza = await prisma.presenze.create({
       data: {
         dipendenteId: validatedData.dipendenteId,
         data: new Date(validatedData.data),
-        entrata: validatedData.entrata ? new Date(`${validatedData.data}T${validatedData.entrata}:00`) : null,
-        uscita: validatedData.uscita ? new Date(`${validatedData.data}T${validatedData.uscita}:00`) : null,
+        entrata: validatedData.entrata ? createRomeDateTime(validatedData.data, validatedData.entrata) : null,
+        uscita: validatedData.uscita ? createRomeDateTime(validatedData.data, validatedData.uscita) : null,
         oreLavorate,
         oreStraordinario,
         nota: validatedData.nota || null

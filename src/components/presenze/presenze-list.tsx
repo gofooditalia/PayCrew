@@ -37,6 +37,8 @@ interface Presenza {
   }
   turni?: {
     tipoTurno?: 'MATTINA' | 'PRANZO' | 'SERA' | 'NOTTE' | 'SPEZZATO'
+    pausaPranzoInizio?: string | null
+    pausaPranzoFine?: string | null
     sedi?: {
       nome: string
     } | null
@@ -89,24 +91,9 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
     return format(new Date(date), 'dd/MM/yyyy', { locale: it })
   }
 
-  const getStatoBadge = (stato?: string) => {
-    switch (stato) {
-      case 'MODIFICATA':
-        return (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-xs px-2 py-0.5">
-            MOD
-          </Badge>
-        )
-      case 'ASSENTE':
-        return (
-          <Badge className="bg-red-100 text-red-800 border-red-300 text-xs px-2 py-0.5">
-            ASS
-          </Badge>
-        )
-      // CONFERMATA e DA_CONFERMARE non mostrano badge (stato normale)
-      default:
-        return null
-    }
+  const formatPausaPranzo = (pausaInizio?: string | null, pausaFine?: string | null) => {
+    if (!pausaInizio || !pausaFine) return '-'
+    return `${pausaInizio} - ${pausaFine}`
   }
 
   // Mostra skeleton durante il caricamento iniziale
@@ -120,8 +107,8 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Sede</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Orario</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Pausa Pranzo</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
               <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
             </tr>
@@ -142,10 +129,10 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
                   <Skeleton className="h-5 w-28" />
                 </td>
                 <td className="p-4">
-                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-5 w-24" />
                 </td>
                 <td className="p-4">
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-6 w-20" />
                 </td>
                 <td className="p-4 text-center">
                   <div className="flex justify-center">
@@ -200,8 +187,8 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Dipendente</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Sede</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Orario</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Pausa Pranzo</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Ore</th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-gray-700">Stato</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-gray-700">Note</th>
               <th className="h-12 px-4 text-right align-middle font-medium text-gray-700">Azioni</th>
             </tr>
@@ -244,6 +231,11 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
                 </div>
               </td>
               <td className="p-4">
+                <span className="text-sm text-gray-600 font-mono">
+                  {formatPausaPranzo(presenza.turni?.pausaPranzoInizio, presenza.turni?.pausaPranzoFine)}
+                </span>
+              </td>
+              <td className="p-4">
                 {presenza.oreLavorate !== null ? (
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">{Number(presenza.oreLavorate).toFixed(2)}h</Badge>
@@ -256,9 +248,6 @@ export function PresenzeList({ presenze, onConfirm, onMarkAsAbsent, onReset, onR
                 ) : (
                   '-'
                 )}
-              </td>
-              <td className="p-4">
-                {getStatoBadge(presenza.stato)}
               </td>
               <td className="p-4 text-center">
                 <div className="flex items-center justify-center gap-1">

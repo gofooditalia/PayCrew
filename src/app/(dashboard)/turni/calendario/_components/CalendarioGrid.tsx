@@ -87,20 +87,23 @@ export function CalendarioGrid({
             <div
               key={giorno.toISOString()}
               className={cn(
-                "p-3 border-r text-center",
-                oggi && "bg-blue-50",
-                weekend && "bg-gray-100"
+                "p-3 border-r text-center relative",
+                oggi && "bg-blue-100 border-blue-400 border-x-2",
+                !oggi && weekend && "bg-gray-100"
               )}
             >
+              {oggi && (
+                <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
+              )}
               <div className={cn(
-                "text-xs font-medium uppercase text-muted-foreground",
-                oggi && "text-blue-600"
+                "text-xs font-medium uppercase",
+                oggi ? "text-blue-700 font-bold" : "text-muted-foreground"
               )}>
-                {format(giorno, 'EEE', { locale: it })}
+                {oggi ? "OGGI" : format(giorno, 'EEE', { locale: it })}
               </div>
               <div className={cn(
                 "text-lg font-semibold mt-1",
-                oggi && "text-blue-600"
+                oggi && "text-blue-700"
               )}>
                 {format(giorno, 'd')}
               </div>

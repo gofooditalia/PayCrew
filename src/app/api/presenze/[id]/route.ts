@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { presenzaUpdateSchema } from '@/lib/validation/presenze-validator'
 import { AttivitaLogger } from '@/lib/attivita-logger'
 import { calcolaOreTraOrari } from '@/lib/utils/ore-calculator'
+import { createRomeDateTime, extractRomeDate } from '@/lib/utils/timezone'
 
 /**
  * GET /api/presenze/[id]
@@ -183,13 +184,13 @@ export async function PUT(
     }
 
     if (validatedData.entrata !== undefined) {
-      const dataBase = validatedData.data || presenzaEsistente.data.toISOString().substring(0, 10)
-      dataToUpdate.entrata = validatedData.entrata ? new Date(`${dataBase}T${validatedData.entrata}:00`) : null
+      const dataBase = validatedData.data || extractRomeDate(presenzaEsistente.data)
+      dataToUpdate.entrata = validatedData.entrata ? createRomeDateTime(dataBase, validatedData.entrata) : null
     }
 
     if (validatedData.uscita !== undefined) {
-      const dataBase = validatedData.data || presenzaEsistente.data.toISOString().substring(0, 10)
-      dataToUpdate.uscita = validatedData.uscita ? new Date(`${dataBase}T${validatedData.uscita}:00`) : null
+      const dataBase = validatedData.data || extractRomeDate(presenzaEsistente.data)
+      dataToUpdate.uscita = validatedData.uscita ? createRomeDateTime(dataBase, validatedData.uscita) : null
     }
 
     if (validatedData.nota !== undefined) {
