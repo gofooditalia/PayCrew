@@ -97,10 +97,10 @@ export async function POST(request: Request) {
 
     // Esegui operazioni in una transazione Prisma veloce (solo DB operations)
     await prisma.$transaction(async (tx) => {
-      // Processa spostamenti
+      // Processa spostamenti (DELETE + CREATE per integrità referenziale)
       for (const spostamento of spostamenti) {
-        // Verifica che il turno esista e appartenga all'azienda dell'utente
-        const turnoEsistente = await tx.turni.findFirst({
+        // Recupera i dati del turno originale (prima di eliminarlo)
+        const turnoOriginale = await tx.turni.findFirst({
           where: {
             id: spostamento.turnoId,
             dipendenti: {
@@ -109,16 +109,40 @@ export async function POST(request: Request) {
           }
         })
 
-        if (!turnoEsistente) {
+        if (!turnoOriginale) {
           throw new Error(`Turno ${spostamento.turnoId} non trovato o non autorizzato`)
         }
 
-        // Aggiorna il turno con nuova data e dipendente
-        const turnoAggiornato = await tx.turni.update({
-          where: { id: spostamento.turnoId },
+        // Recupera dati del dipendente di destinazione (per sedeId)
+        const dipendenteDestinazione = await tx.dipendenti.findUnique({
+          where: { id: spostamento.toDipendenteId },
+          select: {
+            nome: true,
+            cognome: true,
+            sedeId: true
+          }
+        })
+
+        if (!dipendenteDestinazione) {
+          throw new Error(`Dipendente destinazione non trovato`)
+        }
+
+        // ELIMINA il turno originale (CASCADE elimina anche presenze generate)
+        await tx.turni.delete({
+          where: { id: spostamento.turnoId }
+        })
+
+        // CREA nuovo turno nella posizione di destinazione
+        const nuovoTurno = await tx.turni.create({
           data: {
             data: parseLocalDate(spostamento.toDate),
-            dipendenteId: spostamento.toDipendenteId
+            oraInizio: turnoOriginale.oraInizio,
+            oraFine: turnoOriginale.oraFine,
+            pausaPranzoInizio: turnoOriginale.pausaPranzoInizio,
+            pausaPranzoFine: turnoOriginale.pausaPranzoFine,
+            tipoTurno: turnoOriginale.tipoTurno,
+            dipendenteId: spostamento.toDipendenteId,
+            sedeId: dipendenteDestinazione.sedeId // Sede del dipendente di destinazione
           },
           include: {
             dipendenti: {
@@ -134,9 +158,9 @@ export async function POST(request: Request) {
 
         // Raccogli dati per logging dopo la transazione
         turniPerLogging.push({
-          tipo: 'modifica',
-          turno: turnoAggiornato,
-          dipendenteNome: `${turnoAggiornato.dipendenti.nome} ${turnoAggiornato.dipendenti.cognome}`
+          tipo: 'creazione', // Ora è una creazione, non una modifica
+          turno: nuovoTurno,
+          dipendenteNome: `${nuovoTurno.dipendenti.nome} ${nuovoTurno.dipendenti.cognome}`
         })
       }
 
@@ -162,7 +186,21 @@ export async function POST(request: Request) {
           }
         }
 
-        // Crea il nuovo turno duplicato
+        // Recupera dati del dipendente di destinazione (per sedeId)
+        const dipendenteDest = await tx.dipendenti.findUnique({
+          where: { id: toDipendenteId },
+          select: {
+            nome: true,
+            cognome: true,
+            sedeId: true
+          }
+        })
+
+        if (!dipendenteDest) {
+          throw new Error(`Dipendente destinazione non trovato`)
+        }
+
+        // Crea il nuovo turno duplicato con sedeId corretta
         const nuovoTurno = await tx.turni.create({
           data: {
             data: parseLocalDate(toDate),
@@ -171,7 +209,8 @@ export async function POST(request: Request) {
             pausaPranzoInizio: turnoOriginale.pausaPranzoInizio,
             pausaPranzoFine: turnoOriginale.pausaPranzoFine,
             tipoTurno: turnoOriginale.tipoTurno,
-            dipendenteId: toDipendenteId
+            dipendenteId: toDipendenteId,
+            sedeId: dipendenteDest.sedeId // Sede del dipendente di destinazione
           },
           include: {
             dipendenti: {
@@ -197,21 +236,13 @@ export async function POST(request: Request) {
     // Log attività DOPO la transazione (non blocca il commit)
     // Eseguito in parallelo per massimizzare performance
     const loggingPromises = turniPerLogging.map(({ tipo, turno, dipendenteNome }) => {
-      if (tipo === 'modifica') {
-        return AttivitaLogger.logModificaTurno(
-          turno as any,
-          dipendenteNome,
-          user.id,
-          dbUser.aziendaId!
-        ).catch(err => console.error('Errore logging modifica turno:', err))
-      } else {
-        return AttivitaLogger.logCreazioneTurno(
-          turno as any,
-          dipendenteNome,
-          user.id,
-          dbUser.aziendaId!
-        ).catch(err => console.error('Errore logging creazione turno:', err))
-      }
+      // Tutti gli spostamenti e duplicazioni sono ora creazioni (DELETE + CREATE)
+      return AttivitaLogger.logCreazioneTurno(
+        turno as any,
+        dipendenteNome,
+        user.id,
+        dbUser.aziendaId!
+      ).catch(err => console.error('Errore logging creazione turno:', err))
     })
 
     // Attendi logging in background (non blocca la risposta)

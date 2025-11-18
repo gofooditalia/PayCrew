@@ -42,7 +42,10 @@ npm run verify:deployment # Verify Prisma deployment setup
 - `sedi` - Company locations/branches
 - `dipendenti` - Employees (the core entity)
 - `presenze` - Attendance records with calculated hours
-- `turni` - Shift schedules
+  - **CRITICAL**: `onDelete: Cascade` on `turnoId` - presenze are automatically deleted when turno is deleted
+- `turni` - Shift schedules with location assignment
+  - **CRITICAL**: Always have `sedeId` populated from dipendente
+  - Drag & drop operations use DELETE + CREATE pattern (not UPDATE) for data integrity
 - `buste_paga` - Payroll records with PDF generation
 - `collaboratori` - External collaborators (occasional workers, VAT holders, consultants)
 - `prestazioni` - Work services/projects for collaborators (hourly or fixed-fee)
@@ -205,6 +208,39 @@ The Prisma client uses connection pooling with:
 - Database operations use `safePrismaQuery()` for graceful degradation
 - Activity logging never blocks main operations (catch and log errors)
 - Connection issues are logged but don't crash the app
+
+### Shift Management (Turni) - Critical Architecture
+
+**DELETE + CREATE Pattern for Drag & Drop Operations**:
+
+When a shift is moved via drag & drop, the system uses a DELETE + CREATE pattern instead of UPDATE:
+
+```typescript
+// ❌ OLD APPROACH (problematic):
+UPDATE turni SET data = newDate, dipendenteId = newDipendente
+
+// ✅ NEW APPROACH (correct):
+DELETE FROM turni WHERE id = oldTurnoId  // CASCADE deletes presenze
+CREATE turni (data, dipendenteId, sedeId, ...)  // Fresh record with new ID
+```
+
+**Why DELETE + CREATE?**
+1. **Data Integrity**: Each turno gets a fresh ID and all fields are recalculated
+2. **sedeId Consistency**: Always populated from destination dipendente
+3. **Cascade Benefits**: Presenze are automatically cleaned up when turno is deleted
+4. **Audit Trail**: Clear distinction between "new turno" vs "modified turno"
+5. **No Orphans**: Zero risk of orphaned presenze with null turnoId
+
+**Referential Integrity**:
+- `presenze.turnoId` has `onDelete: Cascade` constraint
+- Deleting a turno automatically deletes all generated presenze
+- No orphaned records, clean database
+
+**Batch API** (`/api/turni/batch`):
+- Handles both spostamenti (moves) and duplicazioni (copies)
+- Uses fast Prisma transactions (DB operations only)
+- Activity logging executed AFTER transaction commit to avoid timeout
+- All operations maintain sedeId consistency
 
 ## Development Workflow
 
