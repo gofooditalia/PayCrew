@@ -24,7 +24,6 @@ const navigation = [
   { name: 'Collaboratori', href: '/collaboratori', icon: UsersIcon, enabled: true, isNew: false, inProgress: false },
   { name: 'Turni', href: '/turni', icon: CalendarIcon, enabled: true, isNew: false, inProgress: false },
   { name: 'Presenze', href: '/presenze', icon: ClockIcon, enabled: true, isNew: false, inProgress: false },
-  { name: 'Cedolini', href: '/cedolini', icon: DocumentTextIcon, enabled: false, isNew: false, inProgress: true },
   { name: 'Report', href: '/report', icon: ChartBarIcon, enabled: true, isNew: false, inProgress: false },
   { name: 'Impostazioni', href: '/impostazioni', icon: CogIcon, enabled: true, isNew: false, inProgress: false },
 ]
@@ -42,7 +41,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div className={`flex flex-col bg-background border-r border-border/50 transition-all duration-300 ease-in-out ${
+    <div className={`flex flex-col bg-background border-r border-border/50 transition-all duration-300 ease-in-out overflow-x-clip ${
       sidebarState === 'open' ? 'w-64' : sidebarState === 'collapsed' ? 'w-16' : 'w-64'
     } ${
       sidebarState === 'closed' ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'

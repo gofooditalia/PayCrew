@@ -43,7 +43,7 @@ export default async function DashboardLayout({
     // Allow user to continue without company data
     return (
       <SidebarProvider>
-        <div className="flex h-screen bg-background">
+        <div className="flex h-screen bg-background overflow-x-hidden">
           {/* Sidebar */}
           <Sidebar />
           
@@ -92,7 +92,7 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen bg-background overflow-x-hidden">
         {/* Sidebar */}
         <Sidebar />
         
