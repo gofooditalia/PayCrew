@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDistanceToNow } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -130,10 +129,7 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
                     <Skeleton className="h-4 w-20" />
                   </div>
                   <Skeleton className="h-5 w-full" />
-                  <div className="flex items-center space-x-2">
-                    <Skeleton className="h-6 w-6 rounded-full" />
-                    <Skeleton className="h-4 w-32" />
-                  </div>
+                  <Skeleton className="h-4 w-32" />
                 </div>
               </div>
             ))}
@@ -212,16 +208,9 @@ export function AttivitaRecenti({ limit = 10, className }: AttivitaRecentiProps)
                 <p className="text-base font-medium mobile-text-primary mb-1">
                   {item.descrizione}
                 </p>
-                <div className="flex items-center space-x-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {item.user.name?.charAt(0) || item.user.email.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <p className="text-sm mobile-text-muted">
-                    {item.user.name || item.user.email}
-                  </p>
-                </div>
+                <p className="text-sm mobile-text-muted">
+                  {item.user.name || item.user.email}
+                </p>
               </div>
             </div>
           ))}

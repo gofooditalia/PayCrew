@@ -8,7 +8,6 @@
 
 import { tipo_turno } from '@prisma/client'
 import { TurnoCell, CellaVuota } from './TurnoCell'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { format, isToday } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -53,9 +52,6 @@ export function DipendenteRow({
     return acc
   }, {} as Record<string, Turno[]>)
 
-  // Iniziali per avatar
-  const iniziali = `${dipendente.nome[0]}${dipendente.cognome[0]}`.toUpperCase()
-
   // Determina dinamicamente il numero di colonne basato sui giorni
   const numGiorni = giorni.length
   const gridTemplate = `200px repeat(${numGiorni}, 1fr)`
@@ -69,14 +65,9 @@ export function DipendenteRow({
       }}
     >
       {/* Nome dipendente */}
-      <div className="flex items-center gap-3 p-3 sticky left-0 bg-white border-r font-medium">
-        <Avatar className="h-8 w-8">
-          <AvatarFallback className="text-xs">{iniziali}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0">
-          <div className="text-sm font-medium truncate">
-            {dipendente.nome} {dipendente.cognome}
-          </div>
+      <div className="flex items-center p-3 sticky left-0 bg-white border-r font-medium">
+        <div className="text-sm font-medium truncate">
+          {dipendente.nome} {dipendente.cognome}
         </div>
       </div>
 
