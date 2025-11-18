@@ -13,8 +13,9 @@
 
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, CalendarRange, Building2, Info } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CalendarRange, Building2, Info, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -46,6 +47,11 @@ interface CalendarioToolbarProps {
   onVistaChange: (vista: 'settimana' | 'mese') => void
   onSedeChange: (sedeId: string) => void
   onPianificazioneClick: () => void
+  // Drag & drop props
+  hasPendingChanges?: boolean
+  countPendingChanges?: number
+  onAnnullaModifiche?: () => void
+  onConfermaModifiche?: () => void
 }
 
 export function CalendarioToolbar({
@@ -59,7 +65,11 @@ export function CalendarioToolbar({
   onToday,
   onVistaChange,
   onSedeChange,
-  onPianificazioneClick
+  onPianificazioneClick,
+  hasPendingChanges = false,
+  countPendingChanges = 0,
+  onAnnullaModifiche,
+  onConfermaModifiche
 }: CalendarioToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-3 p-3 bg-white border rounded-lg">
@@ -119,6 +129,34 @@ export function CalendarioToolbar({
 
       {/* Sezione destra: Filtri + Azioni */}
       <div className="flex items-center gap-2">
+        {/* Pulsanti Conferma/Annulla (mostrati solo se ci sono modifiche pending) */}
+        {hasPendingChanges && (
+          <>
+            <Badge variant="outline" className="border-orange-500 text-orange-700 h-8">
+              {countPendingChanges} {countPendingChanges === 1 ? 'modifica' : 'modifiche'} in sospeso
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAnnullaModifiche}
+              className="h-8 px-3 text-xs"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Annulla
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onConfermaModifiche}
+              className="h-8 px-3 text-xs"
+            >
+              <Check className="h-3 w-3 mr-1" />
+              Conferma
+            </Button>
+            <div className="h-6 w-px bg-border" />
+          </>
+        )}
+
         {/* Filtro Sede */}
         <Select value={sedeSelezionata} onValueChange={onSedeChange}>
           <SelectTrigger className="h-8 w-[180px] text-xs">
@@ -158,33 +196,72 @@ export function CalendarioToolbar({
         {/* Legenda (Popover) */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Info className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 gap-1.5 relative hover:bg-blue-50 transition-colors group"
+            >
+              <Info className="h-4 w-4 text-blue-600 animate-[pulse_3s_ease-in-out_infinite] group-hover:animate-none" />
+              <span className="text-xs font-medium text-blue-600">Leggimi</span>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-[ping_3s_ease-in-out_infinite] absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+              </span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-64" align="end">
-            <div className="space-y-2">
-              <h4 className="font-semibold text-sm">Legenda Turni</h4>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300"></div>
-                  <span className="text-xs">Mattina</span>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-3">
+              <div>
+                <h4 className="font-semibold text-sm mb-2">Tipi di Turno</h4>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300"></div>
+                    <span className="text-xs">Mattina</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-300"></div>
+                    <span className="text-xs">Pranzo</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300"></div>
+                    <span className="text-xs">Sera</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-300"></div>
+                    <span className="text-xs">Spezzato</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-indigo-100 border-2 border-indigo-300"></div>
+                    <span className="text-xs">Notte</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-300"></div>
-                  <span className="text-xs">Pranzo</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300"></div>
-                  <span className="text-xs">Sera</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-300"></div>
-                  <span className="text-xs">Spezzato</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-indigo-100 border-2 border-indigo-300"></div>
-                  <span className="text-xs">Notte</span>
+              </div>
+
+              <div className="border-t pt-2">
+                <h4 className="font-semibold text-sm mb-2">Drag & Drop</h4>
+                <div className="space-y-2">
+                  <div className="text-xs">
+                    <div className="font-medium text-orange-700 mb-1">🔄 Sposta turno</div>
+                    <div className="text-muted-foreground">Trascina un turno su una cella vuota per spostarlo</div>
+                  </div>
+                  <div className="text-xs">
+                    <div className="font-medium text-green-700 mb-1">📋 Duplica turno</div>
+                    <div className="text-muted-foreground">Tieni premuto <kbd className="px-1 py-0.5 bg-gray-100 border rounded text-[10px]">CTRL</kbd> mentre trascini per duplicare</div>
+                  </div>
+                  <div className="text-xs">
+                    <div className="flex items-center gap-1 mb-1">
+                      <div className="w-3 h-3 rounded border-2 border-dashed border-orange-500 bg-orange-50"></div>
+                      <span className="font-medium text-orange-700">Arancione tratteggiato</span>
+                    </div>
+                    <div className="text-muted-foreground">Turno in attesa di conferma (sposta)</div>
+                  </div>
+                  <div className="text-xs">
+                    <div className="flex items-center gap-1 mb-1">
+                      <div className="w-3 h-3 rounded border-2 border-dashed border-green-500 bg-green-50"></div>
+                      <span className="font-medium text-green-700">Verde tratteggiato</span>
+                    </div>
+                    <div className="text-muted-foreground">Turno duplicato in attesa di conferma</div>
+                  </div>
                 </div>
               </div>
             </div>

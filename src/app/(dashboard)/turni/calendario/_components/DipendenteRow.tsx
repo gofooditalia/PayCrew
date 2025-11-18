@@ -33,6 +33,13 @@ interface DipendenteRowProps {
   turni: Turno[]
   onTurnoClick: (turno: Turno) => void
   onCellaVuotaClick: (dipendenteId: string, data: Date) => void
+  // Drag & drop props
+  onDropTurno?: (turno: Turno, targetDipendenteId: string, targetData: Date, isDuplica: boolean) => boolean
+  isTurnoPending?: (turnoId: string) => boolean
+  isCellaValida?: (dipendenteId: string, data: Date) => boolean
+  isDragging?: boolean
+  setIsDragging?: (dragging: boolean) => void
+  isCtrlPressed?: boolean
 }
 
 export function DipendenteRow({
@@ -40,7 +47,13 @@ export function DipendenteRow({
   giorni,
   turni,
   onTurnoClick,
-  onCellaVuotaClick
+  onCellaVuotaClick,
+  onDropTurno,
+  isTurnoPending,
+  isCellaValida,
+  isDragging = false,
+  setIsDragging,
+  isCtrlPressed = false
 }: DipendenteRowProps) {
   // Crea una mappa turni per data per accesso veloce
   const turniPerData = turni.reduce((acc, turno) => {
@@ -81,13 +94,17 @@ export function DipendenteRow({
         const dataKey = format(giorno, 'yyyy-MM-dd')
         const turniGiorno = turniPerData[dataKey] || []
         const oggi = isToday(giorno)
+        const cellaValida = isCellaValida ? isCellaValida(dipendente.id, giorno) : true
 
         return (
           <div
             key={dataKey}
             className={cn(
               "p-2 border-r",
-              oggi && "bg-blue-50 border-blue-400 border-x-2"
+              oggi && "bg-blue-50 border-blue-400 border-x-2",
+              // Evidenzia celle durante drag
+              isDragging && cellaValida && "bg-green-100 transition-colors",
+              isDragging && !cellaValida && "bg-red-100 transition-colors"
             )}
           >
             {turniGiorno.length > 0 ? (
@@ -97,11 +114,23 @@ export function DipendenteRow({
                     key={turno.id}
                     turno={turno}
                     onClick={() => onTurnoClick(turno)}
+                    onDropTurno={onDropTurno}
+                    isPending={isTurnoPending ? isTurnoPending(turno.id) : false}
+                    setIsDragging={setIsDragging}
+                    dipendenteId={dipendente.id}
+                    data={giorno}
                   />
                 ))}
               </div>
             ) : (
-              <CellaVuota onClick={() => onCellaVuotaClick(dipendente.id, giorno)} />
+              <CellaVuota
+                onClick={() => onCellaVuotaClick(dipendente.id, giorno)}
+                onDropTurno={onDropTurno}
+                dipendenteId={dipendente.id}
+                data={giorno}
+                isCellaValida={cellaValida}
+                isCtrlPressed={isCtrlPressed}
+              />
             )}
           </div>
         )

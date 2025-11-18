@@ -260,16 +260,31 @@ The Prisma client uses connection pooling with:
 **Shift Management** ✅
 - Complete CRUD for shifts (turni)
 - **Vista Settimana**: Griglia orizzontale dipendente × 7 giorni
+  - **Drag & Drop**: Trascina turni tra celle per spostarli o duplicarli
+  - **Sposta turno**: Drag normale tra celle
+  - **Duplica turno**: CTRL+Drag (CMD+Drag su Mac) per duplicare
+  - **Validazione real-time**: Solo celle vuote accettano drop
+  - **Feedback visivo**:
+    - Celle verdi durante drag = destinazione valida
+    - Celle rosse durante drag = destinazione occupata
+    - Bordo tratteggiato arancione + ring = turno spostato (da confermare)
+    - Bordo tratteggiato verde + ring = turno duplicato (da confermare)
+  - **Conferma batch**: Pulsanti Conferma/Annulla per salvare modifiche pending
+  - **API batch**: `/api/turni/batch` per operazioni multiple in transazione
 - **Vista Mese**: Calendario professionale 7×5 stile Google Calendar
   - Griglia completa del mese con giorni mese precedente/successivo
   - Turni compatti nelle celle giorno (cognome + orario)
   - Max 4 turni visibili per cella + contatore
   - Tooltip completo al hover
 - **Toolbar compatta unica**: navigazione, toggle vista, filtro sede, pianificazione, legenda (popover)
+  - **Legenda interattiva**: Pulsante "Leggimi" con animazione pulse e badge
+  - Istruzioni complete drag & drop
+  - Spiegazione codici colore turni pending
 - Multiple shift creation (pianificazione multipla)
 - Integration with attendance tracking
 - Filtri by employee, location, shift type, date range
 - **UI ottimizzata**: ~400px di spazio recuperato per massimizzare griglia calendario
+- **Libreria**: Pragmatic Drag and Drop (Atlassian)
 
 **Payroll System (Cedolini)** ✅
 - Complete payroll CRUD interface

@@ -59,6 +59,26 @@ interface Sede {
   nome: string
 }
 
+// Tipi per gestione drag & drop
+interface TurnoSpostamento {
+  turnoId: string
+  fromDate: Date
+  toDate: Date
+  fromDipendenteId: string
+  toDipendenteId: string
+}
+
+interface TurnoDuplicazione {
+  turnoOriginale: Turno
+  toDate: Date
+  toDipendenteId: string
+}
+
+interface TurniPending {
+  spostamenti: TurnoSpostamento[]
+  duplicazioni: TurnoDuplicazione[]
+}
+
 export default function TurniPage() {
   // Stato
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -69,6 +89,37 @@ export default function TurniPage() {
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sedeSelezionata, setSedeSelezionata] = useState<string>('tutte')
+
+  // Stato per drag & drop
+  const [turniPending, setTurniPending] = useState<TurniPending>({
+    spostamenti: [],
+    duplicazioni: []
+  })
+  const [isDragging, setIsDragging] = useState(false)
+  const [isCtrlPressed, setIsCtrlPressed] = useState(false)
+
+  // Monitor tasto CTRL per duplicazione
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) { // metaKey per Mac
+        setIsCtrlPressed(true)
+      }
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) {
+        setIsCtrlPressed(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -103,6 +154,80 @@ export default function TurniPage() {
     }
     return dipendenti.filter(d => d.sedeId === sedeSelezionata)
   }, [dipendenti, sedeSelezionata])
+
+  // Calcola se ci sono modifiche pending
+  const hasPendingChanges = useMemo(() => {
+    return turniPending.spostamenti.length > 0 || turniPending.duplicazioni.length > 0
+  }, [turniPending])
+
+  const countPendingChanges = useMemo(() => {
+    return turniPending.spostamenti.length + turniPending.duplicazioni.length
+  }, [turniPending])
+
+  // Verifica se un turno è in pending (spostato)
+  const isTurnoPending = useCallback((turnoId: string) => {
+    return turniPending.spostamenti.some(s => s.turnoId === turnoId)
+  }, [turniPending.spostamenti])
+
+  // Verifica se una cella è valida per il drop (vuota)
+  const isCellaValida = useCallback((dipendenteId: string, data: Date) => {
+    const dataKey = format(data, 'yyyy-MM-dd')
+
+    // Controlla turni esistenti
+    const hasTurnoEsistente = turni.some(t => {
+      const turnoDataKey = format(t.data, 'yyyy-MM-dd')
+      return t.dipendenteId === dipendenteId && turnoDataKey === dataKey
+    })
+
+    if (hasTurnoEsistente) return false
+
+    // Controlla duplicazioni pending
+    const hasDuplicazionePending = turniPending.duplicazioni.some(d => {
+      const dupDataKey = format(d.toDate, 'yyyy-MM-dd')
+      return d.toDipendenteId === dipendenteId && dupDataKey === dataKey
+    })
+
+    if (hasDuplicazionePending) return false
+
+    // Controlla spostamenti pending (destinazione)
+    const hasSpostamentoPending = turniPending.spostamenti.some(s => {
+      const spostDataKey = format(s.toDate, 'yyyy-MM-dd')
+      return s.toDipendenteId === dipendenteId && spostDataKey === dataKey
+    })
+
+    return !hasSpostamentoPending
+  }, [turni, turniPending])
+
+  // Ottieni turni "virtuali" includendo spostamenti e duplicazioni pending
+  const turniVirtuali = useMemo(() => {
+    const virtuali = [...turni]
+
+    // Aggiungi spostamenti come turni temporanei nella posizione di destinazione
+    turniPending.spostamenti.forEach(spost => {
+      // Trova il turno originale
+      const turnoOriginale = turni.find(t => t.id === spost.turnoId)
+      if (turnoOriginale) {
+        virtuali.push({
+          ...turnoOriginale,
+          id: `temp-move-${spost.turnoId}-${format(spost.toDate, 'yyyy-MM-dd')}`,
+          data: spost.toDate,
+          dipendenteId: spost.toDipendenteId
+        })
+      }
+    })
+
+    // Aggiungi duplicazioni come turni temporanei
+    turniPending.duplicazioni.forEach(dup => {
+      virtuali.push({
+        ...dup.turnoOriginale,
+        id: `temp-dup-${dup.turnoOriginale.id}-${format(dup.toDate, 'yyyy-MM-dd')}`,
+        data: dup.toDate,
+        dipendenteId: dup.toDipendenteId
+      })
+    })
+
+    return virtuali
+  }, [turni, turniPending.spostamenti, turniPending.duplicazioni])
 
   // Carica dipendenti
   const caricaDipendenti = async () => {
@@ -304,6 +429,113 @@ export default function TurniPage() {
     }
   }
 
+  // Handler drop turno (sposta o duplica)
+  const handleDropTurno = useCallback((
+    turno: Turno,
+    targetDipendenteId: string,
+    targetData: Date,
+    isDuplica: boolean
+  ) => {
+    // Verifica se la cella target è valida
+    if (!isCellaValida(targetDipendenteId, targetData)) {
+      toast.error('Impossibile: cella già occupata')
+      return false
+    }
+
+    if (isDuplica) {
+      // Aggiungi duplicazione
+      setTurniPending(prev => ({
+        ...prev,
+        duplicazioni: [
+          ...prev.duplicazioni,
+          {
+            turnoOriginale: turno,
+            toDate: targetData,
+            toDipendenteId: targetDipendenteId
+          }
+        ]
+      }))
+      toast.success('Turno duplicato. Ricorda di confermare la programmazione.')
+    } else {
+      // Aggiungi spostamento
+      setTurniPending(prev => ({
+        ...prev,
+        spostamenti: [
+          ...prev.spostamenti,
+          {
+            turnoId: turno.id,
+            fromDate: turno.data,
+            toDate: targetData,
+            fromDipendenteId: turno.dipendenteId,
+            toDipendenteId: targetDipendenteId
+          }
+        ]
+      }))
+      toast.success('Turno spostato. Ricorda di confermare la programmazione.')
+    }
+
+    return true
+  }, [isCellaValida])
+
+  // Annulla modifiche pending
+  const handleAnnullaModifiche = useCallback(() => {
+    setTurniPending({ spostamenti: [], duplicazioni: [] })
+    toast.info('Modifiche annullate')
+  }, [])
+
+  // Conferma modifiche pending (salva sul server)
+  const handleConfermaModifiche = async () => {
+    setIsSubmitting(true)
+    const loadingToast = toast.loading('Salvataggio modifiche in corso...')
+
+    try {
+      // Converti Date in stringhe YYYY-MM-DD per l'API
+      const payload = {
+        spostamenti: turniPending.spostamenti.map(s => ({
+          turnoId: s.turnoId,
+          fromDate: format(s.fromDate, 'yyyy-MM-dd'),
+          toDate: format(s.toDate, 'yyyy-MM-dd'),
+          fromDipendenteId: s.fromDipendenteId,
+          toDipendenteId: s.toDipendenteId
+        })),
+        duplicazioni: turniPending.duplicazioni.map(d => ({
+          turnoOriginale: {
+            ...d.turnoOriginale,
+            data: format(d.turnoOriginale.data, 'yyyy-MM-dd')
+          },
+          toDate: format(d.toDate, 'yyyy-MM-dd'),
+          toDipendenteId: d.toDipendenteId
+        }))
+      }
+
+      const response = await fetch('/api/turni/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Errore nel salvataggio delle modifiche')
+      }
+
+      const result = await response.json()
+
+      toast.dismiss(loadingToast)
+      toast.success(result.message || 'Modifiche salvate con successo')
+
+      // Reset pending e ricarica turni
+      setTurniPending({ spostamenti: [], duplicazioni: [] })
+      await caricaTurni()
+    } catch (error: any) {
+      console.error('Errore conferma modifiche:', error)
+      toast.dismiss(loadingToast)
+      toast.error(error.message || 'Impossibile salvare le modifiche')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   // Pianificazione multipla
   const handlePianificazioneMultipla = async (data: TurniMultipliFormData) => {
     setIsSubmitting(true)
@@ -360,6 +592,10 @@ export default function TurniPage() {
         onVistaChange={setVistaAttiva}
         onSedeChange={setSedeSelezionata}
         onPianificazioneClick={() => setPianificazioneDialogOpen(true)}
+        hasPendingChanges={hasPendingChanges}
+        countPendingChanges={countPendingChanges}
+        onAnnullaModifiche={handleAnnullaModifiche}
+        onConfermaModifiche={handleConfermaModifiche}
       />
 
       {/* Griglia calendario - occupa tutto lo spazio rimanente */}
@@ -375,9 +611,15 @@ export default function TurniPage() {
           <CalendarioGrid
             giorni={giorni}
             dipendenti={dipendentiFiltrati}
-            turni={turni}
+            turni={turniVirtuali}
             onTurnoClick={handleTurnoClick}
             onCellaVuotaClick={handleCellaVuotaClick}
+            onDropTurno={handleDropTurno}
+            isTurnoPending={isTurnoPending}
+            isCellaValida={isCellaValida}
+            isDragging={isDragging}
+            setIsDragging={setIsDragging}
+            isCtrlPressed={isCtrlPressed}
           />
         ) : (
           <CalendarioMeseGrid

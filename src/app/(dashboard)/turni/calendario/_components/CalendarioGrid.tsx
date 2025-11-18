@@ -36,6 +36,13 @@ interface CalendarioGridProps {
   turni: Turno[]
   onTurnoClick: (turno: Turno) => void
   onCellaVuotaClick: (dipendenteId: string, data: Date) => void
+  // Drag & drop props
+  onDropTurno?: (turno: Turno, targetDipendenteId: string, targetData: Date, isDuplica: boolean) => boolean
+  isTurnoPending?: (turnoId: string) => boolean
+  isCellaValida?: (dipendenteId: string, data: Date) => boolean
+  isDragging?: boolean
+  setIsDragging?: (dragging: boolean) => void
+  isCtrlPressed?: boolean
 }
 
 export function CalendarioGrid({
@@ -43,7 +50,13 @@ export function CalendarioGrid({
   dipendenti,
   turni,
   onTurnoClick,
-  onCellaVuotaClick
+  onCellaVuotaClick,
+  onDropTurno,
+  isTurnoPending,
+  isCellaValida,
+  isDragging = false,
+  setIsDragging,
+  isCtrlPressed = false
 }: CalendarioGridProps) {
   // Raggruppa turni per dipendente
   const turniPerDipendente = turni.reduce((acc, turno) => {
@@ -119,6 +132,12 @@ export function CalendarioGrid({
           turni={turniPerDipendente[dipendente.id] || []}
           onTurnoClick={onTurnoClick}
           onCellaVuotaClick={onCellaVuotaClick}
+          onDropTurno={onDropTurno}
+          isTurnoPending={isTurnoPending}
+          isCellaValida={isCellaValida}
+          isDragging={isDragging}
+          setIsDragging={setIsDragging}
+          isCtrlPressed={isCtrlPressed}
         />
       ))}
     </div>
