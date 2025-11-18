@@ -112,6 +112,14 @@ export async function POST(request: Request) {
           data: {
             data: parseLocalDate(spostamento.toDate),
             dipendenteId: spostamento.toDipendenteId
+          },
+          include: {
+            dipendenti: {
+              select: {
+                nome: true,
+                cognome: true
+              }
+            }
           }
         })
 
@@ -119,8 +127,10 @@ export async function POST(request: Request) {
 
         // Log attività (opzionale, può fallire senza bloccare)
         try {
+          const dipendenteNome = `${turnoAggiornato.dipendenti.nome} ${turnoAggiornato.dipendenti.cognome}`
           await AttivitaLogger.logModificaTurno(
             turnoAggiornato as any,
+            dipendenteNome,
             user.id,
             dbUser.aziendaId
           )
@@ -161,6 +171,14 @@ export async function POST(request: Request) {
             pausaPranzoFine: turnoOriginale.pausaPranzoFine,
             tipoTurno: turnoOriginale.tipoTurno,
             dipendenteId: toDipendenteId
+          },
+          include: {
+            dipendenti: {
+              select: {
+                nome: true,
+                cognome: true
+              }
+            }
           }
         })
 
@@ -168,8 +186,10 @@ export async function POST(request: Request) {
 
         // Log attività (opzionale, può fallire senza bloccare)
         try {
+          const dipendenteNome = `${nuovoTurno.dipendenti.nome} ${nuovoTurno.dipendenti.cognome}`
           await AttivitaLogger.logCreazioneTurno(
             nuovoTurno as any,
+            dipendenteNome,
             user.id,
             dbUser.aziendaId
           )
