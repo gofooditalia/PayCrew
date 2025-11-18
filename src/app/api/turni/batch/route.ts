@@ -88,7 +88,14 @@ export async function POST(request: Request) {
     let countSpostamenti = 0
     let countDuplicazioni = 0
 
-    // Esegui operazioni in una transazione Prisma
+    // Array per raccogliere dati per logging (eseguito dopo la transazione)
+    const turniPerLogging: Array<{
+      tipo: 'modifica' | 'creazione'
+      turno: any
+      dipendenteNome: string
+    }> = []
+
+    // Esegui operazioni in una transazione Prisma veloce (solo DB operations)
     await prisma.$transaction(async (tx) => {
       // Processa spostamenti
       for (const spostamento of spostamenti) {
@@ -125,18 +132,12 @@ export async function POST(request: Request) {
 
         countSpostamenti++
 
-        // Log attività (opzionale, può fallire senza bloccare)
-        try {
-          const dipendenteNome = `${turnoAggiornato.dipendenti.nome} ${turnoAggiornato.dipendenti.cognome}`
-          await AttivitaLogger.logModificaTurno(
-            turnoAggiornato as any,
-            dipendenteNome,
-            user.id,
-            dbUser.aziendaId!
-          )
-        } catch (logError) {
-          console.error('Errore logging modifica turno:', logError)
-        }
+        // Raccogli dati per logging dopo la transazione
+        turniPerLogging.push({
+          tipo: 'modifica',
+          turno: turnoAggiornato,
+          dipendenteNome: `${turnoAggiornato.dipendenti.nome} ${turnoAggiornato.dipendenti.cognome}`
+        })
       }
 
       // Processa duplicazioni
@@ -184,20 +185,37 @@ export async function POST(request: Request) {
 
         countDuplicazioni++
 
-        // Log attività (opzionale, può fallire senza bloccare)
-        try {
-          const dipendenteNome = `${nuovoTurno.dipendenti.nome} ${nuovoTurno.dipendenti.cognome}`
-          await AttivitaLogger.logCreazioneTurno(
-            nuovoTurno as any,
-            dipendenteNome,
-            user.id,
-            dbUser.aziendaId!
-          )
-        } catch (logError) {
-          console.error('Errore logging creazione turno:', logError)
-        }
+        // Raccogli dati per logging dopo la transazione
+        turniPerLogging.push({
+          tipo: 'creazione',
+          turno: nuovoTurno,
+          dipendenteNome: `${nuovoTurno.dipendenti.nome} ${nuovoTurno.dipendenti.cognome}`
+        })
       }
     })
+
+    // Log attività DOPO la transazione (non blocca il commit)
+    // Eseguito in parallelo per massimizzare performance
+    const loggingPromises = turniPerLogging.map(({ tipo, turno, dipendenteNome }) => {
+      if (tipo === 'modifica') {
+        return AttivitaLogger.logModificaTurno(
+          turno as any,
+          dipendenteNome,
+          user.id,
+          dbUser.aziendaId!
+        ).catch(err => console.error('Errore logging modifica turno:', err))
+      } else {
+        return AttivitaLogger.logCreazioneTurno(
+          turno as any,
+          dipendenteNome,
+          user.id,
+          dbUser.aziendaId!
+        ).catch(err => console.error('Errore logging creazione turno:', err))
+      }
+    })
+
+    // Attendi logging in background (non blocca la risposta)
+    await Promise.allSettled(loggingPromises)
 
     return NextResponse.json({
       success: true,
