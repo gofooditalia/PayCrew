@@ -10,6 +10,7 @@ import { tipo_turno } from '@prisma/client'
 import { TurnoCell, CellaVuota } from './TurnoCell'
 import { format, isToday } from 'date-fns'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 interface Turno {
   id: string
@@ -54,7 +55,7 @@ export function DipendenteRow({
 
   // Determina dinamicamente il numero di colonne basato sui giorni
   const numGiorni = giorni.length
-  const gridTemplate = `200px repeat(${numGiorni}, 1fr)`
+  const gridTemplate = `160px repeat(${numGiorni}, 1fr)`
 
   return (
     <div
@@ -65,11 +66,14 @@ export function DipendenteRow({
       }}
     >
       {/* Nome dipendente */}
-      <div className="flex items-center p-3 sticky left-0 bg-white border-r font-medium">
-        <div className="text-sm font-medium truncate">
+      <Link
+        href={`/dipendenti/${dipendente.id}`}
+        className="flex items-center px-2 py-3 sticky left-0 bg-blue-50 border-r font-medium hover:bg-blue-100 transition-colors group"
+      >
+        <div className="text-sm font-medium truncate group-hover:text-blue-700">
           {dipendente.nome} {dipendente.cognome}
         </div>
-      </div>
+      </Link>
 
       {/* Celle turni */}
       {giorni.map((giorno) => {

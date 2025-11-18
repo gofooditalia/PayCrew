@@ -11,6 +11,7 @@ import { DipendenteRow } from './DipendenteRow'
 import { format, isToday, isWeekend } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { UserGroupIcon } from '@heroicons/react/24/outline'
 
 interface Turno {
   id: string
@@ -64,20 +65,20 @@ export function CalendarioGrid({
 
   // Determina dinamicamente il numero di colonne basato sui giorni
   const numGiorni = giorni.length
-  const gridTemplate = `200px repeat(${numGiorni}, 1fr)`
+  const gridTemplate = `160px repeat(${numGiorni}, 1fr)`
 
   return (
     <div className="flex flex-col border rounded-lg overflow-x-auto bg-white h-full">
       {/* Header giorni */}
       <div
-        className="bg-gray-50 border-b sticky top-0 z-10"
+        className="bg-blue-200 border-b border-blue-300 sticky top-0 z-10"
         style={{
           display: 'grid',
           gridTemplateColumns: gridTemplate
         }}
       >
-        <div className="p-3 border-r font-semibold text-sm">
-          Dipendente
+        <div className="px-2 py-2 border-r border-blue-300 flex items-center justify-center bg-blue-50">
+          <UserGroupIcon className="h-5 w-5 text-blue-700" />
         </div>
         {giorni.map((giorno) => {
           const oggi = isToday(giorno)
@@ -87,23 +88,20 @@ export function CalendarioGrid({
             <div
               key={giorno.toISOString()}
               className={cn(
-                "p-3 border-r text-center relative",
-                oggi && "bg-blue-100 border-blue-400 border-x-2",
-                !oggi && weekend && "bg-gray-100"
+                "px-2 py-2 border-r border-blue-300 text-center relative",
+                oggi && "bg-blue-300 border-blue-400 border-x-2",
+                !oggi && weekend && "bg-blue-300/50"
               )}
             >
-              {oggi && (
-                <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
-              )}
               <div className={cn(
-                "text-xs font-medium uppercase",
-                oggi ? "text-blue-700 font-bold" : "text-muted-foreground"
+                "text-[10px] font-semibold uppercase tracking-wide",
+                oggi ? "text-blue-900 font-bold" : "text-blue-700"
               )}>
                 {oggi ? "OGGI" : format(giorno, 'EEE', { locale: it })}
               </div>
               <div className={cn(
-                "text-lg font-semibold mt-1",
-                oggi && "text-blue-700"
+                "text-base font-bold",
+                oggi ? "text-blue-900" : "text-blue-800"
               )}>
                 {format(giorno, 'd')}
               </div>
