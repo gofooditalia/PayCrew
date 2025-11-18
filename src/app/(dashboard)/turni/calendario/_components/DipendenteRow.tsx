@@ -55,8 +55,18 @@ export function DipendenteRow({
   // Iniziali per avatar
   const iniziali = `${dipendente.nome[0]}${dipendente.cognome[0]}`.toUpperCase()
 
+  // Determina dinamicamente il numero di colonne basato sui giorni
+  const numGiorni = giorni.length
+  const gridTemplate = `200px repeat(${numGiorni}, 1fr)`
+
   return (
-    <div className="grid grid-cols-[200px_repeat(7,1fr)] border-b hover:bg-gray-50/50 transition-colors">
+    <div
+      className="border-b hover:bg-gray-50/50 transition-colors"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: gridTemplate
+      }}
+    >
       {/* Nome dipendente */}
       <div className="flex items-center gap-3 p-3 sticky left-0 bg-white border-r font-medium">
         <Avatar className="h-8 w-8">

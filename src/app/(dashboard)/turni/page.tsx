@@ -9,8 +9,9 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { CalendarioHeader } from './calendario/_components/CalendarioHeader'
+import { CalendarioToolbar } from './calendario/_components/CalendarioToolbar'
 import { CalendarioGrid } from './calendario/_components/CalendarioGrid'
+import { CalendarioMeseGrid } from './calendario/_components/CalendarioMeseGrid'
 import { TurnoFormDialog } from '@/components/turni/turno-form-dialog'
 import { PianificazioneMultiplaDialog } from '@/components/turni/pianificazione-multipla-dialog'
 import { tipo_turno } from '@prisma/client'
@@ -31,15 +32,6 @@ import { it } from 'date-fns/locale'
 import { z } from 'zod'
 import { turnoCreateSchema, turniMultipliCreateSchema } from '@/lib/validation/turni-validator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { CalendarRange, Building2 } from 'lucide-react'
 
 type TurnoFormData = z.infer<typeof turnoCreateSchema>
 type TurniMultipliFormData = z.infer<typeof turniMultipliCreateSchema>
@@ -91,11 +83,12 @@ export default function TurniPage() {
       const fine = endOfWeek(currentDate, { weekStartsOn: 1 })
       return eachDayOfInterval({ start: inizio, end: fine })
     } else {
-      // Vista mese: mostra solo i primi 7 giorni per ora
-      // TODO: implementare vista mese completa con scroll orizzontale
-      const inizio = startOfMonth(currentDate)
-      const fine = new Date(inizio)
-      fine.setDate(fine.getDate() + 6)
+      // Vista mese: intero mese con giorni mese precedente/successivo per riempire griglia
+      const monthStart = startOfMonth(currentDate)
+      const monthEnd = endOfMonth(currentDate)
+      const inizio = startOfWeek(monthStart, { weekStartsOn: 1 })
+      const fine = endOfWeek(monthEnd, { weekStartsOn: 1 })
+
       return eachDayOfInterval({ start: inizio, end: fine })
     }
   }, [currentDate, vistaAttiva])
@@ -151,9 +144,11 @@ export default function TurniPage() {
         dataInizio = startOfWeek(currentDate, { weekStartsOn: 1 })
         dataFine = endOfWeek(currentDate, { weekStartsOn: 1 })
       } else {
-        dataInizio = startOfMonth(currentDate)
-        dataFine = new Date(dataInizio)
-        dataFine.setDate(dataFine.getDate() + 6)
+        // Vista mese: intero mese con giorni mese precedente/successivo
+        const monthStart = startOfMonth(currentDate)
+        const monthEnd = endOfMonth(currentDate)
+        dataInizio = startOfWeek(monthStart, { weekStartsOn: 1 })
+        dataFine = endOfWeek(monthEnd, { weekStartsOn: 1 })
       }
 
       const params = new URLSearchParams({
@@ -240,6 +235,14 @@ export default function TurniPage() {
   const handleCellaVuotaClick = (dipendenteId: string, data: Date) => {
     setTurnoInModifica(null)
     setPreFillData({ dipendenteId, data })
+    setDialogOpen(true)
+  }
+
+  // Gestione click giorno nella vista mese
+  const handleDayClick = (data: Date) => {
+    // Apre dialog per creare nuovo turno in quella data
+    setTurnoInModifica(null)
+    setPreFillData({ data })
     setDialogOpen(true)
   }
 
@@ -343,107 +346,49 @@ export default function TurniPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header principale */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Turni</h1>
-          <p className="text-muted-foreground">
-            Gestisci i turni e la pianificazione del personale
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setPianificazioneDialogOpen(true)}
-            className="w-full sm:w-auto"
-          >
-            <CalendarRange className="mr-2 h-4 w-4" />
-            Pianificazione Multipla
-          </Button>
-        </div>
-      </div>
-
-      {/* Header calendario */}
-      <CalendarioHeader
+    <div className="flex flex-col h-[calc(100vh-80px)]">
+      {/* Toolbar compatta unica */}
+      <CalendarioToolbar
         currentDate={currentDate}
+        vistaAttiva={vistaAttiva}
+        sedeSelezionata={sedeSelezionata}
+        sedi={sedi}
+        dipendentiFiltrati={dipendentiFiltrati.length}
         onPreviousMonth={handlePreviousMonth}
         onNextMonth={handleNextMonth}
         onToday={handleToday}
-        vistaAttiva={vistaAttiva}
         onVistaChange={setVistaAttiva}
+        onSedeChange={setSedeSelezionata}
+        onPianificazioneClick={() => setPianificazioneDialogOpen(true)}
       />
 
-      {/* Filtri e Legenda */}
-      <div className="space-y-4">
-        {/* Filtro Sede */}
-        <div className="flex items-center gap-3">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-muted-foreground">Filtra per sede:</span>
-          <Select value={sedeSelezionata} onValueChange={setSedeSelezionata}>
-            <SelectTrigger className="w-[240px]">
-              <SelectValue placeholder="Tutte le sedi" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="tutte">Tutte le sedi</SelectItem>
-              <SelectItem value="nessuna">Senza sede assegnata</SelectItem>
-              {sedi.map((sede) => (
-                <SelectItem key={sede.id} value={sede.id}>
-                  {sede.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {sedeSelezionata !== 'tutte' && (
-            <span className="text-xs text-muted-foreground">
-              ({dipendentiFiltrati.length} dipendent{dipendentiFiltrati.length === 1 ? 'e' : 'i'})
-            </span>
-          )}
-        </div>
-
-        {/* Legenda colori */}
-        <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
-          <div className="text-sm font-medium text-muted-foreground">Legenda:</div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-yellow-100 border-2 border-yellow-300"></div>
-            <span className="text-sm">Mattina</span>
+      {/* Griglia calendario - occupa tutto lo spazio rimanente */}
+      <div className="flex-1 mt-3 overflow-hidden">
+        {loading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-300"></div>
-            <span className="text-sm">Pranzo</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300"></div>
-            <span className="text-sm">Sera</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-300"></div>
-            <span className="text-sm">Spezzato</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-indigo-100 border-2 border-indigo-300"></div>
-            <span className="text-sm">Notte</span>
-          </div>
-        </div>
+        ) : vistaAttiva === 'settimana' ? (
+          <CalendarioGrid
+            giorni={giorni}
+            dipendenti={dipendentiFiltrati}
+            turni={turni}
+            onTurnoClick={handleTurnoClick}
+            onCellaVuotaClick={handleCellaVuotaClick}
+          />
+        ) : (
+          <CalendarioMeseGrid
+            currentDate={currentDate}
+            dipendenti={dipendentiFiltrati}
+            turni={turni}
+            onDayClick={handleDayClick}
+            onTurnoClick={handleTurnoClick}
+          />
+        )}
       </div>
-
-      {/* Griglia calendario */}
-      {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-      ) : (
-        <CalendarioGrid
-          giorni={giorni}
-          dipendenti={dipendentiFiltrati}
-          turni={turni}
-          onTurnoClick={handleTurnoClick}
-          onCellaVuotaClick={handleCellaVuotaClick}
-        />
-      )}
 
       {/* Dialog Form Turno Singolo */}
       <TurnoFormDialog

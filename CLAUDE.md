@@ -149,12 +149,25 @@ export async function POST(request: Request) {
 
 **React Hook Form** with Zod resolvers for all forms.
 
-### Styling
+### Styling & UI/UX
 
 - **Tailwind CSS** with custom configuration
 - **shadcn/ui** components (installed via `npx shadcn@latest add [component]`)
 - Path alias: `@/*` maps to `src/*`
 - Responsive design with mobile-first approach
+
+**Sidebar Navigation**:
+- Three states: `open` (256px), `collapsed` (64px), `closed` (mobile)
+- **Default**: collapsed su desktop per massimizzare spazio contenuto
+- **Persistenza**: stato salvato in localStorage tra sessioni
+- Context: `src/contexts/sidebar-context.tsx`
+- Toggle via hamburger menu, tooltip in modalità collapsed
+
+**Design Principles**:
+- Content-first: priorità massima allo spazio per contenuto principale
+- Compact toolbars: controlli essenziali raggruppati in singola riga
+- Progressive disclosure: info secondaria in popover/tooltip on-demand
+- Consistent patterns: UI coerente tra tutte le sezioni dell'app
 
 ## Important Technical Details
 
@@ -246,9 +259,17 @@ The Prisma client uses connection pooling with:
 ### ✅ Sprint 4 - Complete
 **Shift Management** ✅
 - Complete CRUD for shifts (turni)
-- Filters by employee, location, shift type, date range
+- **Vista Settimana**: Griglia orizzontale dipendente × 7 giorni
+- **Vista Mese**: Calendario professionale 7×5 stile Google Calendar
+  - Griglia completa del mese con giorni mese precedente/successivo
+  - Turni compatti nelle celle giorno (cognome + orario)
+  - Max 4 turni visibili per cella + contatore
+  - Tooltip completo al hover
+- **Toolbar compatta unica**: navigazione, toggle vista, filtro sede, pianificazione, legenda (popover)
 - Multiple shift creation (pianificazione multipla)
 - Integration with attendance tracking
+- Filtri by employee, location, shift type, date range
+- **UI ottimizzata**: ~400px di spazio recuperato per massimizzare griglia calendario
 
 **Payroll System (Cedolini)** ✅
 - Complete payroll CRUD interface

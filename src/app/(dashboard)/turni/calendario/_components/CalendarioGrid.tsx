@@ -62,10 +62,20 @@ export function CalendarioGrid({
     )
   }
 
+  // Determina dinamicamente il numero di colonne basato sui giorni
+  const numGiorni = giorni.length
+  const gridTemplate = `200px repeat(${numGiorni}, 1fr)`
+
   return (
-    <div className="flex flex-col border rounded-lg overflow-hidden bg-white">
+    <div className="flex flex-col border rounded-lg overflow-x-auto bg-white h-full">
       {/* Header giorni */}
-      <div className="grid grid-cols-[200px_repeat(7,1fr)] bg-gray-50 border-b sticky top-0 z-10">
+      <div
+        className="bg-gray-50 border-b sticky top-0 z-10"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: gridTemplate
+        }}
+      >
         <div className="p-3 border-r font-semibold text-sm">
           Dipendente
         </div>

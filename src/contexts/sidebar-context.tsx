@@ -15,31 +15,41 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined)
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [sidebarState, setSidebarState] = useState<'open' | 'closed' | 'collapsed'>('open')
+  const [sidebarState, setSidebarState] = useState<'open' | 'closed' | 'collapsed'>('collapsed')
   const [isClient, setIsClient] = useState(false)
 
   // Assicura che il componente sia renderizzato solo sul client
   useEffect(() => {
     setIsClient(true)
-    
-    // Imposta stato iniziale basato sulla dimensione dello schermo
+
+    // Imposta stato iniziale basato sulla dimensione dello schermo e localStorage
     const checkScreenSize = () => {
       if (window.innerWidth < 1024) {
         // Su mobile/tablet, sidebar chiusa di default
         setSidebarState('closed')
       } else {
-        // Su desktop, sidebar aperta di default
-        setSidebarState('open')
+        // Su desktop, legge preferenza salvata o collapsed di default
+        const savedState = localStorage.getItem('sidebar-state') as 'open' | 'collapsed' | null
+        setSidebarState(savedState && (savedState === 'open' || savedState === 'collapsed') ? savedState : 'collapsed')
       }
     }
 
     checkScreenSize()
     window.addEventListener('resize', checkScreenSize)
-    
+
     return () => {
       window.removeEventListener('resize', checkScreenSize)
     }
   }, [])
+
+  // Salva lo stato nel localStorage quando cambia (solo su desktop)
+  useEffect(() => {
+    if (isClient && typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      if (sidebarState === 'open' || sidebarState === 'collapsed') {
+        localStorage.setItem('sidebar-state', sidebarState)
+      }
+    }
+  }, [sidebarState, isClient])
 
   const toggleSidebar = () => {
     setSidebarState(prev => {
@@ -70,13 +80,13 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   if (!isClient) {
     return (
       <SidebarContext.Provider value={{
-        sidebarState: 'open',
+        sidebarState: 'collapsed',
         toggleSidebar,
         closeSidebar,
         openSidebar,
         collapseSidebar,
-        isSidebarOpen: true,
-        isSidebarCollapsed: false
+        isSidebarOpen: false,
+        isSidebarCollapsed: true
       }}>
         {children}
       </SidebarContext.Provider>
