@@ -132,7 +132,7 @@ export async function POST(request: Request) {
             turnoAggiornato as any,
             dipendenteNome,
             user.id,
-            dbUser.aziendaId
+            dbUser.aziendaId!
           )
         } catch (logError) {
           console.error('Errore logging modifica turno:', logError)
@@ -191,7 +191,7 @@ export async function POST(request: Request) {
             nuovoTurno as any,
             dipendenteNome,
             user.id,
-            dbUser.aziendaId
+            dbUser.aziendaId!
           )
         } catch (logError) {
           console.error('Errore logging creazione turno:', logError)
