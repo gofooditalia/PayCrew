@@ -63,9 +63,14 @@ npm run verify:deployment # Verify Prisma deployment setup
 ### Authentication & Authorization
 
 **Supabase Auth** with cookie-based sessions:
-- Client creation: `src/lib/supabase/client.ts` (client components)
+- Client creation: `src/lib/supabase/client.ts` (client components, `flowType: 'pkce'`)
 - Server creation: `src/lib/supabase/server.ts` (server components, API routes)
-- Middleware: `src/lib/supabase/middleware.ts` (route protection)
+- `src/lib/supabase/middleware.ts` exists but is **not wired into a root `middleware.ts`** — route protection is done at the layout level instead (e.g. `(dashboard)/layout.tsx` calls `supabase.auth.getUser()` and redirects to `/login` or `/azienda/crea`), not via Next.js Edge Middleware.
+
+**Password reset** (`src/app/(auth)/recupera-password/`, `src/app/(auth)/reset-password/`):
+- `recupera-password` calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: ... /reset-password })`
+- `reset-password` listens for the `PASSWORD_RECOVERY` event via `onAuthStateChange`, then calls `supabase.auth.updateUser({ password })`
+- Requires the app origin (e.g. `http://localhost:3000/**`) to be present in Supabase dashboard → Authentication → URL Configuration → Redirect URLs, or the recovery link silently falls back to the Site URL/login page instead
 
 **User Roles**:
 - SUPER_ADMIN: Full system access
@@ -262,6 +267,8 @@ CREATE turni (data, dipendenteId, sedeId, ...)  // Fresh record with new ID
 
 ## Current Development Status
 
+**2026-07-07 restart note**: The project was paused for months and the original Supabase project became unrecoverable. A new Supabase project was created and the database restored from a `pg_dumpall` backup found in the repo root (`db_cluster-27-11-2025@22-42-55.backup`). App data (companies, employees, shifts, attendance, auth users/logins) was fully recovered; Supabase Storage file contents (uploaded documents/payslip PDFs) were not, but no code currently uploads to Storage anyway (`documenti-dipendenti`/`cedolini` buckets exist only as a concept in the DB schema, not implemented in `src/`). The password reset flow was also built from scratch during this restart (see Authentication section above) — it never existed before.
+
 ### ✅ Sprint 1-2 Complete
 - Foundation (Next.js 16, Supabase, Prisma setup)
 - Authentication system with roles (SUPER_ADMIN, ADMIN, MANAGER, USER)
@@ -370,7 +377,12 @@ CREATE turni (data, dipendenteId, sedeId, ...)  // Fresh record with new ID
 
 Required variables (see `.env` file):
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin operations
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous/publishable key
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role/secret key for admin operations
 - `DATABASE_URL` - PostgreSQL connection string (with pooler)
 - `DIRECT_URL` - Direct PostgreSQL connection (for migrations)
+
+**Notes**:
+- Supabase's newer key format (`sb_publishable_...` / `sb_secret_...`) works fine as drop-in values for `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` with the `@supabase/supabase-js` version this project uses — no code changes needed, just paste the new-format value in.
+- **Both `.env` and `.env.local` are needed locally**: Next.js reads `.env.local` at runtime, but the Prisma CLI (`npx prisma ...`) only auto-loads `.env`. Keep `DATABASE_URL`/`DIRECT_URL` in sync in both files.
+- On networks without IPv6, Supabase's **Direct connection** (`db.<ref>.supabase.co:5432`) is unreachable (IPv6-only). Use the **Session pooler** connection string instead (`aws-<region>.pooler.supabase.com:5432`, user `postgres.<ref>`) for `DATABASE_URL`/`DIRECT_URL` and for any manual `psql` work.

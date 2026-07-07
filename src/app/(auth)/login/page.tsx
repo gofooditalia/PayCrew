@@ -92,6 +92,12 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div className="text-right">
+            <a href="/recupera-password" className="text-sm font-medium text-primary hover:text-primary-dark transition-colors">
+              Password dimenticata?
+            </a>
+          </div>
+
           <div>
             <button
               type="submit"

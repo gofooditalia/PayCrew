@@ -65,3 +65,8 @@ lighthouse-report-*.json
 
 # Internal documentation and archives
 /docs/archive/
+
+# Database backups and credential dumps (never commit)
+*.backup
+*.storage.zip
+password_*.txt
